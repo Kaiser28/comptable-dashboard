@@ -1,4 +1,4 @@
-import { Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel } from "docx";
+import { Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel, Table, TableRow, TableCell, WidthType } from "docx";
 
 export interface ClientData {
   nom_entreprise: string;
@@ -54,11 +54,42 @@ function calculerPremierExerciceFin(dateCreation: string | undefined, dateClotur
   return formatDate(new Date(annee, parseInt(mois) - 1, parseInt(jour)).toISOString());
 }
 
+function getGenre(civilite: string): 'M' | 'F' {
+  return civilite.toLowerCase().includes('mme') || civilite.toLowerCase().includes('madame') ? 'F' : 'M';
+}
+
+function accorderNe(civilite: string): string {
+  return getGenre(civilite) === 'F' ? 'née' : 'né';
+}
+
+function getPronoms(associes: AssocieData[]) {
+  if (associes.length === 1) {
+    const genre = getGenre(associes[0].civilite);
+    return {
+      soussigne: genre === 'F' ? 'La soussignée' : 'Le soussigné',
+      pronom: genre === 'F' ? 'elle' : 'il',
+      possessif: genre === 'F' ? 'sa' : 'son'
+    };
+  } else {
+    return {
+      soussigne: 'Les soussignés',
+      pronom: 'ils',
+      possessif: 'leur'
+    };
+  }
+}
+
 export async function generateStatuts(client: ClientData, associes: AssocieData[]): Promise<Buffer> {
   if (!associes || associes.length === 0) throw new Error("Aucun associé trouvé");
 
-  const associe = associes[0];
-  const formeJuridique = getFormeJuridique(associes.length);
+  // Dédupliquer les associés basé sur nom + prénom pour éviter les doublons
+  const associesUniques = associes.filter((associe, index, self) => 
+    index === self.findIndex(a => a.nom === associe.nom && a.prenom === associe.prenom)
+  );
+
+  const associe = associesUniques[0];
+  const formeJuridique = getFormeJuridique(associesUniques.length);
+  const pronoms = getPronoms(associesUniques);
   const adresseSiege = formatAdresse(client.adresse_siege);
   const adresseAssocie = formatAdresse(associe.adresse);
   const valeurNominale = client.capital_social / client.nb_actions;
@@ -69,138 +100,986 @@ export async function generateStatuts(client: ClientData, associes: AssocieData[
     sections: [
       {
         children: [
+          new Paragraph({ text: "" }),
+          new Paragraph({ text: "" }),
+          new Paragraph({ text: "" }),
+
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "STATUTS",
+                bold: true,
+                allCaps: true,
+                size: 20 * 2,
+              }),
+            ],
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 400, after: 400 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: formeJuridique.complete.toUpperCase(),
+                bold: true,
+                size: 14 * 2,
+              }),
+            ],
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 200 },
+          }),
+
+          new Paragraph({ text: "" }),
+          new Paragraph({ text: "" }),
+
+          new Paragraph({
+            children: [new TextRun({ text: `Dénomination sociale : ${client.nom_entreprise}`, size: 11 * 2 })],
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 100 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `Capital social : ${formatMontant(client.capital_social)} euros`,
+                size: 11 * 2,
+              }),
+            ],
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 100 },
+          }),
+          new Paragraph({
+            children: [new TextRun({ text: `Siège social : ${adresseSiege}`, size: 11 * 2 })],
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 100 },
+          }),
+
+          new Paragraph({ text: "" }),
+          new Paragraph({ text: "" }),
+          new Paragraph({ text: "" }),
+
+          new Paragraph({
+            children: [new TextRun({ text: `Constitué le ${dateSignature}`, size: 11 * 2 })],
+            alignment: AlignmentType.CENTER,
+          }),
+
+          new Paragraph({ text: "", pageBreakBefore: true, spacing: { before: 0, after: 0 } }),
+
           new Paragraph({
             text: "STATUTS",
             heading: HeadingLevel.TITLE,
             alignment: AlignmentType.CENTER,
           }),
           new Paragraph({
-            text: "Société par Actions Simplifiée",
+            text: formeJuridique.complete,
             alignment: AlignmentType.CENTER,
           }),
           new Paragraph({ text: "" }),
 
-          new Paragraph({ children: [new TextRun({ text: "Les soussignés :", bold: true })] }),
-          new Paragraph({ text: `${associe.civilite} ${associe.prenom} ${associe.nom}` }),
-          new Paragraph({ text: `Né(e) le ${associe.date_naissance || "Non renseigné"} à ${associe.lieu_naissance || "Non renseigné"}` }),
-          new Paragraph({ text: `Demeurant ${adresseAssocie}` }),
-          new Paragraph({ text: "" }),
-          new Paragraph({ text: "Ont établi ainsi qu'il suit les statuts d'une société par actions simplifiée qu'ils conviennent de constituer entre eux." }),
+          // Section "Les soussignés"
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `${pronoms.soussigne} :`,
+                bold: true,
+                size: 14 * 2, // docx uses half-points, so 14pt = 28 half-points
+              }),
+            ],
+            spacing: { before: 200, after: 100 },
+          }),
+
+          // Blocs pour chaque associé
+          ...associesUniques.flatMap((associe, index) => {
+            const adresseAssocieFormatee = formatAdresse(associe.adresse);
+            const nationalite = (associe as any).nationalite || "française";
+            
+            return [
+              // Ligne 1: Nom complet
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `${associe.civilite} ${associe.prenom} ${associe.nom}`,
+                    bold: true,
+                    size: 12 * 2,
+                  }),
+                ],
+                spacing: { after: 50 },
+              }),
+              
+              // Ligne 2: Date et lieu de naissance
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `${accorderNe(associe.civilite)} le ${associe.date_naissance || "date non renseignée"} à ${associe.lieu_naissance || "lieu non renseigné"}`,
+                    italics: true,
+                    size: 11 * 2,
+                  }),
+                ],
+              }),
+              
+              // Ligne 3: Adresse
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `Demeurant : ${adresseAssocieFormatee}`,
+                    size: 11 * 2,
+                  }),
+                ],
+              }),
+              
+              // Ligne 4: Nationalité
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `Nationalité ${nationalite}`,
+                    size: 11 * 2,
+                  }),
+                ],
+                spacing: { after: 150 },
+              }),
+            ];
+          }),
+
+          // Espace vertical
           new Paragraph({ text: "" }),
 
-          new Paragraph({ children: [new TextRun({ text: "TITRE I : FORME - DÉNOMINATION - SIÈGE - OBJET - DURÉE", bold: true })] }),
+          // Texte de clôture
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: associesUniques.length === 1 
+                  ? `A établi ainsi qu'il suit les statuts d'une ${formeJuridique.complete.toLowerCase()} qu'il déclare constituer.`
+                  : `Ont établi ainsi qu'il suit les statuts d'une ${formeJuridique.complete.toLowerCase()} qu'ils déclarent constituer entre eux.`,
+                size: 12 * 2,
+              }),
+            ],
+            spacing: { before: 100, after: 200 },
+          }),
+
           new Paragraph({ text: "" }),
 
-          new Paragraph({ children: [new TextRun({ text: "Article 1 - Forme", bold: true })] }),
-          new Paragraph({ text: `Il est formé entre les soussignés et ceux qui deviendront ultérieurement associés une ${formeJuridique.complete} (${formeJuridique.sigle}), régie par les dispositions législatives et réglementaires en vigueur ainsi que par les présents statuts.` }),
-          new Paragraph({ text: "" }),
+          // TITRE I
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "TITRE I : FORME - DÉNOMINATION - SIÈGE - OBJET - DURÉE",
+                bold: true,
+                allCaps: true,
+                size: 16 * 2,
+              }),
+            ],
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 400, after: 200 },
+          }),
 
-          new Paragraph({ children: [new TextRun({ text: "Article 2 - Dénomination", bold: true })] }),
-          new Paragraph({ text: `La société a pour dénomination sociale : ${client.nom_entreprise}.` }),
-          new Paragraph({ text: `Dans tous les actes et documents émanant de la société et destinés aux tiers, la dénomination sociale doit être précédée ou suivie immédiatement des mots "${formeJuridique.complete}" ou du sigle "${formeJuridique.sigle}" ainsi que de l'indication du montant du capital social.` }),
-          new Paragraph({ text: "" }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Article 1 - Forme",
+                bold: true,
+                size: 13 * 2,
+              }),
+            ],
+            spacing: { before: 200, after: 100 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `Il est formé entre ${pronoms.soussigne.toLowerCase()} et ceux qui deviendront ultérieurement associés une ${formeJuridique.complete} (${formeJuridique.sigle}), régie par les dispositions législatives et réglementaires en vigueur ainsi que par les présents statuts.`,
+                size: 11 * 2,
+              }),
+            ],
+            spacing: { after: 100 },
+          }),
 
-          new Paragraph({ children: [new TextRun({ text: "Article 3 - Siège social", bold: true })] }),
-          new Paragraph({ text: `Le siège social est fixé : ${adresseSiege}.` }),
-          new Paragraph({ text: "Il peut être transféré en tout autre endroit par décision du président, sous réserve de ratification par la collectivité des associés dans les conditions prévues par la loi et les présents statuts." }),
-          new Paragraph({ text: "" }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Article 2 - Dénomination",
+                bold: true,
+                size: 13 * 2,
+              }),
+            ],
+            spacing: { before: 200, after: 100 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `La société a pour dénomination sociale : ${client.nom_entreprise}.`,
+                size: 11 * 2,
+              }),
+            ],
+            spacing: { after: 100 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `Dans tous les actes et documents émanant de la société et destinés aux tiers, la dénomination sociale doit être précédée ou suivie immédiatement des mots "${formeJuridique.complete}" ou du sigle "${formeJuridique.sigle}" ainsi que de l'indication du montant du capital social.`,
+                size: 11 * 2,
+              }),
+            ],
+            spacing: { after: 100 },
+          }),
 
-          new Paragraph({ children: [new TextRun({ text: "Article 4 - Objet", bold: true })] }),
-          new Paragraph({ text: "La société a pour objet :" }),
-          new Paragraph({ text: client.objet_social || "Objet social non renseigné" }),
-          new Paragraph({ text: "Et plus généralement, toutes opérations industrielles, commerciales, financières, mobilières ou immobilières pouvant se rattacher directement ou indirectement à l'objet social ou susceptibles d'en faciliter la réalisation, le développement ou la continuité." }),
-          new Paragraph({ text: "" }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Article 3 - Siège social",
+                bold: true,
+                size: 13 * 2,
+              }),
+            ],
+            spacing: { before: 200, after: 100 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `Le siège social est fixé : ${adresseSiege}.`,
+                size: 11 * 2,
+              }),
+            ],
+            spacing: { after: 100 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Il peut être transféré en tout autre endroit par décision du président, sous réserve de ratification par la collectivité des associés dans les conditions prévues par la loi et les présents statuts.",
+                size: 11 * 2,
+              }),
+            ],
+            spacing: { after: 100 },
+          }),
 
-          new Paragraph({ children: [new TextRun({ text: "Article 5 - Durée", bold: true })] }),
-          new Paragraph({ text: `La durée de la société est fixée à ${client.duree_societe} années à compter de son immatriculation au Registre du Commerce et des Sociétés, sauf prorogation ou dissolution anticipée décidée conformément aux statuts.` }),
-          new Paragraph({ text: "" }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Article 4 - Objet",
+                bold: true,
+                size: 13 * 2,
+              }),
+            ],
+            spacing: { before: 200, after: 100 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "La société a pour objet :",
+                size: 11 * 2,
+              }),
+            ],
+            spacing: { after: 100 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: client.objet_social || "Objet social non renseigné",
+                size: 11 * 2,
+              }),
+            ],
+            spacing: { after: 100 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Et plus généralement, toutes opérations industrielles, commerciales, financières, mobilières ou immobilières pouvant se rattacher directement ou indirectement à l'objet social ou susceptibles d'en faciliter la réalisation, le développement ou la continuité.",
+                size: 11 * 2,
+              }),
+            ],
+            spacing: { after: 100 },
+          }),
 
-          new Paragraph({ children: [new TextRun({ text: "TITRE II : APPORTS - CAPITAL SOCIAL", bold: true })] }),
-          new Paragraph({ text: "" }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Article 5 - Durée",
+                bold: true,
+                size: 13 * 2,
+              }),
+            ],
+            spacing: { before: 200, after: 100 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `La durée de la société est fixée à ${client.duree_societe} années à compter de son immatriculation au Registre du Commerce et des Sociétés, sauf prorogation ou dissolution anticipée décidée conformément aux statuts.`,
+                size: 11 * 2,
+              }),
+            ],
+            spacing: { after: 100 },
+          }),
 
-          new Paragraph({ children: [new TextRun({ text: "Article 6 - Apports", bold: true })] }),
-          new Paragraph({ text: `Les associés font apport à la société d'une somme totale de ${formatMontant(client.capital_social)} euros en numéraire.` }),
-          new Paragraph({ text: "" }),
+          // TITRE II
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "TITRE II : APPORTS - CAPITAL SOCIAL",
+                bold: true,
+                allCaps: true,
+                size: 16 * 2,
+              }),
+            ],
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 400, after: 200 },
+          }),
 
-          new Paragraph({ children: [new TextRun({ text: "Article 7 - Capital social", bold: true })] }),
-          new Paragraph({ text: `Le capital social est fixé à ${formatMontant(client.capital_social)} euros.` }),
-          new Paragraph({ text: `Il est divisé en ${client.nb_actions} actions de ${formatMontant(valeurNominale)} euros chacune, intégralement souscrites et libérées à hauteur de ${formatMontant(client.montant_libere)} euros, le solde devant être libéré dans les conditions prévues par la loi.` }),
-          new Paragraph({ text: "" }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Article 6 - Apports",
+                bold: true,
+                size: 13 * 2,
+              }),
+            ],
+            spacing: { before: 200, after: 100 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `Les associés font apport à la société d'une somme totale de ${formatMontant(client.capital_social)} euros en numéraire.`,
+                size: 11 * 2,
+              }),
+            ],
+            spacing: { after: 100 },
+          }),
 
-          new Paragraph({ children: [new TextRun({ text: "Article 8 - Modification du capital", bold: true })] }),
-          new Paragraph({ text: "Le capital social peut être augmenté, réduit ou amorti dans les conditions prévues par la loi et les présents statuts." }),
-          new Paragraph({ text: "" }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Article 7 - Capital social",
+                bold: true,
+                size: 13 * 2,
+              }),
+            ],
+            spacing: { before: 200, after: 100 },
+          }),
+          
+          // Paragraphe intro
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `Le capital social est fixé à la somme de ${formatMontant(client.capital_social)} euros.`,
+                size: 11 * 2,
+              }),
+            ],
+            spacing: { after: 100 },
+          }),
 
-          new Paragraph({ children: [new TextRun({ text: "Article 9 - Forme des actions", bold: true })] }),
-          new Paragraph({ text: "Les actions sont nominatives et donnent lieu à une inscription en compte conformément à la réglementation en vigueur. Les attestations d'inscription valent titres au regard des tiers." }),
-          new Paragraph({ text: "" }),
+          // Tableau récapitulatif du capital
+          new Table({
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            rows: [
+              // LIGNE 1 : En-tête
+              new TableRow({
+                children: [
+                  new TableCell({
+                    children: [
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: "Associé",
+                            bold: true,
+                          }),
+                        ],
+                      }),
+                    ],
+                    shading: { fill: "D3D3D3" },
+                  }),
+                  new TableCell({
+                    children: [
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: "Nombre d'actions",
+                            bold: true,
+                          }),
+                        ],
+                        alignment: AlignmentType.CENTER,
+                      }),
+                    ],
+                    shading: { fill: "D3D3D3" },
+                  }),
+                  new TableCell({
+                    children: [
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: "Valeur nominale",
+                            bold: true,
+                          }),
+                        ],
+                        alignment: AlignmentType.CENTER,
+                      }),
+                    ],
+                    shading: { fill: "D3D3D3" },
+                  }),
+                  new TableCell({
+                    children: [
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: "Montant souscrit",
+                            bold: true,
+                          }),
+                        ],
+                        alignment: AlignmentType.CENTER,
+                      }),
+                    ],
+                    shading: { fill: "D3D3D3" },
+                  }),
+                ],
+              }),
+              // LIGNES : Données associés
+              ...associesUniques.map((associe, index) => {
+                // Répartition équitable si plusieurs associés
+                const nbActionsParAssocie = Math.floor(client.nb_actions / associesUniques.length);
+                // Le dernier associé récupère le reste des actions pour que le total soit exact
+                const actionsFinales = index === associesUniques.length - 1 
+                  ? client.nb_actions - (nbActionsParAssocie * (associesUniques.length - 1))
+                  : nbActionsParAssocie;
+                const montantParAssocie = client.capital_social / associesUniques.length;
+                
+                return new TableRow({
+                  children: [
+                    new TableCell({
+                      children: [
+                        new Paragraph({
+                          text: `${associe.civilite} ${associe.prenom} ${associe.nom}`,
+                        }),
+                      ],
+                    }),
+                    new TableCell({
+                      children: [
+                        new Paragraph({
+                          text: `${actionsFinales}`,
+                          alignment: AlignmentType.CENTER,
+                        }),
+                      ],
+                    }),
+                    new TableCell({
+                      children: [
+                        new Paragraph({
+                          text: `${formatMontant(valeurNominale)} €`,
+                          alignment: AlignmentType.CENTER,
+                        }),
+                      ],
+                    }),
+                    new TableCell({
+                      children: [
+                        new Paragraph({
+                          text: `${formatMontant(montantParAssocie)} €`,
+                          alignment: AlignmentType.CENTER,
+                        }),
+                      ],
+                    }),
+                  ],
+                });
+              }),
+              // LIGNE : Total
+              new TableRow({
+                children: [
+                  new TableCell({
+                    children: [
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: "TOTAL",
+                            bold: true,
+                          }),
+                        ],
+                      }),
+                    ],
+                  }),
+                  new TableCell({
+                    children: [
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: `${client.nb_actions}`,
+                            bold: true,
+                          }),
+                        ],
+                        alignment: AlignmentType.CENTER,
+                      }),
+                    ],
+                  }),
+                  new TableCell({
+                    children: [
+                      new Paragraph({
+                        text: "",
+                      }),
+                    ],
+                  }),
+                  new TableCell({
+                    children: [
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: `${formatMontant(client.capital_social)} €`,
+                            bold: true,
+                          }),
+                        ],
+                        alignment: AlignmentType.CENTER,
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+            ],
+          }),
 
-          new Paragraph({ children: [new TextRun({ text: "Article 10 - Transmission des actions", bold: true })] }),
-          new Paragraph({ text: "Les actions sont librement cessibles entre associés. Toute cession à un tiers non associé est soumise à l'agrément préalable de la collectivité des associés dans les conditions de majorité prévues par les présents statuts." }),
-          new Paragraph({ text: "" }),
+          // Paragraphe après le tableau
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `Le capital est divisé en ${client.nb_actions} actions de ${formatMontant(valeurNominale)} euros de valeur nominale chacune, intégralement souscrites et libérées à hauteur de ${formatMontant(client.montant_libere)} euros.`,
+                size: 11 * 2,
+              }),
+            ],
+            spacing: { after: 100 },
+          }),
 
-          new Paragraph({ children: [new TextRun({ text: "TITRE III : DIRECTION", bold: true })] }),
-          new Paragraph({ text: "" }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Article 8 - Modification du capital",
+                bold: true,
+                size: 13 * 2,
+              }),
+            ],
+            spacing: { before: 200, after: 100 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Le capital social peut être augmenté, réduit ou amorti dans les conditions prévues par la loi et les présents statuts.",
+                size: 11 * 2,
+              }),
+            ],
+            spacing: { after: 100 },
+          }),
 
-          new Paragraph({ children: [new TextRun({ text: "Article 11 - Présidence", bold: true })] }),
-          new Paragraph({ text: "La société est représentée et dirigée par un président." }),
-          new Paragraph({ text: `Le premier président est : ${associe.civilite} ${associe.prenom} ${associe.nom}, nommé pour une durée illimitée. Il peut être révoqué dans les conditions prévues par la loi et les présents statuts.` }),
-          new Paragraph({ text: "" }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Article 9 - Forme des actions",
+                bold: true,
+                size: 13 * 2,
+              }),
+            ],
+            spacing: { before: 200, after: 100 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Les actions sont nominatives et donnent lieu à une inscription en compte conformément à la réglementation en vigueur. Les attestations d'inscription valent titres au regard des tiers.",
+                size: 11 * 2,
+              }),
+            ],
+            spacing: { after: 100 },
+          }),
 
-          new Paragraph({ children: [new TextRun({ text: "Article 12 - Pouvoirs du président", bold: true })] }),
-          new Paragraph({ text: "Le président est investi des pouvoirs les plus étendus pour agir en toute circonstance au nom de la société, dans la limite de l'objet social et sous réserve des pouvoirs expressément attribués par la loi ou les statuts à la collectivité des associés." }),
-          new Paragraph({ text: "" }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Article 10 - Transmission des actions",
+                bold: true,
+                size: 13 * 2,
+              }),
+            ],
+            spacing: { before: 200, after: 100 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Les actions sont librement cessibles entre associés. Toute cession à un tiers non associé est soumise à l'agrément préalable de la collectivité des associés dans les conditions de majorité prévues par les présents statuts.",
+                size: 11 * 2,
+              }),
+            ],
+            spacing: { after: 100 },
+          }),
 
-          new Paragraph({ children: [new TextRun({ text: "Article 13 - Rémunération", bold: true })] }),
-          new Paragraph({ text: "La collectivité des associés fixe et, le cas échéant, modifie la rémunération du président. Celle-ci peut comprendre une partie fixe et/ou une partie variable." }),
-          new Paragraph({ text: "" }),
+          // TITRE III
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "TITRE III : DIRECTION",
+                bold: true,
+                allCaps: true,
+                size: 16 * 2,
+              }),
+            ],
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 400, after: 200 },
+          }),
 
-          new Paragraph({ children: [new TextRun({ text: "TITRE IV : DÉCISIONS COLLECTIVES", bold: true })] }),
-          new Paragraph({ text: "" }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Article 11 - Présidence",
+                bold: true,
+                size: 13 * 2,
+              }),
+            ],
+            spacing: { before: 200, after: 100 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "La société est représentée et dirigée par un président.",
+                size: 11 * 2,
+              }),
+            ],
+            spacing: { after: 100 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `Le premier président est : ${associe.civilite} ${associe.prenom} ${associe.nom}, nommé pour une durée illimitée. Il peut être révoqué dans les conditions prévues par la loi et les présents statuts.`,
+                size: 11 * 2,
+              }),
+            ],
+            spacing: { after: 100 },
+          }),
 
-          new Paragraph({ children: [new TextRun({ text: "Article 14 - Assemblées générales", bold: true })] }),
-          new Paragraph({ text: "Les associés sont réunis en assemblée générale aussi souvent que l'intérêt de la société l'exige et au moins une fois par an pour l'approbation des comptes de l'exercice." }),
-          new Paragraph({ text: "" }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Article 12 - Pouvoirs du président",
+                bold: true,
+                size: 13 * 2,
+              }),
+            ],
+            spacing: { before: 200, after: 100 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Le président est investi des pouvoirs les plus étendus pour agir en toute circonstance au nom de la société, dans la limite de l'objet social et sous réserve des pouvoirs expressément attribués par la loi ou les statuts à la collectivité des associés.",
+                size: 11 * 2,
+              }),
+            ],
+            spacing: { after: 100 },
+          }),
 
-          new Paragraph({ children: [new TextRun({ text: "Article 15 - Convocation", bold: true })] }),
-          new Paragraph({ text: "Les assemblées sont convoquées par le président par lettre simple, courrier électronique ou tout autre moyen écrit, au moins sept jours avant la date de réunion, sauf délai différent prévu par la loi." }),
-          new Paragraph({ text: "" }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Article 13 - Rémunération",
+                bold: true,
+                size: 13 * 2,
+              }),
+            ],
+            spacing: { before: 200, after: 100 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "La collectivité des associés fixe et, le cas échéant, modifie la rémunération du président. Celle-ci peut comprendre une partie fixe et/ou une partie variable.",
+                size: 11 * 2,
+              }),
+            ],
+            spacing: { after: 100 },
+          }),
 
-          new Paragraph({ children: [new TextRun({ text: "Article 16 - Quorum et majorité", bold: true })] }),
-          new Paragraph({ text: "Chaque action donne droit à une voix. Sauf dispositions légales contraires, les décisions sont prises à la majorité simple des voix exprimées par les associés présents ou représentés." }),
-          new Paragraph({ text: "" }),
+          // TITRE IV
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "TITRE IV : DÉCISIONS COLLECTIVES",
+                bold: true,
+                allCaps: true,
+                size: 16 * 2,
+              }),
+            ],
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 400, after: 200 },
+          }),
 
-          new Paragraph({ children: [new TextRun({ text: "TITRE V : EXERCICE SOCIAL - COMPTES", bold: true })] }),
-          new Paragraph({ text: "" }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Article 14 - Assemblées générales",
+                bold: true,
+                size: 13 * 2,
+              }),
+            ],
+            spacing: { before: 200, after: 100 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Les associés sont réunis en assemblée générale aussi souvent que l'intérêt de la société l'exige et au moins une fois par an pour l'approbation des comptes de l'exercice.",
+                size: 11 * 2,
+              }),
+            ],
+            spacing: { after: 100 },
+          }),
 
-          new Paragraph({ children: [new TextRun({ text: "Article 17 - Exercice social", bold: true })] }),
-          new Paragraph({ text: "L'exercice social commence le 1er janvier et se termine le 31 décembre de chaque année." }),
-          new Paragraph({ text: `Par exception, le premier exercice social se terminera le ${premierExerciceFin}.` }),
-          new Paragraph({ text: "" }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Article 15 - Convocation",
+                bold: true,
+                size: 13 * 2,
+              }),
+            ],
+            spacing: { before: 200, after: 100 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Les assemblées sont convoquées par le président par lettre simple, courrier électronique ou tout autre moyen écrit, au moins sept jours avant la date de réunion, sauf délai différent prévu par la loi.",
+                size: 11 * 2,
+              }),
+            ],
+            spacing: { after: 100 },
+          }),
 
-          new Paragraph({ children: [new TextRun({ text: "Article 18 - Comptes annuels", bold: true })] }),
-          new Paragraph({ text: "À la clôture de chaque exercice, le président établit l'inventaire, les comptes annuels et le rapport de gestion. Les comptes sont soumis à l'approbation de la collectivité des associés." }),
-          new Paragraph({ text: "" }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Article 16 - Quorum et majorité",
+                bold: true,
+                size: 13 * 2,
+              }),
+            ],
+            spacing: { before: 200, after: 100 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Chaque action donne droit à une voix. Sauf dispositions légales contraires, les décisions sont prises à la majorité simple des voix exprimées par les associés présents ou représentés.",
+                size: 11 * 2,
+              }),
+            ],
+            spacing: { after: 100 },
+          }),
 
-          new Paragraph({ children: [new TextRun({ text: "Article 19 - Affectation du résultat", bold: true })] }),
-          new Paragraph({ text: "Le bénéfice distribuable est réparti entre les associés proportionnellement au nombre d'actions détenues, sauf décision contraire de l'assemblée générale prise dans les limites fixées par la loi." }),
-          new Paragraph({ text: "" }),
+          // TITRE V
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "TITRE V : EXERCICE SOCIAL - COMPTES",
+                bold: true,
+                allCaps: true,
+                size: 16 * 2,
+              }),
+            ],
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 400, after: 200 },
+          }),
 
-          new Paragraph({ children: [new TextRun({ text: "TITRE VI : DISSOLUTION - LIQUIDATION", bold: true })] }),
-          new Paragraph({ text: "" }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Article 17 - Exercice social",
+                bold: true,
+                size: 13 * 2,
+              }),
+            ],
+            spacing: { before: 200, after: 100 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "L'exercice social commence le 1er janvier et se termine le 31 décembre de chaque année.",
+                size: 11 * 2,
+              }),
+            ],
+            spacing: { after: 100 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `Par exception, le premier exercice social se terminera le ${premierExerciceFin}.`,
+                size: 11 * 2,
+              }),
+            ],
+            spacing: { after: 100 },
+          }),
 
-          new Paragraph({ children: [new TextRun({ text: "Article 20 - Dissolution", bold: true })] }),
-          new Paragraph({ text: "La société prend fin par l'arrivée du terme, par décision de la collectivité des associés réunis en assemblée générale extraordinaire ou pour toute autre cause prévue par la loi." }),
-          new Paragraph({ text: "" }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Article 18 - Comptes annuels",
+                bold: true,
+                size: 13 * 2,
+              }),
+            ],
+            spacing: { before: 200, after: 100 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "À la clôture de chaque exercice, le président établit l'inventaire, les comptes annuels et le rapport de gestion. Les comptes sont soumis à l'approbation de la collectivité des associés.",
+                size: 11 * 2,
+              }),
+            ],
+            spacing: { after: 100 },
+          }),
 
-          new Paragraph({ children: [new TextRun({ text: "Article 21 - Liquidation", bold: true })] }),
-          new Paragraph({ text: "En cas de dissolution, la collectivité des associés désigne un ou plusieurs liquidateurs dont elle détermine les pouvoirs. Les liquidateurs disposent des pouvoirs les plus étendus pour réaliser l'actif, acquitter le passif et répartir le solde conformément à la loi." }),
-          new Paragraph({ text: "" }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Article 19 - Affectation du résultat",
+                bold: true,
+                size: 13 * 2,
+              }),
+            ],
+            spacing: { before: 200, after: 100 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Le bénéfice distribuable est réparti entre les associés proportionnellement au nombre d'actions détenues, sauf décision contraire de l'assemblée générale prise dans les limites fixées par la loi.",
+                size: 11 * 2,
+              }),
+            ],
+            spacing: { after: 100 },
+          }),
 
+          // TITRE VI
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "TITRE VI : DISSOLUTION - LIQUIDATION",
+                bold: true,
+                allCaps: true,
+                size: 16 * 2,
+              }),
+            ],
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 400, after: 200 },
+          }),
+
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Article 20 - Dissolution",
+                bold: true,
+                size: 13 * 2,
+              }),
+            ],
+            spacing: { before: 200, after: 100 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "La société prend fin par l'arrivée du terme, par décision de la collectivité des associés réunis en assemblée générale extraordinaire ou pour toute autre cause prévue par la loi.",
+                size: 11 * 2,
+              }),
+            ],
+            spacing: { after: 100 },
+          }),
+
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Article 21 - Liquidation",
+                bold: true,
+                size: 13 * 2,
+              }),
+            ],
+            spacing: { before: 200, after: 100 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "En cas de dissolution, la collectivité des associés désigne un ou plusieurs liquidateurs dont elle détermine les pouvoirs. Les liquidateurs disposent des pouvoirs les plus étendus pour réaliser l'actif, acquitter le passif et répartir le solde conformément à la loi.",
+                size: 11 * 2,
+              }),
+            ],
+            spacing: { after: 100 },
+          }),
+
+          // Page de signatures
           new Paragraph({ text: "", pageBreakBefore: true }),
-          new Paragraph({ children: [new TextRun({ text: `Fait à ${adresseSiege}, le ${dateSignature}`, bold: true })] }),
-          new Paragraph({ children: [new TextRun({ text: "Signature :", bold: true })] }),
-          new Paragraph({ text: `${associe.prenom} ${associe.nom}` }),
+
+          // Titre
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "SIGNATURES",
+                bold: true,
+                size: 16 * 2,
+              }),
+            ],
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 200, after: 200 },
+          }),
+
+          // Mention légale
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `${pronoms.soussigne} déclarent avoir pris connaissance des présents statuts, en accepter toutes les dispositions et s'engager à les respecter.`,
+                size: 11 * 2,
+              }),
+            ],
+            spacing: { after: 100 },
+          }),
+
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Mention « Lu et approuvé, bon pour acceptation des statuts »",
+                bold: true,
+                italics: true,
+              }),
+            ],
+            spacing: { after: 200 },
+          }),
+
+          // Blocs de signatures pour chaque associé
+          ...associesUniques.flatMap((associe) => [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `${associe.civilite} ${associe.prenom} ${associe.nom}`,
+                  bold: true,
+                }),
+              ],
+              spacing: { before: 200, after: 50 },
+            }),
+
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `Fait à ${adresseSiege}`,
+                  size: 11 * 2,
+                }),
+              ],
+              spacing: { after: 50 },
+            }),
+
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `Le ${dateSignature}`,
+                  size: 11 * 2,
+                }),
+              ],
+              spacing: { after: 100 },
+            }),
+
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Signature (précédée de la mention « Lu et approuvé ») :",
+                  size: 11 * 2,
+                }),
+              ],
+              spacing: { after: 50 },
+            }),
+
+            // Espace pour signature
+            new Paragraph({ text: "" }),
+            new Paragraph({ text: "" }),
+            new Paragraph({ text: "" }),
+
+            new Paragraph({
+              text: "_".repeat(50),
+              spacing: { after: 200 },
+            }),
+          ]),
         ],
       },
     ],
