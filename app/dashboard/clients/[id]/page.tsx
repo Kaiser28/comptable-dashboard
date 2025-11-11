@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,6 +31,8 @@ export default function ClientDetailPage() {
     isLoading: true,
     error: null,
   });
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generateError, setGenerateError] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -112,6 +115,41 @@ export default function ClientDetailPage() {
   }
 
   const client = clientState.data;
+
+  async function handleGenerateStatuts() {
+    try {
+      setIsGenerating(true);
+      setGenerateError(null);
+
+      const response = await fetch("/api/generate-statuts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ client_id: params.id }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Erreur lors de la génération");
+      }
+
+      const arrayBuffer = await response.arrayBuffer();
+      const blob = new Blob([arrayBuffer], {
+        type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Statuts-${client?.nom_entreprise || "document"}.docx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (error: any) {
+      setGenerateError(error?.message ?? "Une erreur est survenue");
+    } finally {
+      setIsGenerating(false);
+    }
+  }
 
   return (
     <div className="space-y-8">
@@ -256,6 +294,38 @@ export default function ClientDetailPage() {
                 <Button variant="outline">Envoyer le lien formulaire</Button>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Documents</CardTitle>
+            <CardDescription>
+              Générez automatiquement les statuts de cette société.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {generateError && (
+              <Alert variant="destructive">
+                <AlertTitle>Erreur</AlertTitle>
+                <AlertDescription>{generateError}</AlertDescription>
+              </Alert>
+            )}
+
+            <div className="space-y-2">
+              <Button
+                onClick={handleGenerateStatuts}
+                disabled={isGenerating || !client?.nom_entreprise}
+                className="w-full"
+                size="lg"
+              >
+                {isGenerating ? <>⏳ Génération en cours...</> : <>📄 Générer les statuts (Word)</>}
+              </Button>
+
+              <p className="text-sm text-center text-muted-foreground">
+                Le document sera généré au format Word modifiable (.docx)
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>

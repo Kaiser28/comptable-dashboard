@@ -134,10 +134,10 @@ export default function NewClientPage() {
           formData.capital_social !== null && formData.capital_social !== undefined
             ? Number(formData.capital_social)
             : null,
-        email: formData.email.trim() || null,
-        telephone: formData.telephone.trim() || null,
-        adresse: formData.adresse.trim() || null,
-        siret: formData.siret.trim() || null,
+        email: formData.email?.trim() || null,
+        telephone: formData.telephone?.trim() || null,
+        adresse: formData.adresse?.trim() || null,
+        siret: formData.siret?.trim() || null,
         statut: "en attente",
         formulaire_token: crypto.randomUUID(),
         formulaire_complete: false,
