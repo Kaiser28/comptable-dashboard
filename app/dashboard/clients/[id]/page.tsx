@@ -14,8 +14,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 import { supabaseClient } from "@/lib/supabase";
 import type { Client } from "@/types/database";
+import { validateStatutsData, ValidationResult } from "@/lib/validateStatuts";
 
 type ClientState = {
   data: Client | null;
@@ -33,6 +43,7 @@ export default function ClientDetailPage() {
   });
   const [isGenerating, setIsGenerating] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState<ValidationResult | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -116,10 +127,36 @@ export default function ClientDetailPage() {
 
   const client = clientState.data;
 
-  async function handleGenerateStatuts() {
+  async function handleGenerateStatuts(ignoreWarnings = false) {
     try {
       setIsGenerating(true);
       setGenerateError(null);
+      setValidationErrors(null);
+
+      // Validation des données (sauf si on ignore les warnings)
+      if (!ignoreWarnings) {
+        const validationResult = validateStatutsData({
+          capital_social: client.capital_social ?? 0,
+          nb_actions: (client as any).nb_actions ?? 0,
+          montant_libere: (client as any).montant_libere ?? 0,
+          duree_societe: (client as any).duree_societe ?? 0,
+          objet_social: (client as any).objet_social || ''
+        });
+
+        // Si erreurs bloquantes, afficher la modal et arrêter
+        if (!validationResult.isValid) {
+          setValidationErrors(validationResult);
+          setIsGenerating(false);
+          return;
+        }
+
+        // Si seulement des warnings, afficher la modal mais permettre de continuer
+        if (validationResult.warnings.length > 0) {
+          setValidationErrors(validationResult);
+          setIsGenerating(false);
+          return;
+        }
+      }
 
       const response = await fetch("/api/generate-statuts", {
         method: "POST",
@@ -314,7 +351,7 @@ export default function ClientDetailPage() {
 
             <div className="space-y-2">
               <Button
-                onClick={handleGenerateStatuts}
+                onClick={() => handleGenerateStatuts()}
                 disabled={isGenerating || !client?.nom_entreprise}
                 className="w-full"
                 size="lg"
@@ -329,6 +366,72 @@ export default function ClientDetailPage() {
           </CardContent>
         </Card>
       </div>
+
+      {validationErrors && (
+        <AlertDialog open={!!validationErrors} onOpenChange={() => setValidationErrors(null)}>
+          <AlertDialogContent className="max-w-2xl">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2">
+                {validationErrors.isValid ? (
+                  <>⚠️ Avertissements détectés</>
+                ) : (
+                  <>❌ Impossible de générer les statuts</>
+                )}
+              </AlertDialogTitle>
+              <AlertDialogDescription className="space-y-4">
+                {validationErrors.errors.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="font-semibold text-red-600">
+                      {validationErrors.errors.length} erreur(s) juridique(s) détectée(s) :
+                    </p>
+                    {validationErrors.errors.map((error, index) => (
+                      <div key={index} className="bg-red-50 border border-red-200 rounded p-3">
+                        <p className="font-medium text-red-800">{error.code.replace(/_/g, ' ')}</p>
+                        <p className="text-sm text-red-700 mt-1">{error.message}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {validationErrors.warnings.length > 0 && (
+                  <div className="space-y-2 mt-4">
+                    <p className="font-semibold text-orange-600">
+                      {validationErrors.warnings.length} avertissement(s) :
+                    </p>
+                    {validationErrors.warnings.map((warning, index) => (
+                      <div key={index} className="bg-orange-50 border border-orange-200 rounded p-3">
+                        <p className="text-sm text-orange-700">{warning.message}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {!validationErrors.isValid && (
+                  <p className="text-sm text-gray-600 mt-4">
+                    Veuillez corriger les erreurs dans les données du client avant de générer les statuts.
+                  </p>
+                )}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogAction 
+                onClick={() => {
+                  if (validationErrors.isValid) {
+                    // Si que des warnings, fermer modal et générer quand même
+                    setValidationErrors(null);
+                    handleGenerateStatuts(true);
+                  } else {
+                    // Si erreurs bloquantes, juste fermer la modal
+                    setValidationErrors(null);
+                  }
+                }}
+              >
+                {validationErrors.isValid ? "Générer quand même" : "Corriger les données"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </div>
   );
 }
