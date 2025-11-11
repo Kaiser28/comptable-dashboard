@@ -1,4 +1,4 @@
-import { Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel, Table, TableRow, TableCell, WidthType } from "docx";
+import { Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel, Table, TableRow, TableCell, WidthType, PageNumber, Footer, NumberFormat, Header, BorderStyle, TableOfContents } from "docx";
 
 export interface ClientData {
   nom_entreprise: string;
@@ -99,6 +99,68 @@ export async function generateStatuts(client: ClientData, associes: AssocieData[
   const doc = new Document({
     sections: [
       {
+        properties: {
+          page: {
+            pageNumbers: {
+              start: 1,
+              formatType: NumberFormat.DECIMAL,
+            },
+          },
+          titlePage: true,
+        },
+        headers: {
+          default: new Header({
+            children: [
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `STATUTS - ${client.nom_entreprise}`,
+                    size: 20,
+                    color: "666666",
+                  }),
+                ],
+                alignment: AlignmentType.CENTER,
+                border: {
+                  bottom: {
+                    color: "CCCCCC",
+                    space: 1,
+                    style: BorderStyle.SINGLE,
+                    size: 6,
+                  },
+                },
+                spacing: { after: 100 },
+              }),
+            ],
+          }),
+        },
+        footers: {
+          default: new Footer({
+            children: [
+              new Paragraph({
+                children: [
+                  new TextRun("Page "),
+                  new TextRun({
+                    children: [PageNumber.CURRENT],
+                  }),
+                  new TextRun(" sur "),
+                  new TextRun({
+                    children: [PageNumber.TOTAL_PAGES],
+                  }),
+                ],
+                alignment: AlignmentType.RIGHT,
+                border: {
+                  top: {
+                    color: "CCCCCC",
+                    space: 1,
+                    style: BorderStyle.SINGLE,
+                    size: 6,
+                  },
+                },
+                spacing: { before: 100 },
+              }),
+            ],
+          }),
+        },
         children: [
           new Paragraph({ text: "" }),
           new Paragraph({ text: "" }),
@@ -163,10 +225,34 @@ export async function generateStatuts(client: ClientData, associes: AssocieData[
 
           new Paragraph({ text: "", pageBreakBefore: true, spacing: { before: 0, after: 0 } }),
 
+          // Titre de la table des matières
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "SOMMAIRE",
+                bold: true,
+                allCaps: true,
+                size: 32,
+              }),
+            ],
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 200, after: 200 },
+          }),
+
+          // Table des matières
+          new TableOfContents("Sommaire", {
+            hyperlink: true,
+            headingStyleRange: "1-3",
+          }),
+
+          // Saut de page après la table
+          new Paragraph({ text: "" }),
+
           new Paragraph({
             text: "STATUTS",
             heading: HeadingLevel.TITLE,
             alignment: AlignmentType.CENTER,
+            pageBreakBefore: true,
           }),
           new Paragraph({
             text: formeJuridique.complete,
@@ -266,6 +352,7 @@ export async function generateStatuts(client: ClientData, associes: AssocieData[
                 size: 16 * 2,
               }),
             ],
+            heading: HeadingLevel.HEADING_1,
             alignment: AlignmentType.CENTER,
             spacing: { before: 400, after: 200 },
           }),
@@ -278,6 +365,7 @@ export async function generateStatuts(client: ClientData, associes: AssocieData[
                 size: 13 * 2,
               }),
             ],
+            heading: HeadingLevel.HEADING_2,
             spacing: { before: 200, after: 100 },
           }),
           new Paragraph({
@@ -298,6 +386,7 @@ export async function generateStatuts(client: ClientData, associes: AssocieData[
                 size: 13 * 2,
               }),
             ],
+            heading: HeadingLevel.HEADING_2,
             spacing: { before: 200, after: 100 },
           }),
           new Paragraph({
@@ -327,6 +416,7 @@ export async function generateStatuts(client: ClientData, associes: AssocieData[
                 size: 13 * 2,
               }),
             ],
+            heading: HeadingLevel.HEADING_2,
             spacing: { before: 200, after: 100 },
           }),
           new Paragraph({
@@ -356,6 +446,7 @@ export async function generateStatuts(client: ClientData, associes: AssocieData[
                 size: 13 * 2,
               }),
             ],
+            heading: HeadingLevel.HEADING_2,
             spacing: { before: 200, after: 100 },
           }),
           new Paragraph({
@@ -394,6 +485,7 @@ export async function generateStatuts(client: ClientData, associes: AssocieData[
                 size: 13 * 2,
               }),
             ],
+            heading: HeadingLevel.HEADING_2,
             spacing: { before: 200, after: 100 },
           }),
           new Paragraph({
@@ -416,6 +508,7 @@ export async function generateStatuts(client: ClientData, associes: AssocieData[
                 size: 16 * 2,
               }),
             ],
+            heading: HeadingLevel.HEADING_1,
             alignment: AlignmentType.CENTER,
             spacing: { before: 400, after: 200 },
           }),
@@ -428,6 +521,7 @@ export async function generateStatuts(client: ClientData, associes: AssocieData[
                 size: 13 * 2,
               }),
             ],
+            heading: HeadingLevel.HEADING_2,
             spacing: { before: 200, after: 100 },
           }),
           new Paragraph({
@@ -448,6 +542,7 @@ export async function generateStatuts(client: ClientData, associes: AssocieData[
                 size: 13 * 2,
               }),
             ],
+            heading: HeadingLevel.HEADING_2,
             spacing: { before: 200, after: 100 },
           }),
           
@@ -644,6 +739,7 @@ export async function generateStatuts(client: ClientData, associes: AssocieData[
                 size: 13 * 2,
               }),
             ],
+            heading: HeadingLevel.HEADING_2,
             spacing: { before: 200, after: 100 },
           }),
           new Paragraph({
@@ -664,6 +760,7 @@ export async function generateStatuts(client: ClientData, associes: AssocieData[
                 size: 13 * 2,
               }),
             ],
+            heading: HeadingLevel.HEADING_2,
             spacing: { before: 200, after: 100 },
           }),
           new Paragraph({
@@ -684,6 +781,7 @@ export async function generateStatuts(client: ClientData, associes: AssocieData[
                 size: 13 * 2,
               }),
             ],
+            heading: HeadingLevel.HEADING_2,
             spacing: { before: 200, after: 100 },
           }),
           new Paragraph({
@@ -706,6 +804,7 @@ export async function generateStatuts(client: ClientData, associes: AssocieData[
                 size: 16 * 2,
               }),
             ],
+            heading: HeadingLevel.HEADING_1,
             alignment: AlignmentType.CENTER,
             spacing: { before: 400, after: 200 },
           }),
@@ -718,6 +817,7 @@ export async function generateStatuts(client: ClientData, associes: AssocieData[
                 size: 13 * 2,
               }),
             ],
+            heading: HeadingLevel.HEADING_2,
             spacing: { before: 200, after: 100 },
           }),
           new Paragraph({
@@ -747,6 +847,7 @@ export async function generateStatuts(client: ClientData, associes: AssocieData[
                 size: 13 * 2,
               }),
             ],
+            heading: HeadingLevel.HEADING_2,
             spacing: { before: 200, after: 100 },
           }),
           new Paragraph({
@@ -767,6 +868,7 @@ export async function generateStatuts(client: ClientData, associes: AssocieData[
                 size: 13 * 2,
               }),
             ],
+            heading: HeadingLevel.HEADING_2,
             spacing: { before: 200, after: 100 },
           }),
           new Paragraph({
@@ -789,6 +891,7 @@ export async function generateStatuts(client: ClientData, associes: AssocieData[
                 size: 16 * 2,
               }),
             ],
+            heading: HeadingLevel.HEADING_1,
             alignment: AlignmentType.CENTER,
             spacing: { before: 400, after: 200 },
           }),
@@ -801,6 +904,7 @@ export async function generateStatuts(client: ClientData, associes: AssocieData[
                 size: 13 * 2,
               }),
             ],
+            heading: HeadingLevel.HEADING_2,
             spacing: { before: 200, after: 100 },
           }),
           new Paragraph({
@@ -821,6 +925,7 @@ export async function generateStatuts(client: ClientData, associes: AssocieData[
                 size: 13 * 2,
               }),
             ],
+            heading: HeadingLevel.HEADING_2,
             spacing: { before: 200, after: 100 },
           }),
           new Paragraph({
@@ -841,6 +946,7 @@ export async function generateStatuts(client: ClientData, associes: AssocieData[
                 size: 13 * 2,
               }),
             ],
+            heading: HeadingLevel.HEADING_2,
             spacing: { before: 200, after: 100 },
           }),
           new Paragraph({
@@ -863,6 +969,7 @@ export async function generateStatuts(client: ClientData, associes: AssocieData[
                 size: 16 * 2,
               }),
             ],
+            heading: HeadingLevel.HEADING_1,
             alignment: AlignmentType.CENTER,
             spacing: { before: 400, after: 200 },
           }),
@@ -875,6 +982,7 @@ export async function generateStatuts(client: ClientData, associes: AssocieData[
                 size: 13 * 2,
               }),
             ],
+            heading: HeadingLevel.HEADING_2,
             spacing: { before: 200, after: 100 },
           }),
           new Paragraph({
@@ -904,6 +1012,7 @@ export async function generateStatuts(client: ClientData, associes: AssocieData[
                 size: 13 * 2,
               }),
             ],
+            heading: HeadingLevel.HEADING_2,
             spacing: { before: 200, after: 100 },
           }),
           new Paragraph({
@@ -924,6 +1033,7 @@ export async function generateStatuts(client: ClientData, associes: AssocieData[
                 size: 13 * 2,
               }),
             ],
+            heading: HeadingLevel.HEADING_2,
             spacing: { before: 200, after: 100 },
           }),
           new Paragraph({
@@ -946,6 +1056,7 @@ export async function generateStatuts(client: ClientData, associes: AssocieData[
                 size: 16 * 2,
               }),
             ],
+            heading: HeadingLevel.HEADING_1,
             alignment: AlignmentType.CENTER,
             spacing: { before: 400, after: 200 },
           }),
@@ -958,6 +1069,7 @@ export async function generateStatuts(client: ClientData, associes: AssocieData[
                 size: 13 * 2,
               }),
             ],
+            heading: HeadingLevel.HEADING_2,
             spacing: { before: 200, after: 100 },
           }),
           new Paragraph({
@@ -978,6 +1090,7 @@ export async function generateStatuts(client: ClientData, associes: AssocieData[
                 size: 13 * 2,
               }),
             ],
+            heading: HeadingLevel.HEADING_2,
             spacing: { before: 200, after: 100 },
           }),
           new Paragraph({
