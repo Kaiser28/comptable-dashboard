@@ -3,12 +3,21 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Upload } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { supabaseClient } from "@/lib/supabase";
 
-const NAV_ITEMS = [
+type NavItem = {
+  label: string;
+  href: string;
+  icon: string | LucideIcon;
+  isComponent?: boolean;
+};
+
+const NAV_ITEMS: NavItem[] = [
   {
     label: "Tableau de bord",
     href: "/dashboard",
@@ -18,6 +27,12 @@ const NAV_ITEMS = [
     label: "Clients",
     href: "/dashboard",
     icon: "👥",
+  },
+  {
+    label: "Import CSV",
+    href: "/dashboard/import",
+    icon: Upload,
+    isComponent: true,
   },
   {
     label: "Nouveau client",
@@ -74,7 +89,9 @@ export function DashboardSidebar() {
 
       <nav className="flex-1 space-y-2">
         {NAV_ITEMS.map((item) => {
-          const isActive = pathname === item.href;
+          // Gérer l'état actif : exact match ou commence par le href pour les sous-routes
+          const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname?.startsWith(item.href));
+          const IconComponent = typeof item.icon !== 'string' ? item.icon : null;
 
           return (
             <Link
@@ -84,7 +101,11 @@ export function DashboardSidebar() {
                 isActive ? "bg-slate-200 text-slate-900" : "text-slate-600"
               }`}
             >
-              <span className="text-lg">{item.icon}</span>
+              {IconComponent ? (
+                <IconComponent className="h-5 w-5" />
+              ) : (
+                <span className="text-lg">{item.icon}</span>
+              )}
               {item.label}
             </Link>
           );
