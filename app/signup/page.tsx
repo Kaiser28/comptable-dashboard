@@ -18,6 +18,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabaseClient } from "@/lib/supabase";
 import { initExpertComptable } from "@/lib/initExpert";
 import type { Cabinet } from "@/types/database";
+import type { ExpertComptableData } from "@/lib/types/database";
 
 type FormErrors = {
   email?: string;
@@ -141,7 +142,7 @@ export default function SignupPage() {
 
       // Étape 3 : Créer automatiquement l'expert-comptable admin
       try {
-        const expertPayload = {
+        const expertPayload: Partial<ExpertComptableData> = {
           id: crypto.randomUUID(),
           cabinet_id: cabinetId,
           user_id: userId,
