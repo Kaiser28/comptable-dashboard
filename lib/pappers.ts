@@ -155,7 +155,7 @@ export async function searchEntreprise(siret: string): Promise<EntrepriseData> {
 
     // Erreur réseau ou autre
     console.error("Erreur lors de l'appel API Pappers:", error);
-    throw new Error("Erreur API Pappers: Impossible de contacter le service");
+    throw new Error("Problème de connexion. Vérifiez votre réseau et réessayez.");
   }
 }
 

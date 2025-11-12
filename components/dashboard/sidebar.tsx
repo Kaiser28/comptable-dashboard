@@ -93,7 +93,7 @@ export function DashboardSidebar() {
 
           return (
             <Link
-              key={item.href}
+              key={item.label}
               href={item.href}
               className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition hover:bg-slate-100 ${
                 isActive ? "bg-slate-200 text-slate-900" : "text-slate-600"

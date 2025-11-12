@@ -26,6 +26,7 @@ import { Search } from "lucide-react";
 import { supabaseClient } from "@/lib/supabase";
 import { searchEntreprise } from "@/lib/pappers";
 import { checkRateLimit, getRateLimitCount } from "@/lib/rateLimiter";
+import { getFormulaireEmail } from "@/lib/emailTemplates";
 import type { Client } from "@/types/database";
 
 type ClientFormData = Pick<
@@ -69,6 +70,7 @@ export default function NewClientPage() {
   const [searchError, setSearchError] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [rateLimitCount, setRateLimitCount] = useState(0);
+  const [emailSent, setEmailSent] = useState(false);
 
   const handleChange = <Field extends keyof ClientFormData>(field: Field, value: ClientFormData[Field]) => {
     setFormData((previous) => ({
@@ -123,6 +125,7 @@ export default function NewClientPage() {
         }
       } catch (error) {
         console.error("Erreur récupération userId:", error);
+        // Erreur silencieuse, l'utilisateur pourra toujours utiliser le formulaire
       }
     };
     void fetchUserId();
@@ -199,8 +202,18 @@ export default function NewClientPage() {
       const errorMessage =
         error instanceof Error
           ? error.message
-          : "Une erreur est survenue lors de la recherche";
-      setSearchError(errorMessage);
+          : "Une erreur est survenue lors de la recherche. Vérifiez votre connexion et réessayez.";
+      
+      // Messages d'erreur plus clairs pour l'utilisateur
+      if (errorMessage.includes("introuvable")) {
+        setSearchError("Entreprise introuvable. Vérifiez le numéro SIRET saisi.");
+      } else if (errorMessage.includes("Limite") || errorMessage.includes("rate limit")) {
+        setSearchError("Limite de recherches quotidienne atteinte. Réessayez demain.");
+      } else if (errorMessage.includes("réseau") || errorMessage.includes("fetch")) {
+        setSearchError("Problème de connexion. Vérifiez votre réseau et réessayez.");
+      } else {
+        setSearchError(errorMessage);
+      }
     } finally {
       setIsSearching(false);
     }
@@ -300,18 +313,75 @@ export default function NewClientPage() {
         formulaire_complete: false,
       } satisfies Partial<Client>;
 
-      const { error: insertError } = await supabaseClient.from("clients").insert(payload);
+      const { data: insertedClient, error: insertError } = await supabaseClient
+        .from("clients")
+        .insert(payload)
+        .select()
+        .single();
 
       if (insertError) {
-        setFormErrors({ global: insertError.message || "Impossible de créer le client." });
+        console.error("Erreur création client:", insertError);
+        setFormErrors({ 
+          global: "Impossible de créer le client. Veuillez vérifier vos informations et réessayer." 
+        });
         return;
       }
 
-      router.push("/dashboard?created=1");
+      // Envoyer l'email au client si l'email est fourni
+      let emailSentSuccess = false;
+      if (formData.email && insertedClient) {
+        try {
+          const formUrl = `${window.location.origin}/formulaire/${payload.formulaire_token}`;
+          const expertName = user.user_metadata?.full_name || user.email?.split("@")[0] || "Votre expert-comptable";
+          const expertEmail = user.email || "";
+          
+          const emailHtml = getFormulaireEmail(
+            formData.nom_entreprise,
+            expertName,
+            expertEmail,
+            formUrl
+          );
+
+          const emailResponse = await fetch("/api/send-email", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              to: formData.email.trim(),
+              subject: "Complétez vos informations - Création de votre société",
+              html: emailHtml,
+            }),
+          });
+
+          const emailResult = await emailResponse.json();
+          
+          if (emailResult.success) {
+            emailSentSuccess = true;
+          } else {
+            console.error("Erreur envoi email:", emailResult.error);
+            // Ne pas bloquer la création du client si l'email échoue
+          }
+        } catch (emailError) {
+          console.error("Erreur lors de l'envoi de l'email:", emailError);
+          // Ne pas bloquer la création du client si l'email échoue
+        }
+      }
+
+      // Afficher le message de succès avant la redirection
+      if (emailSentSuccess) {
+        setEmailSent(true);
+        // Rediriger après 2 secondes pour laisser le temps de voir le message
+        setTimeout(() => {
+          router.push("/dashboard?created=1");
+        }, 2000);
+      } else {
+        router.push("/dashboard?created=1");
+      }
     } catch (error) {
-      console.error("Erreur lors de la création d’un client", error);
+      console.error("Erreur lors de la création d'un client", error);
       setFormErrors({
-        global: "Une erreur inattendue est survenue. Veuillez réessayer.",
+        global: "Une erreur est survenue lors de la création du client. Veuillez réessayer ou contacter le support.",
       });
     } finally {
       setIsSubmitting(false);
@@ -329,6 +399,13 @@ export default function NewClientPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {emailSent && (
+              <Alert className="mb-6 border-green-200 bg-green-50">
+                <AlertDescription className="text-green-800">
+                  ✅ Client créé avec succès ! L'email de formulaire a été envoyé.
+                </AlertDescription>
+              </Alert>
+            )}
             {formErrors.global ? (
               <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
                 {formErrors.global}
@@ -405,7 +482,7 @@ export default function NewClientPage() {
                 <div className="space-y-2">
                   <Label htmlFor="forme_juridique">Forme juridique</Label>
                   <Select
-                    value={formData.forme_juridique || undefined}
+                    value={formData.forme_juridique || ""}
                     onValueChange={(value) => handleChange("forme_juridique", value)}
                   >
                     <SelectTrigger id="forme_juridique">

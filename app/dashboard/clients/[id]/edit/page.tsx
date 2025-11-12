@@ -115,6 +115,7 @@ export default function EditClientPage() {
         }
       } catch (error) {
         console.error("Erreur récupération userId:", error);
+        // Erreur silencieuse, l'utilisateur pourra toujours utiliser le formulaire
       }
     };
     void fetchUserId();
@@ -216,7 +217,7 @@ export default function EditClientPage() {
         });
       } catch (err) {
         console.error("Erreur lors du chargement:", err);
-        setError("Impossible de charger les données du client.");
+        setError("Impossible de charger les données du client. Veuillez réessayer ou contacter le support.");
       } finally {
         setIsLoading(false);
       }
@@ -475,8 +476,18 @@ export default function EditClientPage() {
       const errorMessage =
         error instanceof Error
           ? error.message
-          : "Une erreur est survenue lors de la recherche";
-      setSearchError(errorMessage);
+          : "Une erreur est survenue lors de la recherche. Vérifiez votre connexion et réessayez.";
+      
+      // Messages d'erreur plus clairs pour l'utilisateur
+      if (errorMessage.includes("introuvable")) {
+        setSearchError("Entreprise introuvable. Vérifiez le numéro SIRET saisi.");
+      } else if (errorMessage.includes("Limite") || errorMessage.includes("rate limit")) {
+        setSearchError("Limite de recherches quotidienne atteinte. Réessayez demain.");
+      } else if (errorMessage.includes("réseau") || errorMessage.includes("fetch")) {
+        setSearchError("Problème de connexion. Vérifiez votre réseau et réessayez.");
+      } else {
+        setSearchError(errorMessage);
+      }
     } finally {
       setIsSearching(false);
     }
@@ -584,8 +595,6 @@ export default function EditClientPage() {
         banque_depot_capital: formState.client.banque_depot_capital || null,
       };
 
-      console.log('Données envoyées à Supabase (client):', clientDataToUpdate);
-
       // Mise à jour du client
       const { error: clientError } = await supabaseClient
         .from("clients")
@@ -593,10 +602,12 @@ export default function EditClientPage() {
         .eq("id", clientId);
 
       if (clientError) {
-        console.error('Erreur Supabase complète (client):', clientError);
-        console.error('Message:', clientError.message);
-        console.error('Details:', clientError.details);
-        console.error('Hint:', clientError.hint);
+        console.error("Erreur Supabase (client):", {
+          message: clientError.message,
+          details: clientError.details,
+          hint: clientError.hint,
+          code: clientError.code,
+        });
         throw clientError;
       }
 
@@ -635,7 +646,7 @@ export default function EditClientPage() {
 
         if (deleteError) {
           console.error(`Erreur Supabase lors de la suppression (associé ${associeId}):`, deleteError);
-          throw deleteError;
+          throw new Error("Impossible de supprimer l'associé. Veuillez réessayer.");
         }
       }
 
@@ -663,8 +674,8 @@ export default function EditClientPage() {
           .insert(associeDataToInsert);
 
         if (insertError) {
-          console.error('Erreur Supabase lors de l\'insertion (associé):', insertError);
-          throw insertError;
+          console.error("Erreur Supabase lors de l'insertion (associé):", insertError);
+          throw new Error("Impossible d'ajouter l'associé. Veuillez réessayer.");
         }
       }
 
@@ -693,7 +704,7 @@ export default function EditClientPage() {
 
         if (updateError) {
           console.error(`Erreur Supabase lors de la mise à jour (associé ${associe.id}):`, updateError);
-          throw updateError;
+          throw new Error("Impossible de mettre à jour l'associé. Veuillez réessayer.");
         }
       }
 
@@ -702,12 +713,11 @@ export default function EditClientPage() {
         router.push(`/dashboard/clients/${clientId}`);
       }, 1500);
     } catch (err: any) {
-      console.error('Erreur lors de la sauvegarde:', err);
-      console.error('Erreur Supabase complète:', err);
-      console.error('Message:', err?.message);
-      console.error('Details:', err?.details);
-      console.error('Hint:', err?.hint);
-      setError(err?.message || "Erreur lors de la sauvegarde.");
+      console.error("Erreur lors de la sauvegarde:", err);
+      const errorMessage = err?.message || "Une erreur est survenue lors de la sauvegarde.";
+      setError(errorMessage.includes("Supabase") || errorMessage.includes("impossible") 
+        ? errorMessage 
+        : "Une erreur est survenue lors de la sauvegarde. Veuillez réessayer ou contacter le support.");
     } finally {
       setIsSaving(false);
     }
@@ -876,7 +886,7 @@ export default function EditClientPage() {
               <div className="space-y-2">
                 <Label htmlFor="forme_juridique">Forme juridique</Label>
                 <Select
-                  value={formState.client.forme_juridique}
+                  value={formState.client.forme_juridique || ""}
                   onValueChange={(value) => handleClientChange("forme_juridique", value)}
                 >
                   <SelectTrigger id="forme_juridique">
@@ -1140,11 +1150,11 @@ export default function EditClientPage() {
                   <div className="space-y-2">
                     <Label>Civilité</Label>
                     <Select
-                      value={associe.civilite}
+                      value={associe.civilite || ""}
                       onValueChange={(value) => handleAssocieChange(originalIndex, "civilite", value)}
                     >
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue placeholder="Sélectionner" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="M.">M.</SelectItem>

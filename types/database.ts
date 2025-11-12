@@ -151,3 +151,31 @@ export type PieceJointe = {
   /** Date de dépôt de la pièce jointe (format ISO 8601). */
   uploaded_at: string;
 };
+
+/**
+ * Représente un expert-comptable rattaché à un cabinet dans la table `experts_comptables` de Supabase.
+ */
+export type ExpertComptable = {
+  /** Identifiant unique de l'expert-comptable (UUID). */
+  id: string;
+  /** Identifiant du cabinet auquel l'expert-comptable est rattaché. */
+  cabinet_id: string;
+  /** Identifiant de l'utilisateur Supabase Auth associé. */
+  user_id: string;
+  /** Adresse e-mail de l'expert-comptable. */
+  email: string;
+  /** Nom de famille de l'expert-comptable (peut être absent). */
+  nom: string | null;
+  /** Prénom de l'expert-comptable (peut être absent). */
+  prenom: string | null;
+  /** Numéro de téléphone de l'expert-comptable (peut être absent). */
+  telephone: string | null;
+  /** Rôle de l'expert-comptable dans le système ('admin' ou 'expert'). */
+  role: "admin" | "expert";
+  /** Indique si l'expert-comptable est actif dans le système. */
+  actif: boolean;
+  /** Date de création de l'enregistrement (format ISO 8601). */
+  created_at: string;
+  /** Date de dernière mise à jour de l'enregistrement (format ISO 8601). */
+  updated_at: string;
+};
