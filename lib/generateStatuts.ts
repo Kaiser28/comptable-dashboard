@@ -1,25 +1,5 @@
 import { Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel, Table, TableRow, TableCell, WidthType, PageNumber, Footer, NumberFormat, Header, BorderStyle, TableOfContents } from "docx";
-
-export interface ClientData {
-  nom_entreprise: string;
-  objet_social: string;
-  adresse_siege: any;
-  capital_social: number;
-  nb_actions: number;
-  montant_libere: number;
-  duree_societe: number;
-  date_cloture_exercice?: string;
-  date_creation?: string;
-}
-
-export interface AssocieData {
-  civilite: string;
-  prenom: string;
-  nom: string;
-  date_naissance?: string;
-  lieu_naissance?: string;
-  adresse: any;
-}
+import type { ClientData, AssocieData } from "./types/database";
 
 function formatMontant(montant: number): string {
   return new Intl.NumberFormat("fr-FR").format(montant);
@@ -44,13 +24,13 @@ function getFormeJuridique(nbAssocies: number) {
     : { complete: "Société par Actions Simplifiée", sigle: "SAS" };
 }
 
-function calculerPremierExerciceFin(dateCreation: string | undefined, dateCloture: string | undefined): string {
+function calculerPremierExerciceFin(dateDebutActivite: string | undefined, dateCloture: string | undefined): string {
   if (!dateCloture) dateCloture = "31/12";
-  const creation = dateCreation ? new Date(dateCreation) : new Date();
+  const debut = dateDebutActivite ? new Date(dateDebutActivite) : new Date();
   const [jour, mois] = dateCloture.split("/");
-  let annee = creation.getFullYear();
+  let annee = debut.getFullYear();
   const cloture = new Date(annee, parseInt(mois) - 1, parseInt(jour));
-  if (cloture < creation) annee++;
+  if (cloture < debut) annee++;
   return formatDate(new Date(annee, parseInt(mois) - 1, parseInt(jour)).toISOString());
 }
 
@@ -94,7 +74,7 @@ export async function generateStatuts(client: ClientData, associes: AssocieData[
   const adresseAssocie = formatAdresse(associe.adresse);
   const valeurNominale = client.capital_social / client.nb_actions;
   const dateSignature = formatDate(undefined);
-  const premierExerciceFin = calculerPremierExerciceFin(client.date_creation, client.date_cloture_exercice);
+  const premierExerciceFin = calculerPremierExerciceFin(client.date_debut_activite, client.date_cloture);
 
   const doc = new Document({
     sections: [

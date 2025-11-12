@@ -4,11 +4,11 @@ import { createServerClient } from "@supabase/ssr";
 import { NextRequest } from "next/server";
 
 import type { ClientData, AssocieData } from "@/lib/types/database";
-import { generatePV } from "@/lib/generatePV";
+import { generateDNC } from "@/lib/generateDNC";
 
 /**
- * Route POST /api/generate-pv
- * Génère le Procès-Verbal de Constitution Word pour un client donné.
+ * Route POST /api/generate-dnc
+ * Génère la Déclaration de Non-Condamnation Word pour le président d'un client donné.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -81,22 +81,32 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // 6. Générer le PV
-    console.log(`Génération du PV pour le client ${client.nom_entreprise}...`);
-    const documentBuffer = await generatePV(client, associes);
+    // 6. Trouver le président (premier associé avec president = true, ou premier associé)
+    const president = associes.find(a => a.president) || associes[0];
+    
+    if (!president) {
+      return new Response(JSON.stringify({ error: "Aucun président trouvé" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
 
-    // 7. Retourner le fichier Word
+    // 7. Générer la DNC
+    console.log(`Génération de la DNC pour le client ${client.nom_entreprise}...`);
+    const documentBuffer = await generateDNC(client, president);
+
+    // 8. Retourner le fichier Word
     return new Response(new Uint8Array(documentBuffer), {
       headers: {
         "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "Content-Disposition": `attachment; filename="PV-Constitution-${client.nom_entreprise || "document"}.docx"`
+        "Content-Disposition": `attachment; filename="Declaration_Non_Condamnation_${client.nom_entreprise || "document"}.docx"`
       }
     });
 
   } catch (error) {
-    console.error("Erreur génération PV:", error);
+    console.error("Erreur génération DNC:", error);
     return new Response(JSON.stringify({ 
-      error: error instanceof Error ? error.message : "Erreur lors de la génération du PV" 
+      error: error instanceof Error ? error.message : "Erreur lors de la génération de la DNC" 
     }), {
       status: 500,
       headers: { "Content-Type": "application/json" }

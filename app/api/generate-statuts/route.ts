@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 
-import type { ClientData, AssocieData } from "@/lib/generateStatuts";
+import type { ClientData, AssocieData } from "@/lib/types/database";
 import { generateStatuts } from "@/lib/generateStatuts";
 
 /**
@@ -11,7 +11,7 @@ import { generateStatuts } from "@/lib/generateStatuts";
  */
 export async function POST(request: Request) {
   try {
-    const body = await request.json().catch(() => null);
+    const body = await request.json().catch((): null => null);
     const clientId = body?.client_id as string | undefined;
 
     if (!clientId) {

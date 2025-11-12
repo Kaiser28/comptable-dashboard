@@ -1,5 +1,5 @@
 import { Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel, PageNumber, Footer, NumberFormat, Header, BorderStyle } from "docx";
-import type { ClientData, AssocieData } from "./generateStatuts";
+import type { ClientData, AssocieData } from "./types/database";
 
 // Réutilisation des helpers depuis generateStatuts.ts
 function formatMontant(montant: number): string {
@@ -75,8 +75,8 @@ export async function generatePV(client: ClientData, associes: AssocieData[]): P
   const pronoms = getPronoms(associesUniques);
   const adresseSiege = formatAdresse(client.adresse_siege);
   const villeSiege = extraireVille(adresseSiege);
-  const dateSignature = formatDate(client.date_creation);
-  const dateAssemblee = formatDate(client.date_creation);
+  const dateSignature = formatDate(client.date_debut_activite);
+  const dateAssemblee = formatDate(client.date_debut_activite);
   const premierAssocie = associesUniques[0];
 
   const doc = new Document({

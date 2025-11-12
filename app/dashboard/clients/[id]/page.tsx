@@ -3,10 +3,13 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { Copy, Check, FileText } from "lucide-react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -14,6 +17,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -45,6 +56,10 @@ export default function ClientDetailPage() {
   const [generateError, setGenerateError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<ValidationResult | null>(null);
   const [isGeneratingPV, setIsGeneratingPV] = useState(false);
+  const [isGeneratingDNC, setIsGeneratingDNC] = useState(false);
+  const [isGeneratingAnnonceLegale, setIsGeneratingAnnonceLegale] = useState(false);
+  const [isGeneratingAttestationDepotFonds, setIsGeneratingAttestationDepotFonds] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -223,6 +238,133 @@ export default function ClientDetailPage() {
     }
   }
 
+  async function handleGenerateDNC() {
+    if (!client) return;
+
+    try {
+      setIsGeneratingDNC(true);
+
+      const response = await fetch("/api/generate-dnc", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ clientId: client.id })
+      });
+
+      if (!response.ok) {
+        throw new Error("Erreur lors de la génération de la DNC");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Declaration_Non_Condamnation_${client.nom_entreprise}.docx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+    } catch (error) {
+      console.error("Erreur:", error);
+      alert("Erreur lors de la génération de la Déclaration de Non-Condamnation");
+    } finally {
+      setIsGeneratingDNC(false);
+    }
+  }
+
+  async function handleGenerateAnnonceLegale() {
+    if (!client) return;
+
+    try {
+      setIsGeneratingAnnonceLegale(true);
+
+      const response = await fetch("/api/generate-annonce-legale", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ clientId: client.id })
+      });
+
+      if (!response.ok) {
+        throw new Error("Erreur lors de la génération de l'Annonce Légale");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Annonce_Legale_${client.nom_entreprise}.docx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+    } catch (error) {
+      console.error("Erreur:", error);
+      alert("Erreur lors de la génération de l'Annonce Légale");
+    } finally {
+      setIsGeneratingAnnonceLegale(false);
+    }
+  }
+
+  async function handleGenerateAttestationDepotFonds() {
+    if (!client) return;
+
+    try {
+      setIsGeneratingAttestationDepotFonds(true);
+
+      const response = await fetch("/api/generate-attestation-depot-fonds", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ clientId: client.id })
+      });
+
+      if (!response.ok) {
+        throw new Error("Erreur lors de la génération de l'Attestation de Dépôt des Fonds");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Attestation_Depot_Fonds_${client.nom_entreprise}.docx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+    } catch (error) {
+      console.error("Erreur:", error);
+      alert("Erreur lors de la génération de l'Attestation de Dépôt des Fonds");
+    } finally {
+      setIsGeneratingAttestationDepotFonds(false);
+    }
+  }
+
+  async function handleCopyLink() {
+    if (!client?.formulaire_token) return;
+
+    const formUrl = `${window.location.origin}/formulaire/${client.formulaire_token}`;
+    
+    try {
+      await navigator.clipboard.writeText(formUrl);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2000);
+    } catch (error) {
+      console.error("Erreur lors de la copie:", error);
+      // Fallback pour les navigateurs qui ne supportent pas clipboard API
+      const textArea = document.createElement("textarea");
+      textArea.value = formUrl;
+      textArea.style.position = "fixed";
+      textArea.style.opacity = "0";
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textArea);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2000);
+    }
+  }
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -256,7 +398,9 @@ export default function ClientDetailPage() {
           <Button variant="outline" onClick={() => router.push("/dashboard")}>
             Retour
           </Button>
-          <Button>Modifier</Button>
+          <Button onClick={() => router.push(`/dashboard/clients/${params.id}/edit`)}>
+            Modifier
+          </Button>
         </div>
       </div>
 
@@ -358,12 +502,36 @@ export default function ClientDetailPage() {
                 </p>
               </div>
             ) : (
-              <div className="space-y-2">
-                <Badge variant="secondary">En attente</Badge>
-                <p className="text-muted-foreground">
-                  Ce client n’a pas encore complété le formulaire.
-                </p>
-                <Button variant="outline">Envoyer le lien formulaire</Button>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Lien du formulaire</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      readOnly
+                      value={`${typeof window !== 'undefined' ? window.location.origin : ''}/formulaire/${client.formulaire_token}`}
+                      className="font-mono text-sm"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={handleCopyLink}
+                      className="shrink-0"
+                    >
+                      {copiedLink ? (
+                        <Check className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                  {copiedLink && (
+                    <p className="text-sm text-green-600">Lien copié dans le presse-papier !</p>
+                  )}
+                </div>
+                <Button variant="outline" className="w-full">
+                  Envoyer le lien formulaire
+                </Button>
               </div>
             )}
           </CardContent>
@@ -384,44 +552,132 @@ export default function ClientDetailPage() {
               </Alert>
             )}
 
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Button
-                  onClick={() => handleGenerateStatuts()}
-                  disabled={isGenerating || !client?.nom_entreprise}
-                  className="w-full"
-                  size="lg"
-                >
-                  {isGenerating ? <>⏳ Génération en cours...</> : <>📄 Générer les statuts (Word)</>}
-                </Button>
-
-                <p className="text-sm text-center text-muted-foreground">
-                  Le document sera généré au format Word modifiable (.docx)
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Button
-                  onClick={handleGeneratePV}
-                  disabled={isGeneratingPV || !client?.nom_entreprise}
-                  variant="outline"
-                  className="w-full"
-                  size="lg"
-                >
-                  {isGeneratingPV ? (
-                    <>
-                      <span className="animate-spin mr-2">⏳</span>
-                      Génération en cours...
-                    </>
-                  ) : (
-                    <>📄 Générer le Procès-Verbal</>
-                  )}
-                </Button>
-
-                <p className="text-sm text-gray-500 mt-2 text-center">
-                  Le PV constate officiellement la constitution de la société
-                </p>
-              </div>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Document</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead className="text-right">Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell className="font-medium">Statuts SAS/SASU</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      Le document sera généré au format Word modifiable (.docx)
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        onClick={() => handleGenerateStatuts()}
+                        disabled={isGenerating || !client?.nom_entreprise}
+                        size="sm"
+                      >
+                        {isGenerating ? (
+                          <>
+                            <span className="animate-spin mr-2">⏳</span>
+                            Génération...
+                          </>
+                        ) : (
+                          "Générer"
+                        )}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">Procès-Verbal de Constitution</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      Le PV constate officiellement la constitution de la société
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        onClick={handleGeneratePV}
+                        disabled={isGeneratingPV || !client?.nom_entreprise}
+                        variant="outline"
+                        size="sm"
+                      >
+                        {isGeneratingPV ? (
+                          <>
+                            <span className="animate-spin mr-2">⏳</span>
+                            Génération...
+                          </>
+                        ) : (
+                          "Générer"
+                        )}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">Déclaration Non-Condamnation</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      Déclaration de non-condamnation du président
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        onClick={handleGenerateDNC}
+                        disabled={isGeneratingDNC || !client?.nom_entreprise}
+                        variant="outline"
+                        size="sm"
+                      >
+                        {isGeneratingDNC ? (
+                          <>
+                            <span className="animate-spin mr-2">⏳</span>
+                            Génération...
+                          </>
+                        ) : (
+                          "Générer"
+                        )}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">Annonce Légale</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      Publication de la constitution au BODACC
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        onClick={handleGenerateAnnonceLegale}
+                        disabled={isGeneratingAnnonceLegale || !client?.nom_entreprise}
+                        variant="outline"
+                        size="sm"
+                      >
+                        {isGeneratingAnnonceLegale ? (
+                          <>
+                            <span className="animate-spin mr-2">⏳</span>
+                            Génération...
+                          </>
+                        ) : (
+                          "Générer"
+                        )}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">Attestation Dépôt Fonds</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      Attestation de dépôt de capital
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        onClick={handleGenerateAttestationDepotFonds}
+                        disabled={isGeneratingAttestationDepotFonds || !client?.nom_entreprise}
+                        variant="outline"
+                        size="sm"
+                      >
+                        {isGeneratingAttestationDepotFonds ? (
+                          <>
+                            <span className="animate-spin mr-2">⏳</span>
+                            Génération...
+                          </>
+                        ) : (
+                          "Générer"
+                        )}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
             </div>
           </CardContent>
         </Card>

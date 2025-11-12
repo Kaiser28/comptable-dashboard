@@ -1044,6 +1044,10 @@ export default function PublicFormPage() {
       errors.prenom = "Le prénom est requis.";
     }
 
+    if (!associeForm.nationalite.trim() || associeForm.nationalite.trim().length < 2) {
+      errors.nationalite = "La nationalité est requise (minimum 2 caractères).";
+    }
+
     const previousPourcentage =
       editingAssocieIndex !== null ? formData.associes[editingAssocieIndex].pourcentage_capital : 0;
     const remainingPourcentage = Math.max(0, 100 - (totalPourcentage - previousPourcentage));
@@ -1544,7 +1548,9 @@ export default function PublicFormPage() {
                             <Label htmlFor="associe_nationalite">Nationalité</Label>
                             <Input
                               id="associe_nationalite"
+                              type="text"
                               value={associeForm.nationalite}
+                              placeholder="Française"
                               onChange={(event) =>
                                 setAssocieForm((previous) => ({
                                   ...previous,
@@ -1552,6 +1558,9 @@ export default function PublicFormPage() {
                                 }))
                               }
                             />
+                            {associeFormErrors.nationalite ? (
+                              <p className="text-xs text-destructive">{associeFormErrors.nationalite}</p>
+                            ) : null}
                           </div>
                         </div>
 
@@ -1689,10 +1698,10 @@ export default function PublicFormPage() {
                           </label>
                         </div>
 
-                        {associeFormErrors.nom || associeFormErrors.prenom || associeFormErrors.president ? (
+                        {associeFormErrors.nom || associeFormErrors.prenom || associeFormErrors.nationalite || associeFormErrors.president ? (
                           <Alert variant="destructive">
                             <AlertDescription>
-                              {[associeFormErrors.nom, associeFormErrors.prenom, associeFormErrors.president]
+                              {[associeFormErrors.nom, associeFormErrors.prenom, associeFormErrors.nationalite, associeFormErrors.president]
                                 .filter(Boolean)
                                 .join(" • ")}
                             </AlertDescription>

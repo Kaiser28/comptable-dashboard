@@ -4,11 +4,11 @@ import { createServerClient } from "@supabase/ssr";
 import { NextRequest } from "next/server";
 
 import type { ClientData, AssocieData } from "@/lib/types/database";
-import { generatePV } from "@/lib/generatePV";
+import { generateAnnonceLegale } from "@/lib/generateAnnonceLegale";
 
 /**
- * Route POST /api/generate-pv
- * Génère le Procès-Verbal de Constitution Word pour un client donné.
+ * Route POST /api/generate-annonce-legale
+ * Génère l'Annonce Légale de Constitution Word pour un client donné.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -81,22 +81,22 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // 6. Générer le PV
-    console.log(`Génération du PV pour le client ${client.nom_entreprise}...`);
-    const documentBuffer = await generatePV(client, associes);
+    // 6. Générer l'Annonce Légale
+    console.log(`Génération de l'Annonce Légale pour le client ${client.nom_entreprise}...`);
+    const documentBuffer = await generateAnnonceLegale(client, associes);
 
     // 7. Retourner le fichier Word
     return new Response(new Uint8Array(documentBuffer), {
       headers: {
         "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "Content-Disposition": `attachment; filename="PV-Constitution-${client.nom_entreprise || "document"}.docx"`
+        "Content-Disposition": `attachment; filename="Annonce_Legale_${client.nom_entreprise || "document"}.docx"`
       }
     });
 
   } catch (error) {
-    console.error("Erreur génération PV:", error);
+    console.error("Erreur génération Annonce Légale:", error);
     return new Response(JSON.stringify({ 
-      error: error instanceof Error ? error.message : "Erreur lors de la génération du PV" 
+      error: error instanceof Error ? error.message : "Erreur lors de la génération de l'Annonce Légale" 
     }), {
       status: 500,
       headers: { "Content-Type": "application/json" }
