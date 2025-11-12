@@ -44,6 +44,7 @@ export default function ClientDetailPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<ValidationResult | null>(null);
+  const [isGeneratingPV, setIsGeneratingPV] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -185,6 +186,40 @@ export default function ClientDetailPage() {
       setGenerateError(error?.message ?? "Une erreur est survenue");
     } finally {
       setIsGenerating(false);
+    }
+  }
+
+  async function handleGeneratePV() {
+    if (!client) return;
+
+    try {
+      setIsGeneratingPV(true);
+
+      const response = await fetch("/api/generate-pv", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ clientId: client.id })
+      });
+
+      if (!response.ok) {
+        throw new Error("Erreur lors de la génération du PV");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `PV-Constitution-${client.nom_entreprise}.docx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+    } catch (error) {
+      console.error("Erreur:", error);
+      alert("Erreur lors de la génération du PV");
+    } finally {
+      setIsGeneratingPV(false);
     }
   }
 
@@ -349,19 +384,44 @@ export default function ClientDetailPage() {
               </Alert>
             )}
 
-            <div className="space-y-2">
-              <Button
-                onClick={() => handleGenerateStatuts()}
-                disabled={isGenerating || !client?.nom_entreprise}
-                className="w-full"
-                size="lg"
-              >
-                {isGenerating ? <>⏳ Génération en cours...</> : <>📄 Générer les statuts (Word)</>}
-              </Button>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Button
+                  onClick={() => handleGenerateStatuts()}
+                  disabled={isGenerating || !client?.nom_entreprise}
+                  className="w-full"
+                  size="lg"
+                >
+                  {isGenerating ? <>⏳ Génération en cours...</> : <>📄 Générer les statuts (Word)</>}
+                </Button>
 
-              <p className="text-sm text-center text-muted-foreground">
-                Le document sera généré au format Word modifiable (.docx)
-              </p>
+                <p className="text-sm text-center text-muted-foreground">
+                  Le document sera généré au format Word modifiable (.docx)
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Button
+                  onClick={handleGeneratePV}
+                  disabled={isGeneratingPV || !client?.nom_entreprise}
+                  variant="outline"
+                  className="w-full"
+                  size="lg"
+                >
+                  {isGeneratingPV ? (
+                    <>
+                      <span className="animate-spin mr-2">⏳</span>
+                      Génération en cours...
+                    </>
+                  ) : (
+                    <>📄 Générer le Procès-Verbal</>
+                  )}
+                </Button>
+
+                <p className="text-sm text-gray-500 mt-2 text-center">
+                  Le PV constate officiellement la constitution de la société
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
