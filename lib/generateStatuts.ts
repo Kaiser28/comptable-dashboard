@@ -14,7 +14,9 @@ function formatDate(date: string | undefined): string {
 function formatAdresse(adresse: any): string {
   if (!adresse) return "Adresse non renseignée";
   if (typeof adresse === "string") return adresse;
-  const parts = [adresse.numero_voie, adresse.type_voie, adresse.nom_voie, adresse.code_postal, adresse.ville].filter(Boolean);
+  // Utiliser libelle_voie si disponible, sinon nom_voie (pour compatibilité)
+  const nomVoie = adresse.libelle_voie || adresse.nom_voie;
+  const parts = [adresse.numero_voie, adresse.type_voie, nomVoie, adresse.code_postal, adresse.ville].filter(Boolean);
   return parts.length > 0 ? parts.join(" ") : "Adresse non renseignée";
 }
 

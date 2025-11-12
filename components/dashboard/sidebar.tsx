@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Upload } from "lucide-react";
+import { Upload, LayoutDashboard, Users, Plus } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -13,31 +13,29 @@ import { supabaseClient } from "@/lib/supabase";
 type NavItem = {
   label: string;
   href: string;
-  icon: string | LucideIcon;
-  isComponent?: boolean;
+  icon: LucideIcon;
 };
 
 const NAV_ITEMS: NavItem[] = [
   {
     label: "Tableau de bord",
     href: "/dashboard",
-    icon: "📊",
+    icon: LayoutDashboard,
   },
   {
     label: "Clients",
     href: "/dashboard",
-    icon: "👥",
+    icon: Users,
   },
   {
     label: "Import CSV",
     href: "/dashboard/import",
     icon: Upload,
-    isComponent: true,
   },
   {
     label: "Nouveau client",
     href: "/dashboard/clients/new",
-    icon: "➕",
+    icon: Plus,
   },
 ];
 
@@ -91,7 +89,7 @@ export function DashboardSidebar() {
         {NAV_ITEMS.map((item) => {
           // Gérer l'état actif : exact match ou commence par le href pour les sous-routes
           const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname?.startsWith(item.href));
-          const IconComponent = typeof item.icon !== 'string' ? item.icon : null;
+          const IconComponent = item.icon;
 
           return (
             <Link
@@ -101,11 +99,7 @@ export function DashboardSidebar() {
                 isActive ? "bg-slate-200 text-slate-900" : "text-slate-600"
               }`}
             >
-              {IconComponent ? (
-                <IconComponent className="h-5 w-5" />
-              ) : (
-                <span className="text-lg">{item.icon}</span>
-              )}
+              <IconComponent className="h-5 w-5" />
               {item.label}
             </Link>
           );

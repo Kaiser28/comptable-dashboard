@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, type FormEvent } from "react";
+import { useMemo, useState, useEffect, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Search } from "lucide-react";
 import { supabaseClient } from "@/lib/supabase";
+import { searchEntreprise } from "@/lib/pappers";
+import { checkRateLimit, getRateLimitCount } from "@/lib/rateLimiter";
 import type { Client } from "@/types/database";
 
 type ClientFormData = Pick<
@@ -33,6 +37,8 @@ type ClientFormData = Pick<
   | "telephone"
   | "adresse"
   | "siret"
+  | "code_ape"
+  | "date_debut_activite"
 >; 
 
 const LEGAL_FORMS = ["SAS", "SASU", "SARL", "EURL", "SA", "SCI"] as const;
@@ -45,6 +51,8 @@ const initialFormState: ClientFormData = {
   telephone: "",
   adresse: "",
   siret: "",
+  code_ape: "",
+  date_debut_activite: "",
 };
 
 type FormErrors = Partial<Record<keyof ClientFormData, string>> & { global?: string };
@@ -56,6 +64,11 @@ export default function NewClientPage() {
   const [formData, setFormData] = useState<ClientFormData>(initialFormState);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [siretSearch, setSiretSearch] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [rateLimitCount, setRateLimitCount] = useState(0);
 
   const handleChange = <Field extends keyof ClientFormData>(field: Field, value: ClientFormData[Field]) => {
     setFormData((previous) => ({
@@ -67,6 +80,148 @@ export default function NewClientPage() {
       [field]: undefined,
       global: undefined,
     }));
+  };
+
+  const mapFormeJuridiqueCode = (code?: string): string => {
+    if (!code) return "";
+    // Code 5710 = SASU
+    if (code === "5710") return "SASU";
+    // Code 5499 = SAS
+    if (code === "5499") return "SAS";
+    // Autres codes = laisser vide pour l'instant
+    return "";
+  };
+
+  const formatDateISO = (dateString?: string): string => {
+    if (!dateString) return "";
+    try {
+      // Si la date est déjà au format ISO (YYYY-MM-DD), la retourner telle quelle
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+        return dateString;
+      }
+      // Sinon, essayer de parser et formater
+      const date = new Date(dateString);
+      if (!isNaN(date.getTime())) {
+        return date.toISOString().split("T")[0]; // Format YYYY-MM-DD
+      }
+    } catch {
+      // En cas d'erreur, retourner la chaîne originale
+    }
+    return "";
+  };
+
+  // Récupérer le userId au chargement
+  useEffect(() => {
+    const fetchUserId = async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabaseClient.auth.getUser();
+        if (user) {
+          setUserId(user.id);
+          setRateLimitCount(getRateLimitCount(user.id));
+        }
+      } catch (error) {
+        console.error("Erreur récupération userId:", error);
+      }
+    };
+    void fetchUserId();
+  }, []);
+
+  const handleSearchSiret = async () => {
+    if (!siretSearch.trim()) {
+      setSearchError("Veuillez saisir un numéro SIRET");
+      return;
+    }
+
+    if (!userId) {
+      setSearchError("Session utilisateur non disponible");
+      return;
+    }
+
+    // Vérifier le rate limit
+    if (!checkRateLimit(userId, 10)) {
+      setSearchError("❌ Limite quotidienne atteinte (10/10). Réessayez demain.");
+      setRateLimitCount(10);
+      return;
+    }
+
+    setIsSearching(true);
+    setSearchError(null);
+
+    try {
+      const entrepriseData = await searchEntreprise(siretSearch.trim());
+      
+      // Mettre à jour le compteur après succès
+      setRateLimitCount(getRateLimitCount(userId));
+
+      // Mapper le code de forme juridique vers SAS/SASU
+      // Priorité : categorie_juridique mappé > forme_juridique texte > vide
+      let formeJuridiqueMapped = "";
+      if (entrepriseData.categorie_juridique) {
+        formeJuridiqueMapped = mapFormeJuridiqueCode(entrepriseData.categorie_juridique);
+      } else if (entrepriseData.forme_juridique) {
+        // Si pas de code, utiliser le texte et vérifier s'il correspond à nos valeurs
+        const formeText = entrepriseData.forme_juridique.toUpperCase();
+        if (LEGAL_FORMS.includes(formeText as any)) {
+          formeJuridiqueMapped = entrepriseData.forme_juridique;
+        }
+      }
+
+      // Utiliser adresse_ligne_1 si disponible, sinon formater depuis adresse_siege
+      const adresseFormatee =
+        entrepriseData.adresse_ligne_1 ||
+        formatAdresse(entrepriseData.adresse_siege);
+
+      // Pré-remplir les champs automatiquement
+      // On ne remplace que les champs vides pour ne pas écraser les données déjà saisies
+      // Si un champ Pappers est null/undefined, ne pas écraser le champ du formulaire
+      setFormData((previous) => ({
+        ...previous,
+        nom_entreprise: previous.nom_entreprise || entrepriseData.nom_entreprise || "",
+        forme_juridique: previous.forme_juridique || formeJuridiqueMapped || "",
+        siret: previous.siret || entrepriseData.siret || "",
+        capital_social:
+          previous.capital_social ||
+          (entrepriseData.capital_social && entrepriseData.capital_social > 0
+            ? entrepriseData.capital_social
+            : null),
+        adresse: previous.adresse || adresseFormatee || "",
+        code_ape: previous.code_ape || entrepriseData.code_naf || "",
+        date_debut_activite:
+          previous.date_debut_activite ||
+          (entrepriseData.date_creation ? formatDateISO(entrepriseData.date_creation) : ""),
+      }));
+
+      // Effacer le champ de recherche après succès
+      setSiretSearch("");
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Une erreur est survenue lors de la recherche";
+      setSearchError(errorMessage);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const formatAdresse = (adresseSiege: {
+    numero_voie?: string;
+    type_voie?: string;
+    nom_voie?: string;
+    code_postal?: string;
+    ville?: string;
+    pays?: string;
+  }): string => {
+    const parts = [
+      adresseSiege.numero_voie,
+      adresseSiege.type_voie,
+      adresseSiege.nom_voie,
+      adresseSiege.code_postal,
+      adresseSiege.ville,
+    ].filter(Boolean);
+    return parts.join(" ") || "";
   };
 
   const validate = useMemo(
@@ -138,6 +293,8 @@ export default function NewClientPage() {
         telephone: formData.telephone?.trim() || null,
         adresse: formData.adresse?.trim() || null,
         siret: formData.siret?.trim() || null,
+        code_ape: formData.code_ape?.trim() || null,
+        date_debut_activite: formData.date_debut_activite?.trim() || null,
         statut: "en attente",
         formulaire_token: crypto.randomUUID(),
         formulaire_complete: false,
@@ -179,6 +336,57 @@ export default function NewClientPage() {
             ) : null}
 
             <form className="space-y-6" onSubmit={handleSubmit}>
+              {/* Section recherche SIRET */}
+              <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                <div className="space-y-3">
+                  <Label htmlFor="siret_search" className="text-sm font-semibold text-blue-900">
+                    🔍 Recherche automatique par SIRET
+                  </Label>
+                  <p className="text-xs text-blue-700">
+                    Saisissez un numéro SIRET pour pré-remplir automatiquement les informations de l'entreprise
+                  </p>
+                  <div className="flex gap-2">
+                    <Input
+                      id="siret_search"
+                      type="text"
+                      inputMode="numeric"
+                      value={siretSearch}
+                      onChange={(e) => {
+                        setSiretSearch(e.target.value);
+                        setSearchError(null);
+                      }}
+                      placeholder={userId ? `SIRET (${rateLimitCount}/10 recherches aujourd'hui)` : "12345678901234"}
+                      maxLength={14}
+                      disabled={isSearching || rateLimitCount >= 10}
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      onClick={handleSearchSiret}
+                      disabled={isSearching || !siretSearch.trim() || rateLimitCount >= 10}
+                      variant="default"
+                    >
+                      {isSearching ? (
+                        <>
+                          <span className="animate-spin mr-2">⏳</span>
+                          Recherche...
+                        </>
+                      ) : (
+                        <>
+                          <Search className="mr-2 h-4 w-4" />
+                          Rechercher
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  {searchError && (
+                    <Alert variant="destructive" className="mt-2">
+                      <AlertDescription className="text-sm">{searchError}</AlertDescription>
+                    </Alert>
+                  )}
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div className="sm:col-span-2 space-y-2">
                   <Label htmlFor="nom_entreprise">Nom de l’entreprise</Label>
@@ -286,6 +494,27 @@ export default function NewClientPage() {
                   {formErrors.siret ? (
                     <p className="text-sm text-red-600">{formErrors.siret}</p>
                   ) : null}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="code_ape">Code APE</Label>
+                  <Input
+                    id="code_ape"
+                    type="text"
+                    value={formData.code_ape ?? ""}
+                    onChange={(event) => handleChange("code_ape", event.target.value)}
+                    placeholder="Ex : 62.01Z"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="date_debut_activite">Date de début d'activité</Label>
+                  <Input
+                    id="date_debut_activite"
+                    type="date"
+                    value={formData.date_debut_activite ?? ""}
+                    onChange={(event) => handleChange("date_debut_activite", event.target.value)}
+                  />
                 </div>
               </div>
 

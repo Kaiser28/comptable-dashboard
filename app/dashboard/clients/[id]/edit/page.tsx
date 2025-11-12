@@ -25,10 +25,12 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
-import { Trash2, Plus } from "lucide-react";
+import { Trash2, Plus, Search } from "lucide-react";
 import { supabaseClient } from "@/lib/supabase";
 import type { Client, Associe, PieceJointe } from "@/types/database";
 import { validateStatutsData } from "@/lib/validateStatuts";
+import { searchEntreprise } from "@/lib/pappers";
+import { checkRateLimit, getRateLimitCount } from "@/lib/rateLimiter";
 
 const FORME_JURIDIQUE_OPTIONS = ["SAS", "SASU", "SARL", "EURL", "SA", "SCI"] as const;
 
@@ -93,6 +95,30 @@ export default function EditClientPage() {
     pieces_jointes: [],
   });
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [siretSearch, setSiretSearch] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [searchSuccess, setSearchSuccess] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [rateLimitCount, setRateLimitCount] = useState(0);
+
+  // Récupérer le userId au chargement
+  useEffect(() => {
+    const fetchUserId = async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabaseClient.auth.getUser();
+        if (user) {
+          setUserId(user.id);
+          setRateLimitCount(getRateLimitCount(user.id));
+        }
+      } catch (error) {
+        console.error("Erreur récupération userId:", error);
+      }
+    };
+    void fetchUserId();
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -294,6 +320,165 @@ export default function EditClientPage() {
         ...formState,
         associes: updatedAssocies,
       });
+    }
+  };
+
+  const mapFormeJuridiqueCode = (code?: string): string => {
+    if (!code) return "";
+    // Code 5710 = SASU
+    if (code === "5710") return "SASU";
+    // Code 5499 = SAS
+    if (code === "5499") return "SAS";
+    // Autres codes = laisser vide pour l'instant
+    return "";
+  };
+
+  const formatDateISO = (dateString?: string): string => {
+    if (!dateString) return "";
+    try {
+      // Si la date est déjà au format ISO (YYYY-MM-DD), la retourner telle quelle
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+        return dateString;
+      }
+      // Sinon, essayer de parser et formater
+      const date = new Date(dateString);
+      if (!isNaN(date.getTime())) {
+        return date.toISOString().split("T")[0]; // Format YYYY-MM-DD
+      }
+    } catch {
+      // En cas d'erreur, retourner la chaîne originale
+    }
+    return "";
+  };
+
+  const formatAdresse = (adresseSiege: {
+    numero_voie?: string;
+    type_voie?: string;
+    libelle_voie?: string;
+    nom_voie?: string;
+    code_postal?: string;
+    ville?: string;
+    pays?: string;
+  }): string => {
+    const nomVoie = adresseSiege.libelle_voie || adresseSiege.nom_voie;
+    const parts = [
+      adresseSiege.numero_voie,
+      adresseSiege.type_voie,
+      nomVoie,
+      adresseSiege.code_postal,
+      adresseSiege.ville,
+    ].filter(Boolean);
+    return parts.join(" ") || "";
+  };
+
+  const handleSearchSiret = async () => {
+    if (!siretSearch.trim()) {
+      setSearchError("Veuillez saisir un numéro SIRET");
+      return;
+    }
+
+    if (!formState.client) {
+      setSearchError("Données client non chargées");
+      return;
+    }
+
+    if (!userId) {
+      setSearchError("Session utilisateur non disponible");
+      return;
+    }
+
+    // Vérifier le rate limit
+    if (!checkRateLimit(userId, 10)) {
+      setSearchError("❌ Limite quotidienne atteinte (10/10). Réessayez demain.");
+      setRateLimitCount(10);
+      return;
+    }
+
+    setIsSearching(true);
+    setSearchError(null);
+    setSearchSuccess(null);
+
+    try {
+      const entrepriseData = await searchEntreprise(siretSearch.trim());
+      
+      // Mettre à jour le compteur après succès
+      setRateLimitCount(getRateLimitCount(userId));
+
+      // Mapper le code de forme juridique vers SAS/SASU
+      // Priorité : categorie_juridique mappé > forme_juridique texte > vide
+      let formeJuridiqueMapped = "";
+      if (entrepriseData.categorie_juridique) {
+        formeJuridiqueMapped = mapFormeJuridiqueCode(entrepriseData.categorie_juridique);
+      } else if (entrepriseData.forme_juridique) {
+        // Si pas de code, utiliser le texte et vérifier s'il correspond à nos valeurs
+        const formeText = entrepriseData.forme_juridique.toUpperCase();
+        if (FORME_JURIDIQUE_OPTIONS.includes(formeText as any)) {
+          formeJuridiqueMapped = entrepriseData.forme_juridique;
+        }
+      }
+
+      // Compter les champs mis à jour
+      let champsMisAJour = 0;
+
+      // Écraser les champs avec les données Pappers (forcer la mise à jour)
+      const updatedClient = {
+        ...formState.client,
+        // Écraser même si les champs sont déjà remplis
+        nom_entreprise: entrepriseData.nom_entreprise || formState.client.nom_entreprise || "",
+        forme_juridique: formeJuridiqueMapped || formState.client.forme_juridique || "",
+        siret: entrepriseData.siret || formState.client.siret || "",
+        capital_social:
+          entrepriseData.capital_social && entrepriseData.capital_social > 0
+            ? entrepriseData.capital_social
+            : formState.client.capital_social,
+        date_debut_activite: entrepriseData.date_creation
+          ? formatDateISO(entrepriseData.date_creation)
+          : formState.client.date_debut_activite || "",
+        adresse_siege: {
+          ...formState.client.adresse_siege,
+          // Écraser avec les données Pappers (même si déjà remplis)
+          numero_voie: entrepriseData.adresse_siege.numero_voie || formState.client.adresse_siege.numero_voie || "",
+          type_voie: entrepriseData.adresse_siege.type_voie || formState.client.adresse_siege.type_voie || "",
+          nom_voie: entrepriseData.adresse_siege.libelle_voie || formState.client.adresse_siege.nom_voie || "",
+          code_postal: entrepriseData.adresse_siege.code_postal || formState.client.adresse_siege.code_postal || "",
+          ville: entrepriseData.adresse_siege.ville || formState.client.adresse_siege.ville || "",
+        },
+      };
+
+      // Compter les champs mis à jour depuis Pappers
+      if (entrepriseData.nom_entreprise) champsMisAJour++;
+      if (formeJuridiqueMapped) champsMisAJour++;
+      if (entrepriseData.siret) champsMisAJour++;
+      if (entrepriseData.capital_social && entrepriseData.capital_social > 0) champsMisAJour++;
+      if (entrepriseData.date_creation) champsMisAJour++;
+      // Compter l'adresse comme un seul champ si au moins un sous-champ est présent
+      if (entrepriseData.adresse_siege.numero_voie || entrepriseData.adresse_siege.type_voie || entrepriseData.adresse_siege.libelle_voie || entrepriseData.adresse_siege.code_postal || entrepriseData.adresse_siege.ville) {
+        champsMisAJour++;
+      }
+
+      setFormState({
+        ...formState,
+        client: updatedClient,
+      });
+
+      // Afficher le message de succès
+      setSearchSuccess(`✅ ${champsMisAJour} champ${champsMisAJour > 1 ? 's' : ''} mis à jour depuis Pappers`);
+      
+      // Effacer le message après 5 secondes
+      setTimeout(() => {
+        setSearchSuccess(null);
+      }, 5000);
+
+      // Effacer le champ de recherche après succès
+      setSiretSearch("");
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Une erreur est survenue lors de la recherche";
+      setSearchError(errorMessage);
+    } finally {
+      setIsSearching(false);
     }
   };
 
@@ -604,6 +789,67 @@ export default function EditClientPage() {
           <AlertDescription>Les modifications ont été enregistrées avec succès.</AlertDescription>
         </Alert>
       )}
+
+      {/* Recherche automatique par SIRET */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Recherche automatique par SIRET</CardTitle>
+          <CardDescription>
+            Recherchez les informations de l'entreprise via l'API Pappers pour pré-remplir automatiquement les champs
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex gap-2">
+            <Input
+              type="text"
+              placeholder={userId ? `SIRET (${rateLimitCount}/10 recherches aujourd'hui)` : "Saisir le numéro SIRET (14 chiffres)"}
+              value={siretSearch}
+              onChange={(e) => {
+                setSiretSearch(e.target.value);
+                setSearchError(null);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  void handleSearchSiret();
+                }
+              }}
+              disabled={isSearching || rateLimitCount >= 10}
+              className="flex-1"
+            />
+            <Button
+              type="button"
+              onClick={() => void handleSearchSiret()}
+              disabled={isSearching || !siretSearch.trim() || rateLimitCount >= 10}
+              variant="outline"
+            >
+              {isSearching ? (
+                <>
+                  <span className="animate-spin mr-2">⏳</span>
+                  Recherche...
+                </>
+              ) : (
+                <>
+                  <Search className="mr-2 h-4 w-4" />
+                  Rechercher
+                </>
+              )}
+            </Button>
+          </div>
+          {searchError && (
+            <Alert variant="destructive">
+              <AlertTitle>Erreur de recherche</AlertTitle>
+              <AlertDescription>{searchError}</AlertDescription>
+            </Alert>
+          )}
+          {searchSuccess && (
+            <Alert>
+              <AlertTitle>Succès</AlertTitle>
+              <AlertDescription>{searchSuccess}</AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+      </Card>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Section 1 : Infos entreprise */}
