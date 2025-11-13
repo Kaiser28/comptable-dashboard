@@ -59,6 +59,8 @@ export default function ClientDetailPage() {
   const [isGeneratingDNC, setIsGeneratingDNC] = useState(false);
   const [isGeneratingAnnonceLegale, setIsGeneratingAnnonceLegale] = useState(false);
   const [isGeneratingAttestationDepotFonds, setIsGeneratingAttestationDepotFonds] = useState(false);
+  const [isGeneratingCourrierReprise, setIsGeneratingCourrierReprise] = useState(false);
+  const [isGeneratingLettreMission, setIsGeneratingLettreMission] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
   useEffect(() => {
@@ -337,6 +339,84 @@ export default function ClientDetailPage() {
       alert("Erreur lors de la génération de l'Attestation de Dépôt des Fonds");
     } finally {
       setIsGeneratingAttestationDepotFonds(false);
+    }
+  }
+
+  async function handleGenerateCourrierReprise() {
+    if (!client) return;
+
+    try {
+      setIsGeneratingCourrierReprise(true);
+
+      const response = await fetch("/api/generate-courrier-reprise", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ client_id: client.id })
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: "Erreur lors de la génération du courrier de reprise" }));
+        throw new Error(error.error || "Erreur lors de la génération du courrier de reprise");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Courrier_Reprise_${client.nom_entreprise}.docx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      // Message de succès
+      alert("✅ Courrier de reprise généré avec succès !");
+
+    } catch (error: any) {
+      console.error("Erreur:", error);
+      const errorMessage = error?.message || "Erreur lors de la génération du courrier de reprise";
+      alert(`❌ ${errorMessage}`);
+    } finally {
+      setIsGeneratingCourrierReprise(false);
+    }
+  }
+
+  async function handleGenerateLettreMission() {
+    if (!client) return;
+
+    try {
+      setIsGeneratingLettreMission(true);
+
+      const response = await fetch("/api/generate-lettre-mission", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ client_id: client.id })
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: "Erreur lors de la génération de la lettre de mission" }));
+        throw new Error(error.error || "Erreur lors de la génération de la lettre de mission");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Lettre_Mission_${client.nom_entreprise}.docx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      // Message de succès
+      alert("✅ Lettre de mission générée avec succès !");
+
+    } catch (error: any) {
+      console.error("Erreur:", error);
+      const errorMessage = error?.message || "Erreur lors de la génération de la lettre de mission";
+      alert(`❌ ${errorMessage}`);
+    } finally {
+      setIsGeneratingLettreMission(false);
     }
   }
 
@@ -676,6 +756,56 @@ export default function ClientDetailPage() {
                       </Button>
                     </TableCell>
                   </TableRow>
+                  {client.type_dossier === 'reprise' && (
+                    <>
+                      <TableRow>
+                        <TableCell className="font-medium">Courrier de reprise de dossier</TableCell>
+                        <TableCell className="text-muted-foreground">
+                          Courrier conforme à l'article 163 du décret du 30 mars 2012
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            onClick={handleGenerateCourrierReprise}
+                            disabled={isGeneratingCourrierReprise || !client?.nom_entreprise}
+                            variant="outline"
+                            size="sm"
+                          >
+                            {isGeneratingCourrierReprise ? (
+                              <>
+                                <span className="animate-spin mr-2">⏳</span>
+                                Génération...
+                              </>
+                            ) : (
+                              "Générer le courrier"
+                            )}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium">Lettre de mission comptable</TableCell>
+                        <TableCell className="text-muted-foreground">
+                          Définition de la mission comptable et des honoraires
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            onClick={handleGenerateLettreMission}
+                            disabled={isGeneratingLettreMission || !client?.nom_entreprise}
+                            variant="outline"
+                            size="sm"
+                          >
+                            {isGeneratingLettreMission ? (
+                              <>
+                                <span className="animate-spin mr-2">⏳</span>
+                                Génération...
+                              </>
+                            ) : (
+                              "Générer la lettre"
+                            )}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    </>
+                  )}
                 </TableBody>
               </Table>
             </div>

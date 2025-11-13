@@ -80,6 +80,20 @@ export type Client = {
   banque_depot_capital?: string;
   /** Indique si le compte professionnel est ouvert. */
   compte_pro_ouvert?: boolean;
+  /** Type de dossier. */
+  type_dossier?: 'création' | 'reprise' | 'existant';
+  /** Nom du cabinet cédant (peut être absent). */
+  cabinet_cedant_nom?: string | null;
+  /** Adresse du cabinet cédant (peut être absente). */
+  cabinet_cedant_adresse?: string | null;
+  /** Date de reprise (format ISO YYYY-MM-DD, peut être absente). */
+  date_reprise?: string | null;
+  /** Objectif de la mission (peut être absent). */
+  mission_objectif?: string | null;
+  /** Honoraires de la mission (peut être absent). */
+  mission_honoraires?: string | null;
+  /** Périodicité de la mission (peut être absente). */
+  mission_periodicite?: string | null;
 };
 
 /**

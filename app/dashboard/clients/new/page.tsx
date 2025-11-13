@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Search } from "lucide-react";
 import { supabaseClient } from "@/lib/supabase";
 import { searchEntreprise } from "@/lib/pappers";
@@ -40,6 +41,13 @@ type ClientFormData = Pick<
   | "siret"
   | "code_ape"
   | "date_debut_activite"
+  | "type_dossier"
+  | "cabinet_cedant_nom"
+  | "cabinet_cedant_adresse"
+  | "date_reprise"
+  | "mission_objectif"
+  | "mission_honoraires"
+  | "mission_periodicite"
 >; 
 
 const LEGAL_FORMS = ["SAS", "SASU", "SARL", "EURL", "SA", "SCI"] as const;
@@ -54,6 +62,13 @@ const initialFormState: ClientFormData = {
   siret: "",
   code_ape: "",
   date_debut_activite: "",
+  type_dossier: "création",
+  cabinet_cedant_nom: null,
+  cabinet_cedant_adresse: null,
+  date_reprise: null,
+  mission_objectif: null,
+  mission_honoraires: null,
+  mission_periodicite: null,
 };
 
 type FormErrors = Partial<Record<keyof ClientFormData, string>> & { global?: string };
@@ -71,6 +86,7 @@ export default function NewClientPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [rateLimitCount, setRateLimitCount] = useState(0);
   const [emailSent, setEmailSent] = useState(false);
+  const [typeDossier, setTypeDossier] = useState<'création' | 'reprise'>('création');
 
   const handleChange = <Field extends keyof ClientFormData>(field: Field, value: ClientFormData[Field]) => {
     setFormData((previous) => ({
@@ -308,6 +324,14 @@ export default function NewClientPage() {
         siret: formData.siret?.trim() || null,
         code_ape: formData.code_ape?.trim() || null,
         date_debut_activite: formData.date_debut_activite?.trim() || null,
+        type_dossier: formData.type_dossier || "création",
+        // Champs de reprise de dossier
+        cabinet_cedant_nom: formData.cabinet_cedant_nom?.trim() || null,
+        cabinet_cedant_adresse: formData.cabinet_cedant_adresse?.trim() || null,
+        date_reprise: formData.date_reprise?.trim() || null,
+        mission_objectif: formData.mission_objectif?.trim() || null,
+        mission_honoraires: formData.mission_honoraires?.trim() || null,
+        mission_periodicite: formData.mission_periodicite?.trim() || null,
         statut: "en attente",
         formulaire_token: crypto.randomUUID(),
         formulaire_complete: false,
@@ -464,9 +488,156 @@ export default function NewClientPage() {
                 </div>
               </div>
 
+              {/* Section : Informations générales */}
+              <div className="space-y-4">
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <Label htmlFor="type_dossier">Type de dossier</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Choisissez Création pour une nouvelle entreprise, Reprise si le client vient d'un autre cabinet comptable
+                    </p>
+                  </div>
+                  <RadioGroup
+                    value={typeDossier}
+                    onValueChange={(value) => {
+                      const typedValue = value as 'création' | 'reprise';
+                      setTypeDossier(typedValue);
+                      handleChange("type_dossier", typedValue);
+                    }}
+                    className="flex flex-col gap-3 sm:flex-row"
+                  >
+                    <div className="flex items-center space-x-2 rounded-md border p-3 hover:bg-accent">
+                      <RadioGroupItem value="création" id="type_creation" />
+                      <Label htmlFor="type_creation" className="cursor-pointer font-normal">
+                        Création d'entreprise
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2 rounded-md border p-3 hover:bg-accent">
+                      <RadioGroupItem value="reprise" id="type_reprise" />
+                      <Label htmlFor="type_reprise" className="cursor-pointer font-normal">
+                        Reprise de dossier
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+              </div>
+
+              {/* Section conditionnelle : Informations reprise de dossier */}
+              {typeDossier === 'reprise' && (
+                <Card className="border-blue-200 bg-blue-50/50">
+                  <CardHeader>
+                    <CardTitle className="text-lg">Informations reprise de dossier</CardTitle>
+                    <CardDescription>
+                      Complétez les informations relatives à la reprise du dossier depuis l'ancien cabinet comptable
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                      <div className="sm:col-span-2 space-y-2">
+                        <Label htmlFor="cabinet_cedant_nom">
+                          Nom du cabinet cédant <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="cabinet_cedant_nom"
+                          required={typeDossier === 'reprise'}
+                          value={formData.cabinet_cedant_nom ?? ""}
+                          onChange={(event) => handleChange("cabinet_cedant_nom", event.target.value || null)}
+                          placeholder="Ex : Cabinet Expert-Comptable Dupont"
+                        />
+                        {formErrors.cabinet_cedant_nom ? (
+                          <p className="text-sm text-red-600">{formErrors.cabinet_cedant_nom}</p>
+                        ) : null}
+                      </div>
+
+                      <div className="sm:col-span-2 space-y-2">
+                        <Label htmlFor="cabinet_cedant_adresse">
+                          Adresse complète du cabinet cédant <span className="text-red-500">*</span>
+                        </Label>
+                        <Textarea
+                          id="cabinet_cedant_adresse"
+                          required={typeDossier === 'reprise'}
+                          rows={3}
+                          value={formData.cabinet_cedant_adresse ?? ""}
+                          onChange={(event) => handleChange("cabinet_cedant_adresse", event.target.value || null)}
+                          placeholder="123 Rue de la République, 75001 Paris"
+                        />
+                        {formErrors.cabinet_cedant_adresse ? (
+                          <p className="text-sm text-red-600">{formErrors.cabinet_cedant_adresse}</p>
+                        ) : null}
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="date_reprise">
+                          Date de reprise du dossier <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="date_reprise"
+                          type="date"
+                          required={typeDossier === 'reprise'}
+                          value={formData.date_reprise ?? ""}
+                          onChange={(event) => handleChange("date_reprise", event.target.value || null)}
+                        />
+                        {formErrors.date_reprise ? (
+                          <p className="text-sm text-red-600">{formErrors.date_reprise}</p>
+                        ) : null}
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="mission_periodicite">
+                          Périodicité des interventions <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="mission_periodicite"
+                          required={typeDossier === 'reprise'}
+                          value={formData.mission_periodicite ?? ""}
+                          onChange={(event) => handleChange("mission_periodicite", event.target.value || null)}
+                          placeholder="Ex: Trimestrielle"
+                        />
+                        {formErrors.mission_periodicite ? (
+                          <p className="text-sm text-red-600">{formErrors.mission_periodicite}</p>
+                        ) : null}
+                      </div>
+
+                      <div className="sm:col-span-2 space-y-2">
+                        <Label htmlFor="mission_objectif">
+                          Objectif de la mission comptable <span className="text-red-500">*</span>
+                        </Label>
+                        <Textarea
+                          id="mission_objectif"
+                          required={typeDossier === 'reprise'}
+                          rows={3}
+                          value={formData.mission_objectif ?? ""}
+                          onChange={(event) => handleChange("mission_objectif", event.target.value || null)}
+                          placeholder="Ex: Tenue comptable, établissement des comptes annuels..."
+                        />
+                        {formErrors.mission_objectif ? (
+                          <p className="text-sm text-red-600">{formErrors.mission_objectif}</p>
+                        ) : null}
+                      </div>
+
+                      <div className="sm:col-span-2 space-y-2">
+                        <Label htmlFor="mission_honoraires">
+                          Honoraires <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="mission_honoraires"
+                          required={typeDossier === 'reprise'}
+                          value={formData.mission_honoraires ?? ""}
+                          onChange={(event) => handleChange("mission_honoraires", event.target.value || null)}
+                          placeholder="Ex: 1500€ HT/an"
+                        />
+                        {formErrors.mission_honoraires ? (
+                          <p className="text-sm text-red-600">{formErrors.mission_honoraires}</p>
+                        ) : null}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div className="sm:col-span-2 space-y-2">
-                  <Label htmlFor="nom_entreprise">Nom de l’entreprise</Label>
+                  <Label htmlFor="nom_entreprise">Nom de l'entreprise</Label>
                   <Input
                     id="nom_entreprise"
                     required
