@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Upload, LayoutDashboard, Users, Plus } from "lucide-react";
+import { Upload, LayoutDashboard, Users, Plus, FileText } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,11 @@ const NAV_ITEMS: NavItem[] = [
     label: "Clients",
     href: "/dashboard",
     icon: Users,
+  },
+  {
+    label: "Actes juridiques",
+    href: "/dashboard/actes",
+    icon: FileText,
   },
   {
     label: "Import CSV",

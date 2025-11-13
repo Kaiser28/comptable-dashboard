@@ -193,3 +193,47 @@ export type ExpertComptable = {
   /** Date de dernière mise à jour de l'enregistrement (format ISO 8601). */
   updated_at: string;
 };
+
+/**
+ * Représente un acte juridique dans la table `actes_juridiques` de Supabase.
+ */
+export type ActeJuridique = {
+  /** Identifiant unique de l'acte (UUID). */
+  id?: string;
+  /** Identifiant du client concerné (UUID). */
+  client_id: string;
+  /** Identifiant du cabinet (UUID). */
+  cabinet_id: string;
+  /** Type d'acte juridique. */
+  type: 'cession_actions' | 'augmentation_capital' | 'ag_ordinaire';
+  /** Date de l'acte (format ISO 8601). */
+  date_acte: string;
+  /** Statut de l'acte. */
+  statut: 'brouillon' | 'validé' | 'signé';
+  /** Identifiant de l'associé cédant (pour cession d'actions). */
+  cedant_id?: string | null;
+  /** Civilité du cessionnaire (pour cession d'actions). */
+  cessionnaire_civilite?: string | null;
+  /** Nom du cessionnaire (pour cession d'actions). */
+  cessionnaire_nom?: string | null;
+  /** Prénom du cessionnaire (pour cession d'actions). */
+  cessionnaire_prenom?: string | null;
+  /** Adresse du cessionnaire (pour cession d'actions). */
+  cessionnaire_adresse?: string | null;
+  /** Nationalité du cessionnaire (pour cession d'actions). */
+  cessionnaire_nationalite?: string | null;
+  /** Nombre d'actions cédées (pour cession d'actions). */
+  nombre_actions?: number | null;
+  /** Prix unitaire par action (pour cession d'actions). */
+  prix_unitaire?: number | null;
+  /** Prix total de la cession (pour cession d'actions). */
+  prix_total?: number | null;
+  /** Date d'agrément par les autres associés (pour cession d'actions). */
+  date_agrement?: string | null;
+  /** Modalités de paiement (pour cession d'actions). */
+  modalites_paiement?: string | null;
+  /** Date de création de l'enregistrement (format ISO 8601). */
+  created_at: string;
+  /** Date de dernière mise à jour de l'enregistrement (format ISO 8601). */
+  updated_at: string;
+};

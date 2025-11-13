@@ -8,4 +8,5 @@ export type {
   Associe as AssocieData,
   Cabinet as CabinetData,
   ExpertComptable as ExpertComptableData,
+  ActeJuridique as ActeJuridiqueData,
 } from "@/types/database";
