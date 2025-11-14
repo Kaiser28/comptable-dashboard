@@ -232,6 +232,32 @@ export type ActeJuridique = {
   date_agrement?: string | null;
   /** Modalités de paiement (pour cession d'actions). */
   modalites_paiement?: string | null;
+  /** Ancien capital social (pour augmentation de capital). */
+  ancien_capital?: number | null;
+  /** Nouveau capital social (pour augmentation de capital). */
+  nouveau_capital?: number | null;
+  /** Montant de l'augmentation (pour augmentation de capital). */
+  montant_augmentation?: number | null;
+  /** Modalité de l'augmentation (numéraire, nature, réserves). */
+  modalite?: 'numeraire' | 'nature' | 'reserves' | null;
+  /** Description de l'apport (pour augmentation de capital). */
+  description_apport?: string | null;
+  /** Nombre de nouvelles actions créées (pour augmentation de capital). */
+  nombre_nouvelles_actions?: number | null;
+  /** Nouveaux associés (pour augmentation de capital). */
+  nouveaux_associes?: Array<{
+    nom: string;
+    prenom: string;
+    adresse: string;
+    apport: number;
+    nombre_actions: number;
+  }> | null;
+  /** Quorum atteint pendant l'assemblée (pour augmentation de capital). */
+  quorum?: number | null;
+  /** Nombre de voix pour (pour augmentation de capital). */
+  votes_pour?: number | null;
+  /** Nombre de voix contre (pour augmentation de capital). */
+  votes_contre?: number | null;
   /** Date de création de l'enregistrement (format ISO 8601). */
   created_at: string;
   /** Date de dernière mise à jour de l'enregistrement (format ISO 8601). */

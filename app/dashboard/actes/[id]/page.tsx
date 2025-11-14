@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
-import { ChevronRight, FileText, FileCog, Edit, Trash2, ArrowLeft } from "lucide-react";
+import { ChevronRight, FileText, FileCog, Edit, Trash2, ArrowLeft, CheckCircle2, XCircle } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +16,14 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -82,6 +91,27 @@ const formatAdresse = (adresse: any): string => {
   return parts.length > 0 ? parts.join(" ") : "Non renseignée";
 };
 
+const formatMontant = (montant: number | null | undefined): string => {
+  if (montant === null || montant === undefined) return "0,00";
+  return new Intl.NumberFormat("fr-FR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(montant);
+};
+
+const getModaliteBadge = (modalite: string | null | undefined) => {
+  switch (modalite) {
+    case 'numeraire':
+      return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">Apport en numéraire</Badge>;
+    case 'nature':
+      return <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-100">Apport en nature</Badge>;
+    case 'reserves':
+      return <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100">Incorporation de réserves</Badge>;
+    default:
+      return <Badge>{modalite || "Non renseigné"}</Badge>;
+  }
+};
+
 export default function ActeDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -94,6 +124,7 @@ export default function ActeDetailPage() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [generatingActeCessionId, setGeneratingActeCessionId] = useState(false);
   const [generatingOMTId, setGeneratingOMTId] = useState(false);
+  const [generatingAugmentationId, setGeneratingAugmentationId] = useState(false);
 
   // Fetch acte avec relations
   useEffect(() => {
@@ -184,10 +215,10 @@ export default function ActeDetailPage() {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
 
-      alert('✅ Acte de cession généré');
+      toast.success('Acte de cession généré');
     } catch (err: any) {
       console.error('Erreur génération acte de cession:', err);
-      alert(`❌ ${err.message || 'Erreur lors de la génération de l\'acte de cession'}`);
+      toast.error(err.message || 'Erreur lors de la génération de l\'acte de cession');
     } finally {
       setGeneratingActeCessionId(false);
     }
@@ -207,8 +238,8 @@ export default function ActeDetailPage() {
       });
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ error: 'Erreur lors de la génération' }));
-        throw new Error(error.error || 'Erreur lors de la génération');
+        const errorData = await response.json().catch(() => ({ error: 'Erreur génération' }));
+        throw new Error(errorData.error || 'Erreur génération');
       }
 
       const blob = await response.blob();
@@ -221,12 +252,49 @@ export default function ActeDetailPage() {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
 
-      alert('✅ Ordre de mouvement généré');
+      toast.success('Ordre de mouvement généré');
     } catch (err: any) {
       console.error('Erreur génération OMT:', err);
-      alert(`❌ ${err.message || 'Erreur lors de la génération de l\'ordre de mouvement'}`);
+      toast.error(err.message || 'Erreur lors de la génération de l\'ordre de mouvement');
     } finally {
       setGeneratingOMTId(false);
+    }
+  };
+
+  // Générer le PV d'augmentation de capital
+  const handleGenerateAugmentationCapital = async () => {
+    if (!acte?.id) return;
+
+    setGeneratingAugmentationId(true);
+
+    try {
+      const response = await fetch('/api/generate-augmentation-capital', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ acte_id: acte.id }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Erreur génération' }));
+        throw new Error(errorData.error || 'Erreur génération');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `PV_Augmentation_Capital_${acte.client?.nom_entreprise || 'Client'}_${new Date(acte.date_acte).toLocaleDateString('fr-FR').replace(/\//g, '-')}.docx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      toast.success('PV d\'augmentation de capital généré');
+    } catch (error: any) {
+      console.error('Erreur génération PV augmentation:', error);
+      toast.error(error.message || 'Erreur lors de la génération');
+    } finally {
+      setGeneratingAugmentationId(false);
     }
   };
 
@@ -436,6 +504,160 @@ export default function ActeDetailPage() {
             </CardContent>
           </Card>
         )}
+
+        {/* Cards pour Augmentation de Capital */}
+        {acte.type === 'augmentation_capital' && (
+          <>
+            {/* Card - Capital Social */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Capital Social</CardTitle>
+                <CardDescription>Évolution du capital social</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {acte.ancien_capital !== null && acte.ancien_capital !== undefined && (
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Capital actuel</Label>
+                    <p className="mt-1 text-lg">{formatMontant(acte.ancien_capital)} €</p>
+                  </div>
+                )}
+                {acte.montant_augmentation !== null && acte.montant_augmentation !== undefined && (
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Augmentation</Label>
+                    <p className="mt-1 text-lg font-bold text-green-600">
+                      +{formatMontant(acte.montant_augmentation)} €
+                    </p>
+                  </div>
+                )}
+                {acte.nouveau_capital !== null && acte.nouveau_capital !== undefined && (
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Nouveau capital</Label>
+                    <p className="mt-1 text-2xl font-bold">{formatMontant(acte.nouveau_capital)} €</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Card - Modalités */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Modalités</CardTitle>
+                <CardDescription>Détails de l'augmentation</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {acte.modalite && (
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Type d'augmentation</Label>
+                    <div className="mt-1">{getModaliteBadge(acte.modalite)}</div>
+                  </div>
+                )}
+                {acte.modalite === 'nature' && acte.description_apport && (
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Description de l'apport</Label>
+                    <p className="mt-1 whitespace-pre-wrap">{acte.description_apport}</p>
+                  </div>
+                )}
+                {acte.nombre_nouvelles_actions !== null && acte.nombre_nouvelles_actions !== undefined && (
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Nouvelles actions créées</Label>
+                    <p className="mt-1 font-medium">{acte.nombre_nouvelles_actions} action{acte.nombre_nouvelles_actions > 1 ? 's' : ''}</p>
+                  </div>
+                )}
+                {acte.nouveau_capital !== null && acte.nouveau_capital !== undefined && 
+                 acte.nombre_nouvelles_actions !== null && acte.nombre_nouvelles_actions !== undefined &&
+                 client && (
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Valeur nominale</Label>
+                    <p className="mt-1 font-medium">
+                      {formatMontant(
+                        acte.nouveau_capital / ((client.nb_actions || 0) + acte.nombre_nouvelles_actions)
+                      )} €
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Card - Assemblée Générale */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Assemblée Générale</CardTitle>
+                <CardDescription>Quorum et résultats du vote</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {acte.quorum !== null && acte.quorum !== undefined && (
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Quorum</Label>
+                    <p className="mt-1 font-medium">{acte.quorum}%</p>
+                  </div>
+                )}
+                {acte.votes_pour !== null && acte.votes_pour !== undefined && (
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Votes POUR</Label>
+                    <div className="mt-1 flex items-center gap-2">
+                      <CheckCircle2 className="h-5 w-5 text-green-600" />
+                      <p className="font-medium">{acte.votes_pour}</p>
+                    </div>
+                  </div>
+                )}
+                {acte.votes_contre !== null && acte.votes_contre !== undefined && (
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Votes CONTRE</Label>
+                    <div className="mt-1 flex items-center gap-2">
+                      <XCircle className="h-5 w-5 text-red-600" />
+                      <p className="font-medium">{acte.votes_contre}</p>
+                    </div>
+                  </div>
+                )}
+                {acte.votes_pour !== null && acte.votes_pour !== undefined &&
+                 acte.votes_contre !== null && acte.votes_contre !== undefined && (
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Résultat</Label>
+                    <div className="mt-1">
+                      {acte.votes_pour > acte.votes_contre ? (
+                        <Badge className="bg-green-100 text-green-700 hover:bg-green-100">ADOPTÉE</Badge>
+                      ) : (
+                        <Badge className="bg-red-100 text-red-700 hover:bg-red-100">REJETÉE</Badge>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Card - Nouveaux Associés */}
+            {acte.nouveaux_associes && Array.isArray(acte.nouveaux_associes) && acte.nouveaux_associes.length > 0 && (
+              <Card className="md:col-span-2">
+                <CardHeader>
+                  <CardTitle>Nouveaux Associés</CardTitle>
+                  <CardDescription>Associés créés par cette augmentation</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Nom</TableHead>
+                        <TableHead>Prénom</TableHead>
+                        <TableHead className="text-right">Apport (€)</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {acte.nouveaux_associes.map((associe: any, index: number) => (
+                        <TableRow key={index}>
+                          <TableCell className="font-medium">{associe.nom || "-"}</TableCell>
+                          <TableCell>{associe.prenom || "-"}</TableCell>
+                          <TableCell className="text-right">{formatMontant(associe.apport)}</TableCell>
+                          <TableCell className="text-right">{associe.nombre_actions || 0}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            )}
+          </>
+        )}
       </div>
 
       {/* Section Actions */}
@@ -482,6 +704,16 @@ export default function ActeDetailPage() {
                   {generatingOMTId ? 'Génération...' : 'Générer l\'ordre de mouvement'}
                 </Button>
               </>
+            )}
+            {acte.type === 'augmentation_capital' && (
+              <Button
+                variant="outline"
+                onClick={handleGenerateAugmentationCapital}
+                disabled={generatingAugmentationId}
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                {generatingAugmentationId ? 'Génération...' : 'Générer le PV d\'augmentation'}
+              </Button>
             )}
           </div>
         </CardContent>

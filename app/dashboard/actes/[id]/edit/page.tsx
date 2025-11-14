@@ -1,33 +1,34 @@
 'use client';
 
-import { useState, useEffect, type FormEvent } from "react";
-import Link from "next/link";
-import { useRouter, useParams } from "next/navigation";
-import { ChevronRight } from "lucide-react";
+import { useState, useEffect, type FormEvent } from 'react';
+import { useRouter, useParams } from 'next/navigation';
+import Link from 'next/link';
+import { ChevronRight, Plus, X } from 'lucide-react';
+import { toast } from 'sonner';
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { supabaseClient } from "@/lib/supabase";
-import { nombreEnLettres } from "@/lib/utils/nombreEnLettres";
-import type { Client, Associe, ActeJuridique } from "@/types/database";
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { supabaseClient } from '@/lib/supabase';
+import { nombreEnLettres } from '@/lib/utils/nombreEnLettres';
+import type { Client, Associe, ActeJuridique } from '@/types/database';
 
 type ActeCessionFormData = {
   date_acte: string;
@@ -45,7 +46,29 @@ type ActeCessionFormData = {
   modalites_paiement: string;
 };
 
-type FormErrors = Partial<Record<keyof ActeCessionFormData, string>> & { global?: string };
+type ActeAugmentationCapitalFormData = {
+  date_acte: string;
+  statut: 'brouillon' | 'validé' | 'signé';
+  ancien_capital: number | '';
+  montant_augmentation: number | '';
+  nouveau_capital: number | '';
+  modalite: 'numeraire' | 'nature' | 'reserves' | '';
+  description_apport: string;
+  nombre_nouvelles_actions: number | '';
+  quorum: number | '';
+  votes_pour: number | '';
+  votes_contre: number | '';
+};
+
+type NouvelAssocie = {
+  nom: string;
+  prenom: string;
+  adresse: string;
+  apport: number | '';
+  nombre_actions: number | '';
+};
+
+type FormErrors = Partial<Record<keyof (ActeCessionFormData & ActeAugmentationCapitalFormData), string>> & { global?: string };
 
 type ActeWithRelations = ActeJuridique & {
   cedant: Associe | Associe[] | null;
@@ -60,7 +83,9 @@ export default function EditActePage() {
   const [acte, setActe] = useState<ActeWithRelations | null>(null);
   const [client, setClient] = useState<Client | null>(null);
   const [associes, setAssocies] = useState<Associe[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [formData, setFormData] = useState<ActeCessionFormData>({
     date_acte: '',
     statut: 'brouillon',
@@ -76,60 +101,106 @@ export default function EditActePage() {
     date_agrement: '',
     modalites_paiement: '',
   });
+
+  const [augmentationFormData, setAugmentationFormData] = useState<ActeAugmentationCapitalFormData>({
+    date_acte: '',
+    statut: 'brouillon',
+    ancien_capital: '',
+    montant_augmentation: '',
+    nouveau_capital: '',
+    modalite: '',
+    description_apport: '',
+    nombre_nouvelles_actions: '',
+    quorum: '',
+    votes_pour: '',
+    votes_contre: '',
+  });
+
+  const [nouveauxAssocies, setNouveauxAssocies] = useState<NouvelAssocie[]>([]);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Fetch acte avec relations
   useEffect(() => {
-    const fetchActe = async () => {
-      try {
-        const { data: acteData, error: acteError } = await supabaseClient
-          .from("actes_juridiques")
-          .select(`
-            *,
-            cedant:associes(*),
-            client:clients(*, associes(*))
-          `)
-          .eq("id", acteId)
-          .single();
+    if (acteId) {
+      void fetchActe();
+    }
+  }, [acteId]);
 
-        if (acteError || !acteData) {
-          alert("Acte non modifiable");
-          router.push("/dashboard/actes");
-          return;
-        }
+  // Calcul automatique du prix total (cession)
+  useEffect(() => {
+    if (formData.nombre_actions && formData.prix_unitaire) {
+      const total = Number(formData.nombre_actions) * Number(formData.prix_unitaire);
+      setFormData((prev) => ({
+        ...prev,
+        prix_total: total,
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        prix_total: '',
+      }));
+    }
+  }, [formData.nombre_actions, formData.prix_unitaire]);
 
-        const acteWithRelations = acteData as unknown as ActeWithRelations;
+  // Calcul automatique du nouveau capital (augmentation)
+  useEffect(() => {
+    if (augmentationFormData.ancien_capital && augmentationFormData.montant_augmentation) {
+      const nouveau = Number(augmentationFormData.ancien_capital) + Number(augmentationFormData.montant_augmentation);
+      setAugmentationFormData((prev) => ({
+        ...prev,
+        nouveau_capital: nouveau,
+      }));
+    } else {
+      setAugmentationFormData((prev) => ({
+        ...prev,
+        nouveau_capital: '',
+      }));
+    }
+  }, [augmentationFormData.ancien_capital, augmentationFormData.montant_augmentation]);
 
-        // Vérifier si l'acte est signé
-        if (acteWithRelations.statut === 'signé') {
-          alert("Les actes signés ne peuvent pas être modifiés");
-          router.push("/dashboard/actes");
-          return;
-        }
+  async function fetchActe() {
+    try {
+      const { data: acteData, error } = await supabaseClient
+        .from('actes_juridiques')
+        .select('*, cedant:associes(*), client:clients(*, associes(*))')
+        .eq('id', acteId)
+        .single();
 
-        setActe(acteWithRelations);
+      if (error || !acteData) {
+        console.error('Erreur récupération acte:', error);
+        toast.error('Acte introuvable');
+        router.push('/dashboard/actes');
+        return;
+      }
 
-        // Extraire le client et les associés
-        const clientData = Array.isArray(acteWithRelations.client)
-          ? acteWithRelations.client[0]
-          : acteWithRelations.client;
+      if (acteData.statut === 'signé') {
+        toast.error('Les actes signés ne peuvent pas être modifiés');
+        router.push('/dashboard/actes');
+        return;
+      }
 
-        if (!clientData) {
-          alert("Client introuvable pour cet acte");
-          router.push("/dashboard/actes");
-          return;
-        }
+      const acteWithRelations = acteData as unknown as ActeWithRelations;
+      setActe(acteWithRelations);
 
-        setClient(clientData);
-        setAssocies(clientData.associes || []);
+      // Extraire le client et les associés
+      const clientData = Array.isArray(acteWithRelations.client)
+        ? acteWithRelations.client[0]
+        : acteWithRelations.client;
 
-        // Extraire le cédant
+      if (!clientData) {
+        toast.error('Client introuvable');
+        router.push('/dashboard/actes');
+        return;
+      }
+
+      setClient(clientData);
+      setAssocies(clientData.associes || []);
+
+      // Pré-remplir le formulaire selon le type d'acte
+      if (acteWithRelations.type === 'cession_actions') {
         const cedant = Array.isArray(acteWithRelations.cedant)
           ? acteWithRelations.cedant[0]
           : acteWithRelations.cedant;
 
-        // Pré-remplir le formulaire avec les données de l'acte
         setFormData({
           date_acte: acteWithRelations.date_acte || '',
           statut: acteWithRelations.statut || 'brouillon',
@@ -145,35 +216,42 @@ export default function EditActePage() {
           date_agrement: acteWithRelations.date_agrement || '',
           modalites_paiement: acteWithRelations.modalites_paiement || '',
         });
-      } catch (err: any) {
-        console.error("Erreur récupération acte:", err);
-        alert("Erreur lors du chargement de l'acte");
-        router.push("/dashboard/actes");
-      } finally {
-        setIsLoading(false);
+      } else if (acteWithRelations.type === 'augmentation_capital') {
+        setAugmentationFormData({
+          date_acte: acteWithRelations.date_acte || '',
+          statut: acteWithRelations.statut || 'brouillon',
+          ancien_capital: acteWithRelations.ancien_capital || '',
+          montant_augmentation: acteWithRelations.montant_augmentation || '',
+          nouveau_capital: acteWithRelations.nouveau_capital || '',
+          modalite: (acteWithRelations.modalite as 'numeraire' | 'nature' | 'reserves') || '',
+          description_apport: acteWithRelations.description_apport || '',
+          nombre_nouvelles_actions: acteWithRelations.nombre_nouvelles_actions || '',
+          quorum: acteWithRelations.quorum || '',
+          votes_pour: acteWithRelations.votes_pour || '',
+          votes_contre: acteWithRelations.votes_contre || '',
+        });
+
+        // Pré-remplir les nouveaux associés si présents
+        if (acteWithRelations.nouveaux_associes && Array.isArray(acteWithRelations.nouveaux_associes)) {
+          setNouveauxAssocies(
+            acteWithRelations.nouveaux_associes.map((a: any) => ({
+              nom: a.nom || '',
+              prenom: a.prenom || '',
+              adresse: a.adresse || '',
+              apport: a.apport || '',
+              nombre_actions: a.nombre_actions || '',
+            }))
+          );
+        }
       }
-    };
-
-    if (acteId) {
-      void fetchActe();
+    } catch (err: any) {
+      console.error('Erreur:', err);
+      toast.error('Erreur lors du chargement de l\'acte');
+      router.push('/dashboard/actes');
+    } finally {
+      setLoading(false);
     }
-  }, [acteId, router]);
-
-  // Calcul automatique du prix total
-  useEffect(() => {
-    if (formData.nombre_actions && formData.prix_unitaire) {
-      const total = Number(formData.nombre_actions) * Number(formData.prix_unitaire);
-      setFormData((prev) => ({
-        ...prev,
-        prix_total: total,
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        prix_total: '',
-      }));
-    }
-  }, [formData.nombre_actions, formData.prix_unitaire]);
+  }
 
   const handleChange = <Field extends keyof ActeCessionFormData>(
     field: Field,
@@ -190,116 +268,204 @@ export default function EditActePage() {
     }));
   };
 
+  const handleAugmentationChange = <Field extends keyof ActeAugmentationCapitalFormData>(
+    field: Field,
+    value: ActeAugmentationCapitalFormData[Field]
+  ) => {
+    setAugmentationFormData((previous) => ({
+      ...previous,
+      [field]: value,
+    }));
+    setFormErrors((previous) => ({
+      ...previous,
+      [field]: undefined,
+      global: undefined,
+    }));
+  };
+
+  const addNouvelAssocie = () => {
+    setNouveauxAssocies((prev) => [
+      ...prev,
+      {
+        nom: '',
+        prenom: '',
+        adresse: '',
+        apport: '',
+        nombre_actions: '',
+      },
+    ]);
+  };
+
+  const removeNouvelAssocie = (index: number) => {
+    setNouveauxAssocies((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const updateNouvelAssocie = (index: number, field: keyof NouvelAssocie, value: string | number) => {
+    setNouveauxAssocies((prev) =>
+      prev.map((associe, i) => (i === index ? { ...associe, [field]: value } : associe))
+    );
+  };
+
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
-    if (!formData.date_acte) {
-      newErrors.date_acte = "La date de l'acte est requise";
+    if (!acte) {
+      newErrors.global = 'Acte introuvable';
+      setFormErrors(newErrors);
+      return false;
     }
 
-    if (!formData.cedant_id) {
-      newErrors.cedant_id = "Le cédant est requis";
-    }
-
-    if (!formData.cessionnaire_civilite) {
-      newErrors.cessionnaire_civilite = "La civilité du cessionnaire est requise";
-    }
-
-    if (!formData.cessionnaire_nom.trim()) {
-      newErrors.cessionnaire_nom = "Le nom du cessionnaire est requis";
-    }
-
-    if (!formData.cessionnaire_prenom.trim()) {
-      newErrors.cessionnaire_prenom = "Le prénom du cessionnaire est requis";
-    }
-
-    if (!formData.cessionnaire_adresse.trim()) {
-      newErrors.cessionnaire_adresse = "L'adresse du cessionnaire est requise";
-    }
-
-    if (!formData.cessionnaire_nationalite.trim()) {
-      newErrors.cessionnaire_nationalite = "La nationalité du cessionnaire est requise";
-    }
-
-    if (!formData.nombre_actions || Number(formData.nombre_actions) < 1) {
-      newErrors.nombre_actions = "Le nombre d'actions doit être supérieur à zéro";
-    }
-
-    // Vérifier que le nombre d'actions ne dépasse pas celui détenu par l'associé
-    const cedantSelected = associes.find((a) => a.id === formData.cedant_id);
-    if (cedantSelected && formData.nombre_actions) {
-      const nombreActionsCedant = cedantSelected.nombre_actions || 0;
-      if (Number(formData.nombre_actions) > nombreActionsCedant) {
-        newErrors.nombre_actions = `L'associé détient seulement ${nombreActionsCedant} action${nombreActionsCedant > 1 ? 's' : ''}`;
+    if (acte.type === 'cession_actions') {
+      if (!formData.date_acte) {
+        newErrors.date_acte = "La date de l'acte est requise";
       }
-    }
-
-    if (!formData.prix_unitaire || Number(formData.prix_unitaire) < 0.01) {
-      newErrors.prix_unitaire = "Le prix unitaire doit être supérieur à 0,01€";
-    }
-
-    if (!formData.date_agrement) {
-      newErrors.date_agrement = "La date d'agrément est requise";
-    }
-
-    if (!formData.modalites_paiement.trim()) {
-      newErrors.modalites_paiement = "Les modalités de paiement sont requises";
+      if (!formData.cedant_id) {
+        newErrors.cedant_id = 'Le cédant est requis';
+      }
+      if (!formData.cessionnaire_civilite) {
+        newErrors.cessionnaire_civilite = 'La civilité du cessionnaire est requise';
+      }
+      if (!formData.cessionnaire_nom.trim()) {
+        newErrors.cessionnaire_nom = 'Le nom du cessionnaire est requis';
+      }
+      if (!formData.cessionnaire_prenom.trim()) {
+        newErrors.cessionnaire_prenom = 'Le prénom du cessionnaire est requis';
+      }
+      if (!formData.cessionnaire_adresse.trim()) {
+        newErrors.cessionnaire_adresse = "L'adresse du cessionnaire est requise";
+      }
+      if (!formData.cessionnaire_nationalite.trim()) {
+        newErrors.cessionnaire_nationalite = 'La nationalité du cessionnaire est requise';
+      }
+      if (!formData.nombre_actions || Number(formData.nombre_actions) < 1) {
+        newErrors.nombre_actions = "Le nombre d'actions doit être supérieur à zéro";
+      }
+      const cedantSelected = associes.find((a) => a.id === formData.cedant_id);
+      if (cedantSelected && formData.nombre_actions) {
+        const nombreActionsCedant = cedantSelected.nombre_actions || 0;
+        if (Number(formData.nombre_actions) > nombreActionsCedant) {
+          newErrors.nombre_actions = `L'associé détient seulement ${nombreActionsCedant} action${nombreActionsCedant > 1 ? 's' : ''}`;
+        }
+      }
+      if (!formData.prix_unitaire || Number(formData.prix_unitaire) < 0.01) {
+        newErrors.prix_unitaire = 'Le prix unitaire doit être supérieur à 0,01€';
+      }
+      if (!formData.date_agrement) {
+        newErrors.date_agrement = "La date d'agrément est requise";
+      }
+      if (!formData.modalites_paiement.trim()) {
+        newErrors.modalites_paiement = 'Les modalités de paiement sont requises';
+      }
+    } else if (acte.type === 'augmentation_capital') {
+      if (!augmentationFormData.date_acte) {
+        newErrors.date_acte = "La date de l'acte est requise";
+      }
+      if (!augmentationFormData.ancien_capital || Number(augmentationFormData.ancien_capital) < 1) {
+        newErrors.ancien_capital = 'Le capital social actuel est requis et doit être supérieur à 0';
+      }
+      if (!augmentationFormData.montant_augmentation || Number(augmentationFormData.montant_augmentation) < 1) {
+        newErrors.montant_augmentation = "Le montant de l'augmentation est requis et doit être supérieur à 0";
+      }
+      if (!augmentationFormData.modalite) {
+        newErrors.modalite = "La modalité d'augmentation est requise";
+      }
+      if (augmentationFormData.modalite === 'nature' && !augmentationFormData.description_apport.trim()) {
+        newErrors.description_apport = "La description de l'apport en nature est requise";
+      }
+      if (!augmentationFormData.nombre_nouvelles_actions || Number(augmentationFormData.nombre_nouvelles_actions) < 1) {
+        newErrors.nombre_nouvelles_actions = "Le nombre de nouvelles actions est requis et doit être supérieur à 0";
+      }
+      if (!augmentationFormData.quorum || Number(augmentationFormData.quorum) < 50 || Number(augmentationFormData.quorum) > 100) {
+        newErrors.quorum = 'Le quorum est requis et doit être entre 50% et 100%';
+      }
+      if (augmentationFormData.votes_pour === '' || Number(augmentationFormData.votes_pour) < 0) {
+        newErrors.votes_pour = 'Le nombre de votes POUR est requis';
+      }
+      if (augmentationFormData.votes_contre === '' || Number(augmentationFormData.votes_contre) < 0) {
+        newErrors.votes_contre = 'Le nombre de votes CONTRE est requis';
+      }
     }
 
     setFormErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
     setFormErrors({});
 
-    if (!validateForm()) {
+    if (!validateForm() || !acte) {
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      // Préparer les données pour la mise à jour
-      const updateData = {
-        date_acte: formData.date_acte,
-        statut: formData.statut,
-        cedant_id: formData.cedant_id,
-        cessionnaire_civilite: formData.cessionnaire_civilite,
-        cessionnaire_nom: formData.cessionnaire_nom.trim(),
-        cessionnaire_prenom: formData.cessionnaire_prenom.trim(),
-        cessionnaire_adresse: formData.cessionnaire_adresse.trim(),
-        cessionnaire_nationalite: formData.cessionnaire_nationalite.trim(),
-        nombre_actions: Number(formData.nombre_actions),
-        prix_unitaire: Number(formData.prix_unitaire),
-        prix_total: Number(formData.prix_total),
-        date_agrement: formData.date_agrement,
-        modalites_paiement: formData.modalites_paiement.trim(),
+      const updateData: any = {
+        date_acte: acte.type === 'cession_actions' ? formData.date_acte : augmentationFormData.date_acte,
+        statut: acte.type === 'cession_actions' ? formData.statut : augmentationFormData.statut,
         updated_at: new Date().toISOString(),
       };
 
-      const { error: updateError } = await supabaseClient
-        .from("actes_juridiques")
-        .update(updateData)
-        .eq("id", acteId);
+      if (acte.type === 'cession_actions') {
+        updateData.cedant_id = formData.cedant_id;
+        updateData.cessionnaire_civilite = formData.cessionnaire_civilite;
+        updateData.cessionnaire_nom = formData.cessionnaire_nom.trim();
+        updateData.cessionnaire_prenom = formData.cessionnaire_prenom.trim();
+        updateData.cessionnaire_adresse = formData.cessionnaire_adresse.trim();
+        updateData.cessionnaire_nationalite = formData.cessionnaire_nationalite.trim();
+        updateData.nombre_actions = Number(formData.nombre_actions);
+        updateData.prix_unitaire = Number(formData.prix_unitaire);
+        updateData.prix_total = Number(formData.prix_total);
+        updateData.date_agrement = formData.date_agrement;
+        updateData.modalites_paiement = formData.modalites_paiement.trim();
+      } else if (acte.type === 'augmentation_capital') {
+        const nouveauCapital = augmentationFormData.nouveau_capital ||
+          (Number(augmentationFormData.ancien_capital) + Number(augmentationFormData.montant_augmentation));
 
-      if (updateError) {
-        throw updateError;
+        updateData.ancien_capital = Number(augmentationFormData.ancien_capital);
+        updateData.nouveau_capital = nouveauCapital;
+        updateData.montant_augmentation = Number(augmentationFormData.montant_augmentation);
+        updateData.modalite = augmentationFormData.modalite;
+        updateData.description_apport = augmentationFormData.modalite === 'nature'
+          ? augmentationFormData.description_apport.trim()
+          : null;
+        updateData.nombre_nouvelles_actions = Number(augmentationFormData.nombre_nouvelles_actions);
+        updateData.quorum = Number(augmentationFormData.quorum);
+        updateData.votes_pour = Number(augmentationFormData.votes_pour);
+        updateData.votes_contre = Number(augmentationFormData.votes_contre);
+        updateData.nouveaux_associes = nouveauxAssocies.length > 0
+          ? nouveauxAssocies.map((a) => ({
+              nom: a.nom.trim(),
+              prenom: a.prenom.trim(),
+              adresse: a.adresse.trim(),
+              apport: Number(a.apport),
+              nombre_actions: Number(a.nombre_actions),
+            }))
+          : null;
       }
 
-      // Succès - redirection
-      alert("✅ Acte modifié avec succès");
-      router.push("/dashboard/actes");
+      const { error } = await supabaseClient
+        .from('actes_juridiques')
+        .update(updateData)
+        .eq('id', acteId);
+
+      if (error) {
+        throw error;
+      }
+
+      toast.success('Acte modifié avec succès');
+      router.push(`/dashboard/actes/${acteId}`);
     } catch (err: any) {
-      console.error("Erreur modification acte:", err);
+      console.error('Erreur modification acte:', err);
       setFormErrors({
         global: err.message || "Erreur lors de la modification de l'acte. Veuillez réessayer.",
       });
+      toast.error(err.message || "Erreur lors de la modification de l'acte");
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }
 
   // Trouver le cédant sélectionné pour afficher le nombre d'actions
   const cedantSelected = associes.find((a) => a.id === formData.cedant_id);
@@ -308,18 +474,32 @@ export default function EditActePage() {
     ? nombreEnLettres(formData.prix_total)
     : '';
 
-  if (isLoading) {
+  // Fonction pour formater les montants
+  const formatMontant = (montant: number): string => {
+    return new Intl.NumberFormat('fr-FR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(montant);
+  };
+
+  if (loading) {
     return (
       <div className="container mx-auto py-8 max-w-4xl">
         <div className="flex min-h-[200px] items-center justify-center">
-          <span className="text-sm text-muted-foreground">Chargement de l'acte...</span>
+          <span className="text-sm text-muted-foreground">Chargement...</span>
         </div>
       </div>
     );
   }
 
   if (!acte || !client) {
-    return null; // La redirection est gérée dans le useEffect
+    return (
+      <div className="container mx-auto py-8 max-w-4xl">
+        <div className="flex min-h-[200px] items-center justify-center">
+          <span className="text-sm text-muted-foreground">Acte non trouvé</span>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -341,7 +521,11 @@ export default function EditActePage() {
       <div className="mb-6">
         <h1 className="text-3xl font-bold">Modifier l'acte juridique</h1>
         <p className="text-muted-foreground mt-2">
-          Modifiez les informations de cet acte de cession d'actions
+          {acte.type === 'cession_actions'
+            ? "Modifiez les informations de cet acte de cession d'actions"
+            : acte.type === 'augmentation_capital'
+            ? "Modifiez les informations de cet acte d'augmentation de capital"
+            : "Modifiez les informations de cet acte juridique"}
         </p>
       </div>
 
@@ -396,8 +580,12 @@ export default function EditActePage() {
                 <Input
                   id="date_acte"
                   type="date"
-                  value={formData.date_acte}
-                  onChange={(e) => handleChange("date_acte", e.target.value)}
+                  value={acte.type === 'cession_actions' ? formData.date_acte : augmentationFormData.date_acte}
+                  onChange={(e) =>
+                    acte.type === 'cession_actions'
+                      ? handleChange('date_acte', e.target.value)
+                      : handleAugmentationChange('date_acte', e.target.value)
+                  }
                   required
                 />
                 {formErrors.date_acte && (
@@ -410,9 +598,11 @@ export default function EditActePage() {
                   Statut <span className="text-red-500">*</span>
                 </Label>
                 <Select
-                  value={formData.statut}
+                  value={acte.type === 'cession_actions' ? formData.statut : augmentationFormData.statut}
                   onValueChange={(value) =>
-                    handleChange("statut", value as 'brouillon' | 'validé' | 'signé')
+                    acte.type === 'cession_actions'
+                      ? handleChange('statut', value as 'brouillon' | 'validé' | 'signé')
+                      : handleAugmentationChange('statut', value as 'brouillon' | 'validé' | 'signé')
                   }
                 >
                   <SelectTrigger id="statut">
@@ -429,290 +619,653 @@ export default function EditActePage() {
           </CardContent>
         </Card>
 
-        {/* Section Le Cédant */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Le Cédant (qui vend)</CardTitle>
-            <CardDescription>
-              Sélectionnez l'associé qui cède ses actions
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {associes.length === 0 ? (
-              <Alert>
-                <AlertDescription>
-                  Ce client n'a pas d'associés enregistrés.
-                </AlertDescription>
-              </Alert>
-            ) : (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="cedant_id">
-                    Associé qui cède ses actions <span className="text-red-500">*</span>
-                  </Label>
-                  <Select
-                    value={formData.cedant_id}
-                    onValueChange={(value) => handleChange("cedant_id", value)}
-                  >
-                    <SelectTrigger id="cedant_id">
-                      <SelectValue placeholder="Sélectionnez un associé" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {associes.map((associe) => (
-                        <SelectItem key={associe.id} value={associe.id!}>
-                          {associe.civilite} {associe.prenom} {associe.nom}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {formErrors.cedant_id && (
-                    <p className="text-sm text-red-500">{formErrors.cedant_id}</p>
-                  )}
-                  {cedantSelected && (
-                    <p className="text-sm text-muted-foreground">
-                      Détient {nombreActionsCedant} action{nombreActionsCedant > 1 ? 's' : ''} dans {client.nom_entreprise}
-                    </p>
-                  )}
-                </div>
-              </>
+        {/* FORMULAIRE CESSION */}
+        {acte.type === 'cession_actions' && (
+          <>
+            {/* Section Le Cédant */}
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>Le Cédant (qui vend)</CardTitle>
+                <CardDescription>
+                  Sélectionnez l'associé qui cède ses actions
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {associes.length === 0 ? (
+                  <Alert>
+                    <AlertDescription>
+                      Ce client n'a pas d'associés enregistrés.
+                    </AlertDescription>
+                  </Alert>
+                ) : (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="cedant_id">
+                        Associé qui cède ses actions <span className="text-red-500">*</span>
+                      </Label>
+                      <Select
+                        value={formData.cedant_id}
+                        onValueChange={(value) => handleChange('cedant_id', value)}
+                      >
+                        <SelectTrigger id="cedant_id">
+                          <SelectValue placeholder="Sélectionnez un associé" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {associes.map((associe) => (
+                            <SelectItem key={associe.id} value={associe.id!}>
+                              {associe.civilite} {associe.prenom} {associe.nom}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {formErrors.cedant_id && (
+                        <p className="text-sm text-red-500">{formErrors.cedant_id}</p>
+                      )}
+                      {cedantSelected && (
+                        <p className="text-sm text-muted-foreground">
+                          Détient {nombreActionsCedant} action{nombreActionsCedant > 1 ? 's' : ''} dans {client.nom_entreprise}
+                        </p>
+                      )}
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Section Le Cessionnaire */}
+            {associes.length > 0 && (
+              <Card className="mb-6">
+                <CardHeader>
+                  <CardTitle>Le Cessionnaire (qui achète)</CardTitle>
+                  <CardDescription>
+                    Informations sur l'acheteur des actions
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>
+                      Civilité <span className="text-red-500">*</span>
+                    </Label>
+                    <RadioGroup
+                      value={formData.cessionnaire_civilite}
+                      onValueChange={(value) =>
+                        handleChange('cessionnaire_civilite', value as 'M.' | 'Mme')
+                      }
+                      className="flex gap-6"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="M." id="civilite-m" />
+                        <Label htmlFor="civilite-m" className="cursor-pointer">
+                          M.
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="Mme" id="civilite-mme" />
+                        <Label htmlFor="civilite-mme" className="cursor-pointer">
+                          Mme
+                        </Label>
+                      </div>
+                    </RadioGroup>
+                    {formErrors.cessionnaire_civilite && (
+                      <p className="text-sm text-red-500">{formErrors.cessionnaire_civilite}</p>
+                    )}
+                  </div>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="cessionnaire_nom">
+                        Nom <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        id="cessionnaire_nom"
+                        value={formData.cessionnaire_nom}
+                        onChange={(e) => handleChange('cessionnaire_nom', e.target.value)}
+                        required
+                      />
+                      {formErrors.cessionnaire_nom && (
+                        <p className="text-sm text-red-500">{formErrors.cessionnaire_nom}</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="cessionnaire_prenom">
+                        Prénom <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        id="cessionnaire_prenom"
+                        value={formData.cessionnaire_prenom}
+                        onChange={(e) => handleChange('cessionnaire_prenom', e.target.value)}
+                        required
+                      />
+                      {formErrors.cessionnaire_prenom && (
+                        <p className="text-sm text-red-500">{formErrors.cessionnaire_prenom}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="cessionnaire_adresse">
+                      Adresse complète <span className="text-red-500">*</span>
+                    </Label>
+                    <Textarea
+                      id="cessionnaire_adresse"
+                      value={formData.cessionnaire_adresse}
+                      onChange={(e) => handleChange('cessionnaire_adresse', e.target.value)}
+                      required
+                      rows={3}
+                    />
+                    {formErrors.cessionnaire_adresse && (
+                      <p className="text-sm text-red-500">{formErrors.cessionnaire_adresse}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="cessionnaire_nationalite">
+                      Nationalité <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="cessionnaire_nationalite"
+                      value={formData.cessionnaire_nationalite}
+                      onChange={(e) => handleChange('cessionnaire_nationalite', e.target.value)}
+                      required
+                    />
+                    {formErrors.cessionnaire_nationalite && (
+                      <p className="text-sm text-red-500">{formErrors.cessionnaire_nationalite}</p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
             )}
-          </CardContent>
-        </Card>
 
-        {/* Section Le Cessionnaire */}
-        {associes.length > 0 && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Le Cessionnaire (qui achète)</CardTitle>
-              <CardDescription>
-                Informations sur l'acheteur des actions
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>
-                  Civilité <span className="text-red-500">*</span>
-                </Label>
-                <RadioGroup
-                  value={formData.cessionnaire_civilite}
-                  onValueChange={(value) =>
-                    handleChange("cessionnaire_civilite", value as 'M.' | 'Mme')
-                  }
-                  className="flex gap-6"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="M." id="civilite-m" />
-                    <Label htmlFor="civilite-m" className="cursor-pointer">
-                      M.
+            {/* Section Détails de la cession */}
+            {associes.length > 0 && (
+              <Card className="mb-6">
+                <CardHeader>
+                  <CardTitle>Détails de la cession</CardTitle>
+                  <CardDescription>
+                    Informations sur la transaction
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="nombre_actions">
+                      Nombre d'actions cédées <span className="text-red-500">*</span>
                     </Label>
+                    <Input
+                      id="nombre_actions"
+                      type="number"
+                      min="1"
+                      value={formData.nombre_actions}
+                      onChange={(e) =>
+                        handleChange('nombre_actions', e.target.value === '' ? '' : Number(e.target.value))
+                      }
+                      required
+                    />
+                    {formErrors.nombre_actions && (
+                      <p className="text-sm text-red-500">{formErrors.nombre_actions}</p>
+                    )}
+                    {cedantSelected && (
+                      <p className="text-sm text-muted-foreground">
+                        L'associé détient {nombreActionsCedant} action{nombreActionsCedant > 1 ? 's' : ''}
+                      </p>
+                    )}
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="Mme" id="civilite-mme" />
-                    <Label htmlFor="civilite-mme" className="cursor-pointer">
-                      Mme
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="prix_unitaire">
+                        Prix unitaire par action (€) <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        id="prix_unitaire"
+                        type="number"
+                        min="0.01"
+                        step="0.01"
+                        value={formData.prix_unitaire}
+                        onChange={(e) =>
+                          handleChange('prix_unitaire', e.target.value === '' ? '' : Number(e.target.value))
+                        }
+                        required
+                      />
+                      {formErrors.prix_unitaire && (
+                        <p className="text-sm text-red-500">{formErrors.prix_unitaire}</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="prix_total">
+                        Prix total (€)
+                      </Label>
+                      <Input
+                        id="prix_total"
+                        type="number"
+                        value={formData.prix_total}
+                        readOnly
+                        className="bg-muted"
+                      />
+                      {prixTotalLettres && (
+                        <p className="text-sm text-muted-foreground italic">
+                          {prixTotalLettres}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="date_agrement">
+                      Date d'agrément par les associés <span className="text-red-500">*</span>
                     </Label>
+                    <Input
+                      id="date_agrement"
+                      type="date"
+                      value={formData.date_agrement}
+                      onChange={(e) => handleChange('date_agrement', e.target.value)}
+                      required
+                    />
+                    {formErrors.date_agrement && (
+                      <p className="text-sm text-red-500">{formErrors.date_agrement}</p>
+                    )}
+                    <p className="text-sm text-muted-foreground">
+                      Date de l'assemblée générale ayant approuvé la cession
+                    </p>
                   </div>
-                </RadioGroup>
-                {formErrors.cessionnaire_civilite && (
-                  <p className="text-sm text-red-500">{formErrors.cessionnaire_civilite}</p>
-                )}
-              </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="cessionnaire_nom">
-                    Nom <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="cessionnaire_nom"
-                    value={formData.cessionnaire_nom}
-                    onChange={(e) => handleChange("cessionnaire_nom", e.target.value)}
-                    required
-                  />
-                  {formErrors.cessionnaire_nom && (
-                    <p className="text-sm text-red-500">{formErrors.cessionnaire_nom}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="cessionnaire_prenom">
-                    Prénom <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="cessionnaire_prenom"
-                    value={formData.cessionnaire_prenom}
-                    onChange={(e) => handleChange("cessionnaire_prenom", e.target.value)}
-                    required
-                  />
-                  {formErrors.cessionnaire_prenom && (
-                    <p className="text-sm text-red-500">{formErrors.cessionnaire_prenom}</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="cessionnaire_adresse">
-                  Adresse complète <span className="text-red-500">*</span>
-                </Label>
-                <Textarea
-                  id="cessionnaire_adresse"
-                  value={formData.cessionnaire_adresse}
-                  onChange={(e) => handleChange("cessionnaire_adresse", e.target.value)}
-                  required
-                  rows={3}
-                />
-                {formErrors.cessionnaire_adresse && (
-                  <p className="text-sm text-red-500">{formErrors.cessionnaire_adresse}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="cessionnaire_nationalite">
-                  Nationalité <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="cessionnaire_nationalite"
-                  value={formData.cessionnaire_nationalite}
-                  onChange={(e) => handleChange("cessionnaire_nationalite", e.target.value)}
-                  required
-                />
-                {formErrors.cessionnaire_nationalite && (
-                  <p className="text-sm text-red-500">{formErrors.cessionnaire_nationalite}</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                  <div className="space-y-2">
+                    <Label htmlFor="modalites_paiement">
+                      Modalités de paiement <span className="text-red-500">*</span>
+                    </Label>
+                    <Textarea
+                      id="modalites_paiement"
+                      value={formData.modalites_paiement}
+                      onChange={(e) => handleChange('modalites_paiement', e.target.value)}
+                      placeholder="Ex: Paiement comptant à la signature / Paiement échelonné en 3 fois..."
+                      required
+                      rows={3}
+                    />
+                    {formErrors.modalites_paiement && (
+                      <p className="text-sm text-red-500">{formErrors.modalites_paiement}</p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </>
         )}
 
-        {/* Section Détails de la cession */}
-        {associes.length > 0 && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Détails de la cession</CardTitle>
-              <CardDescription>
-                Informations sur la transaction
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="nombre_actions">
-                  Nombre d'actions cédées <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="nombre_actions"
-                  type="number"
-                  min="1"
-                  value={formData.nombre_actions}
-                  onChange={(e) =>
-                    handleChange("nombre_actions", e.target.value === '' ? '' : Number(e.target.value))
-                  }
-                  required
-                />
-                {formErrors.nombre_actions && (
-                  <p className="text-sm text-red-500">{formErrors.nombre_actions}</p>
-                )}
-                {cedantSelected && (
-                  <p className="text-sm text-muted-foreground">
-                    L'associé détient {nombreActionsCedant} action{nombreActionsCedant > 1 ? 's' : ''}
-                  </p>
-                )}
-              </div>
+        {/* FORMULAIRE AUGMENTATION DE CAPITAL */}
+        {acte.type === 'augmentation_capital' && (
+          <>
+            {/* Section Capital social */}
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>Capital social</CardTitle>
+                <CardDescription>
+                  Montants avant et après augmentation
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="ancien_capital">
+                      Capital social actuel (€) <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="ancien_capital"
+                      type="number"
+                      min="1"
+                      step="0.01"
+                      value={augmentationFormData.ancien_capital}
+                      onChange={(e) =>
+                        handleAugmentationChange('ancien_capital', e.target.value === '' ? '' : Number(e.target.value))
+                      }
+                      required
+                    />
+                    {formErrors.ancien_capital && (
+                      <p className="text-sm text-red-500">{formErrors.ancien_capital}</p>
+                    )}
+                    <p className="text-sm text-muted-foreground">Capital actuel selon nos données</p>
+                  </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="montant_augmentation">
+                      Montant de l'augmentation (€) <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="montant_augmentation"
+                      type="number"
+                      min="1"
+                      step="0.01"
+                      value={augmentationFormData.montant_augmentation}
+                      onChange={(e) =>
+                        handleAugmentationChange('montant_augmentation', e.target.value === '' ? '' : Number(e.target.value))
+                      }
+                      required
+                    />
+                    {formErrors.montant_augmentation && (
+                      <p className="text-sm text-red-500">{formErrors.montant_augmentation}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="nouveau_capital">
+                      Nouveau capital social (€)
+                    </Label>
+                    <Input
+                      id="nouveau_capital"
+                      type="number"
+                      value={augmentationFormData.nouveau_capital}
+                      readOnly
+                      className="bg-muted"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Section Modalité d'augmentation */}
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>Modalité d'augmentation</CardTitle>
+                <CardDescription>
+                  Choisissez le type d'apport
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="prix_unitaire">
-                    Prix unitaire par action (€) <span className="text-red-500">*</span>
+                  <Label>
+                    Modalité <span className="text-red-500">*</span>
+                  </Label>
+                  <RadioGroup
+                    value={augmentationFormData.modalite}
+                    onValueChange={(value) =>
+                      handleAugmentationChange('modalite', value as 'numeraire' | 'nature' | 'reserves')
+                    }
+                    className="space-y-3"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="numeraire" id="modalite-numeraire" />
+                      <Label htmlFor="modalite-numeraire" className="cursor-pointer">
+                        <span className="font-medium">Apport en numéraire</span>
+                        <span className="text-sm text-muted-foreground ml-2">- Apport d'argent frais</span>
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="nature" id="modalite-nature" />
+                      <Label htmlFor="modalite-nature" className="cursor-pointer">
+                        <span className="font-medium">Apport en nature</span>
+                        <span className="text-sm text-muted-foreground ml-2">- Apport de biens, matériel</span>
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="reserves" id="modalite-reserves" />
+                      <Label htmlFor="modalite-reserves" className="cursor-pointer">
+                        <span className="font-medium">Incorporation de réserves</span>
+                        <span className="text-sm text-muted-foreground ml-2">- Sans apport nouveau (comptable)</span>
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                  {formErrors.modalite && (
+                    <p className="text-sm text-red-500">{formErrors.modalite}</p>
+                  )}
+                </div>
+
+                {augmentationFormData.modalite === 'nature' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="description_apport">
+                      Description détaillée de l'apport en nature <span className="text-red-500">*</span>
+                    </Label>
+                    <Textarea
+                      id="description_apport"
+                      value={augmentationFormData.description_apport}
+                      onChange={(e) => handleAugmentationChange('description_apport', e.target.value)}
+                      placeholder="Ex: Matériel informatique, véhicule, immeuble..."
+                      required
+                      rows={3}
+                    />
+                    {formErrors.description_apport && (
+                      <p className="text-sm text-red-500">{formErrors.description_apport}</p>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Section Actions */}
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>Actions</CardTitle>
+                <CardDescription>
+                  Nombre de nouvelles actions créées
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="nombre_nouvelles_actions">
+                    Nombre de nouvelles actions créées <span className="text-red-500">*</span>
                   </Label>
                   <Input
-                    id="prix_unitaire"
+                    id="nombre_nouvelles_actions"
                     type="number"
-                    min="0.01"
-                    step="0.01"
-                    value={formData.prix_unitaire}
+                    min="1"
+                    value={augmentationFormData.nombre_nouvelles_actions}
                     onChange={(e) =>
-                      handleChange("prix_unitaire", e.target.value === '' ? '' : Number(e.target.value))
+                      handleAugmentationChange('nombre_nouvelles_actions', e.target.value === '' ? '' : Number(e.target.value))
                     }
                     required
                   />
-                  {formErrors.prix_unitaire && (
-                    <p className="text-sm text-red-500">{formErrors.prix_unitaire}</p>
+                  {formErrors.nombre_nouvelles_actions && (
+                    <p className="text-sm text-red-500">{formErrors.nombre_nouvelles_actions}</p>
                   )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="prix_total">
-                    Prix total (€)
-                  </Label>
-                  <Input
-                    id="prix_total"
-                    type="number"
-                    value={formData.prix_total}
-                    readOnly
-                    className="bg-muted"
-                  />
-                  {prixTotalLettres && (
-                    <p className="text-sm text-muted-foreground italic">
-                      {prixTotalLettres}
+                  {client && augmentationFormData.nombre_nouvelles_actions && augmentationFormData.nouveau_capital && (
+                    <p className="text-sm text-muted-foreground">
+                      Valeur nominale = {formatMontant(Number(augmentationFormData.nouveau_capital) / ((client.nb_actions || 0) + Number(augmentationFormData.nombre_nouvelles_actions)))}€
                     </p>
                   )}
                 </div>
-              </div>
+              </CardContent>
+            </Card>
 
-              <div className="space-y-2">
-                <Label htmlFor="date_agrement">
-                  Date d'agrément par les associés <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="date_agrement"
-                  type="date"
-                  value={formData.date_agrement}
-                  onChange={(e) => handleChange("date_agrement", e.target.value)}
-                  required
-                />
-                {formErrors.date_agrement && (
-                  <p className="text-sm text-red-500">{formErrors.date_agrement}</p>
-                )}
-                <p className="text-sm text-muted-foreground">
-                  Date de l'assemblée générale ayant approuvé la cession
-                </p>
-              </div>
+            {/* Section Assemblée Générale */}
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>Assemblée Générale</CardTitle>
+                <CardDescription>
+                  Quorum et résultats du vote
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="quorum">
+                      Quorum (%) <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="quorum"
+                      type="number"
+                      min="50"
+                      max="100"
+                      value={augmentationFormData.quorum}
+                      onChange={(e) =>
+                        handleAugmentationChange('quorum', e.target.value === '' ? '' : Number(e.target.value))
+                      }
+                      required
+                    />
+                    {formErrors.quorum && (
+                      <p className="text-sm text-red-500">{formErrors.quorum}</p>
+                    )}
+                    <p className="text-sm text-muted-foreground">Pourcentage du capital présent ou représenté</p>
+                  </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="modalites_paiement">
-                  Modalités de paiement <span className="text-red-500">*</span>
-                </Label>
-                <Textarea
-                  id="modalites_paiement"
-                  value={formData.modalites_paiement}
-                  onChange={(e) => handleChange("modalites_paiement", e.target.value)}
-                  placeholder="Ex: Paiement comptant à la signature / Paiement échelonné en 3 fois..."
-                  required
-                  rows={3}
-                />
-                {formErrors.modalites_paiement && (
-                  <p className="text-sm text-red-500">{formErrors.modalites_paiement}</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                  <div className="space-y-2">
+                    <Label htmlFor="votes_pour">
+                      Votes POUR <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="votes_pour"
+                      type="number"
+                      min="0"
+                      value={augmentationFormData.votes_pour}
+                      onChange={(e) =>
+                        handleAugmentationChange('votes_pour', e.target.value === '' ? '' : Number(e.target.value))
+                      }
+                      required
+                    />
+                    {formErrors.votes_pour && (
+                      <p className="text-sm text-red-500">{formErrors.votes_pour}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="votes_contre">
+                      Votes CONTRE <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="votes_contre"
+                      type="number"
+                      min="0"
+                      value={augmentationFormData.votes_contre}
+                      onChange={(e) =>
+                        handleAugmentationChange('votes_contre', e.target.value === '' ? '' : Number(e.target.value))
+                      }
+                      required
+                    />
+                    {formErrors.votes_contre && (
+                      <p className="text-sm text-red-500">{formErrors.votes_contre}</p>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Section Nouveaux associés */}
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>Nouveaux associés</CardTitle>
+                <CardDescription>
+                  Ajoutez les nouveaux associés si l'augmentation en crée
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={addNouvelAssocie}
+                  className="w-full sm:w-auto"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Ajouter un nouvel associé
+                </Button>
+
+                {nouveauxAssocies.map((associe, index) => (
+                  <Card key={index} className="p-4">
+                    <div className="flex justify-between items-start mb-4">
+                      <h4 className="font-semibold">Associé {index + 1}</h4>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeNouvelAssocie(index)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor={`associe_${index}_nom`}>
+                          Nom <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id={`associe_${index}_nom`}
+                          value={associe.nom}
+                          onChange={(e) => updateNouvelAssocie(index, 'nom', e.target.value)}
+                          required
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor={`associe_${index}_prenom`}>
+                          Prénom <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id={`associe_${index}_prenom`}
+                          value={associe.prenom}
+                          onChange={(e) => updateNouvelAssocie(index, 'prenom', e.target.value)}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 mt-4">
+                      <Label htmlFor={`associe_${index}_adresse`}>
+                        Adresse <span className="text-red-500">*</span>
+                      </Label>
+                      <Textarea
+                        id={`associe_${index}_adresse`}
+                        value={associe.adresse}
+                        onChange={(e) => updateNouvelAssocie(index, 'adresse', e.target.value)}
+                        required
+                        rows={2}
+                      />
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-2 mt-4">
+                      <div className="space-y-2">
+                        <Label htmlFor={`associe_${index}_apport`}>
+                          Montant apporté (€) <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id={`associe_${index}_apport`}
+                          type="number"
+                          min="0.01"
+                          step="0.01"
+                          value={associe.apport}
+                          onChange={(e) => updateNouvelAssocie(index, 'apport', e.target.value === '' ? '' : Number(e.target.value))}
+                          required
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor={`associe_${index}_nombre_actions`}>
+                          Nombre d'actions attribuées <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id={`associe_${index}_nombre_actions`}
+                          type="number"
+                          min="1"
+                          value={associe.nombre_actions}
+                          onChange={(e) => updateNouvelAssocie(index, 'nombre_actions', e.target.value === '' ? '' : Number(e.target.value))}
+                          required
+                        />
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </CardContent>
+            </Card>
+          </>
         )}
 
-        {/* Boutons sticky bottom */}
-        <div className="sticky bottom-0 bg-background border-t pt-4 pb-4 mt-8 flex gap-4 justify-end">
+        {/* Boutons */}
+        <div className="mt-8 flex gap-4 justify-end">
           <Button
             type="button"
             variant="outline"
-            onClick={() => router.push("/dashboard/actes")}
+            onClick={() => router.push(`/dashboard/actes/${acteId}`)}
             disabled={isSubmitting}
           >
             Annuler
           </Button>
-          <Button type="submit" disabled={isSubmitting || associes.length === 0}>
-            {isSubmitting ? "Enregistrement..." : "Enregistrer les modifications"}
+          <Button
+            type="submit"
+            disabled={
+              isSubmitting ||
+              (acte.type === 'cession_actions' && associes.length === 0)
+            }
+          >
+            {isSubmitting ? 'Enregistrement...' : 'Enregistrer les modifications'}
           </Button>
         </div>
       </form>
     </div>
   );
 }
-

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { MoreHorizontal, FileText, FileCog, Plus } from "lucide-react";
+import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -109,6 +110,7 @@ export default function ActesPage() {
   // Génération
   const [generatingActeCessionId, setGeneratingActeCessionId] = useState<string | null>(null);
   const [generatingOMTId, setGeneratingOMTId] = useState<string | null>(null);
+  const [generatingAugmentationId, setGeneratingAugmentationId] = useState<string | null>(null);
 
   // Fetch cabinet_id et données
   useEffect(() => {
@@ -202,10 +204,10 @@ export default function ActesPage() {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
 
-      alert('✅ Acte de cession généré');
+      toast.success('Acte de cession généré');
     } catch (err: any) {
       console.error('Erreur génération acte de cession:', err);
-      alert(`❌ ${err.message || 'Erreur lors de la génération de l\'acte de cession'}`);
+      toast.error(err.message || 'Erreur lors de la génération de l\'acte de cession');
     } finally {
       setGeneratingActeCessionId(null);
     }
@@ -239,12 +241,49 @@ export default function ActesPage() {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
 
-      alert('✅ Ordre de mouvement généré');
+      toast.success('Ordre de mouvement généré');
     } catch (err: any) {
       console.error('Erreur génération OMT:', err);
-      alert(`❌ ${err.message || 'Erreur lors de la génération de l\'ordre de mouvement'}`);
+      toast.error(err.message || 'Erreur lors de la génération de l\'ordre de mouvement');
     } finally {
       setGeneratingOMTId(null);
+    }
+  };
+
+  // Générer le PV d'augmentation de capital
+  const handleGenerateAugmentation = async (acte: ActeWithRelations) => {
+    if (!acte.id) return;
+
+    setGeneratingAugmentationId(acte.id);
+
+    try {
+      const response = await fetch('/api/generate-augmentation-capital', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ acte_id: acte.id }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Erreur génération' }));
+        throw new Error(errorData.error || 'Erreur génération');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `PV_Augmentation_Capital_${acte.client?.nom_entreprise || 'Client'}_${new Date(acte.date_acte).toLocaleDateString('fr-FR').replace(/\//g, '-')}.docx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      toast.success('PV d\'augmentation de capital généré');
+    } catch (error: any) {
+      console.error('Erreur génération PV augmentation:', error);
+      toast.error(error.message || 'Erreur lors de la génération');
+    } finally {
+      setGeneratingAugmentationId(null);
     }
   };
 
@@ -465,6 +504,14 @@ export default function ActesPage() {
                                 {generatingOMTId === acte.id ? 'Génération...' : 'Générer l\'ordre de mouvement'}
                               </DropdownMenuItem>
                             </>
+                          ) : acte.type === 'augmentation_capital' ? (
+                            <DropdownMenuItem
+                              onClick={() => handleGenerateAugmentation(acte)}
+                              disabled={generatingAugmentationId === acte.id}
+                            >
+                              <FileText className="mr-2 h-4 w-4" />
+                              {generatingAugmentationId === acte.id ? 'Génération...' : 'Générer le PV d\'augmentation'}
+                            </DropdownMenuItem>
                           ) : (
                             <DropdownMenuItem disabled>
                               <FileText className="mr-2 h-4 w-4" />
