@@ -125,6 +125,7 @@ export default function ActeDetailPage() {
   const [generatingActeCessionId, setGeneratingActeCessionId] = useState(false);
   const [generatingOMTId, setGeneratingOMTId] = useState(false);
   const [generatingAugmentationId, setGeneratingAugmentationId] = useState(false);
+  const [generatingAGOrdinaireId, setGeneratingAGOrdinaireId] = useState(false);
 
   // Fetch acte avec relations
   useEffect(() => {
@@ -295,6 +296,89 @@ export default function ActeDetailPage() {
       toast.error(error.message || 'Erreur lors de la génération');
     } finally {
       setGeneratingAugmentationId(false);
+    }
+  };
+
+  // Générer le PV d'AG Ordinaire
+  const handleGenerateAGOrdinaire = async () => {
+    if (!acte?.id) return;
+
+    setGeneratingAGOrdinaireId(true);
+
+    try {
+      console.log('🚀 Appel API generate-ag-ordinaire pour acte:', acte.id);
+      
+      const response = await fetch('/api/generate-ag-ordinaire', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ acteId: acte.id }),
+      });
+
+      const contentType = response.headers.get('content-type');
+      
+      // Si la réponse est JSON (succès avec documentUrl)
+      if (contentType?.includes('application/json')) {
+        const data = await response.json();
+        
+        if (!response.ok || !data.success) {
+          // Afficher l'erreur avec un toast détaillé
+          toast.error('Impossible de générer le document', {
+            description: data.error || 'Erreur lors de la génération',
+            duration: 8000, // Plus long pour lire
+          });
+          return;
+        }
+
+        if (data.success && data.documentUrl) {
+          // Télécharger depuis l'URL publique
+          const a = document.createElement('a');
+          a.href = data.documentUrl;
+          a.download = `PV_AG_Ordinaire_${acte.client?.nom_entreprise || 'Client'}_${acte.date_ag ? new Date(acte.date_ag).toLocaleDateString('fr-FR').replace(/\//g, '-') : new Date().toLocaleDateString('fr-FR').replace(/\//g, '-')}.docx`;
+          a.target = '_blank';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+
+          toast.success('PV d\'AG Ordinaire généré', {
+            description: 'Le document a été téléchargé',
+          });
+        } else {
+          toast.error('Impossible de générer le document', {
+            description: data.error || 'Erreur lors de la génération',
+            duration: 8000,
+          });
+        }
+      } else {
+        // Si la réponse est un blob (fallback si upload échoue)
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: 'Erreur génération' }));
+          toast.error('Impossible de générer le document', {
+            description: errorData.error || 'Erreur génération',
+            duration: 8000,
+          });
+          return;
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `PV_AG_Ordinaire_${acte.client?.nom_entreprise || 'Client'}_${acte.date_ag ? new Date(acte.date_ag).toLocaleDateString('fr-FR').replace(/\//g, '-') : new Date().toLocaleDateString('fr-FR').replace(/\//g, '-')}.docx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        toast.success('PV d\'AG Ordinaire généré');
+      }
+    } catch (error: any) {
+      console.error('❌ Erreur génération PV AG Ordinaire:', error);
+      toast.error('Impossible de générer le document', {
+        description: error.message || 'Une erreur est survenue',
+        duration: 8000, // Plus long pour lire
+      });
+    } finally {
+      setGeneratingAGOrdinaireId(false);
     }
   };
 
@@ -658,6 +742,114 @@ export default function ActeDetailPage() {
             )}
           </>
         )}
+
+        {/* Cards pour AG Ordinaire */}
+        {acte.type === 'ag_ordinaire' && (
+          <>
+            {/* Card 1: Informations Assemblée */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Informations Assemblée</CardTitle>
+                <CardDescription>Date, heure et lieu de l'assemblée générale</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {acte.date_ag && (
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Date et heure</Label>
+                    <p className="mt-1">
+                      {formatDate(acte.date_ag)} à {acte.heure_ag || '14h00'}
+                    </p>
+                  </div>
+                )}
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Lieu</Label>
+                  <p className="mt-1">{acte.lieu_ag || 'Au siège social'}</p>
+                </div>
+                {acte.exercice_clos && (
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Exercice clos</Label>
+                    <p className="mt-1">{acte.exercice_clos}</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Card 2: Résultat et Affectation */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Résultat et Affectation</CardTitle>
+                <CardDescription>Résultat de l'exercice et son affectation</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {acte.resultat_exercice !== null && acte.resultat_exercice !== undefined && (
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Résultat de l'exercice</Label>
+                    <p className={`mt-1 font-medium ${acte.resultat_exercice >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {acte.resultat_exercice >= 0 ? 'Bénéfice' : 'Perte'} de {formatMontant(Math.abs(acte.resultat_exercice))} €
+                    </p>
+                  </div>
+                )}
+                {acte.affectation_resultat && (
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Affectation</Label>
+                    <p className="mt-1">
+                      {acte.affectation_resultat === 'report_nouveau' && 'Report à nouveau'}
+                      {acte.affectation_resultat === 'reserves' && 'Affectation aux réserves'}
+                      {acte.affectation_resultat === 'dividendes' && 'Distribution de dividendes'}
+                      {acte.affectation_resultat === 'mixte' && 'Affectation mixte'}
+                    </p>
+                  </div>
+                )}
+                {acte.montant_dividendes !== null && acte.montant_dividendes !== undefined && acte.montant_dividendes > 0 && (
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Dividendes</Label>
+                    <p className="mt-1 font-medium">{formatMontant(acte.montant_dividendes)} €</p>
+                  </div>
+                )}
+                {acte.montant_reserves !== null && acte.montant_reserves !== undefined && acte.montant_reserves > 0 && (
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Réserves</Label>
+                    <p className="mt-1 font-medium">{formatMontant(acte.montant_reserves)} €</p>
+                  </div>
+                )}
+                {acte.montant_report !== null && acte.montant_report !== undefined && acte.montant_report > 0 && (
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Report à nouveau</Label>
+                    <p className="mt-1 font-medium">{formatMontant(acte.montant_report)} €</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Card 3: Vote */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Résultats du Vote</CardTitle>
+                <CardDescription>Décisions de l'assemblée générale</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Quitus au Président</Label>
+                  <div className="mt-1">
+                    <Badge variant={acte.quitus_president ? 'default' : 'destructive'}>
+                      {acte.quitus_president ? 'Accordé' : 'Refusé'}
+                    </Badge>
+                  </div>
+                </div>
+                {acte.votes_pour_comptes !== null && acte.votes_pour_comptes !== undefined && (
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Approbation des comptes</Label>
+                    <div className="mt-2 space-y-1 text-sm">
+                      <div>Pour : {acte.votes_pour_comptes} voix</div>
+                      <div>Contre : {acte.votes_contre_comptes || 0} voix</div>
+                      <div>Abstention : {acte.votes_abstention_comptes || 0} voix</div>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </>
+        )}
       </div>
 
       {/* Section Actions */}
@@ -713,6 +905,16 @@ export default function ActeDetailPage() {
               >
                 <FileText className="mr-2 h-4 w-4" />
                 {generatingAugmentationId ? 'Génération...' : 'Générer le PV d\'augmentation'}
+              </Button>
+            )}
+            {acte.type === 'ag_ordinaire' && (
+              <Button
+                variant="outline"
+                onClick={handleGenerateAGOrdinaire}
+                disabled={generatingAGOrdinaireId}
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                {generatingAGOrdinaireId ? 'Génération...' : 'Générer le PV d\'AG Ordinaire'}
               </Button>
             )}
           </div>

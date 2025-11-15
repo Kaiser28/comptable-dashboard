@@ -26,6 +26,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Checkbox } from '@/components/ui/checkbox';
 import { supabaseClient } from '@/lib/supabase';
 import { nombreEnLettres } from '@/lib/utils/nombreEnLettres';
 import type { Client, Associe, ActeJuridique } from '@/types/database';
@@ -68,7 +69,25 @@ type NouvelAssocie = {
   nombre_actions: number | '';
 };
 
-type FormErrors = Partial<Record<keyof (ActeCessionFormData & ActeAugmentationCapitalFormData), string>> & { global?: string };
+type ActeAGOrdinaireFormData = {
+  date_acte: string;
+  statut: 'brouillon' | 'validé' | 'signé';
+  date_ag: string;
+  heure_ag: string;
+  lieu_ag: string;
+  exercice_clos: string;
+  resultat_exercice: number | '';
+  affectation_resultat: 'report_nouveau' | 'reserves' | 'dividendes' | 'mixte' | '';
+  montant_dividendes: number | '';
+  montant_reserves: number | '';
+  montant_report: number | '';
+  quitus_president: boolean;
+  votes_pour_comptes: number | '';
+  votes_contre_comptes: number | '';
+  votes_abstention_comptes: number | '';
+};
+
+type FormErrors = Partial<Record<keyof (ActeCessionFormData & ActeAugmentationCapitalFormData & ActeAGOrdinaireFormData), string>> & { global?: string };
 
 type ActeWithRelations = ActeJuridique & {
   cedant: Associe | Associe[] | null;
@@ -114,6 +133,24 @@ export default function EditActePage() {
     quorum: '',
     votes_pour: '',
     votes_contre: '',
+  });
+
+  const [agOrdinaireFormData, setAGOrdinaireFormData] = useState<ActeAGOrdinaireFormData>({
+    date_acte: '',
+    statut: 'brouillon',
+    date_ag: '',
+    heure_ag: '14:00',
+    lieu_ag: '',
+    exercice_clos: '',
+    resultat_exercice: '',
+    affectation_resultat: '',
+    montant_dividendes: '',
+    montant_reserves: '',
+    montant_report: '',
+    quitus_president: true,
+    votes_pour_comptes: '',
+    votes_contre_comptes: 0,
+    votes_abstention_comptes: 0,
   });
 
   const [nouveauxAssocies, setNouveauxAssocies] = useState<NouvelAssocie[]>([]);
@@ -243,6 +280,37 @@ export default function EditActePage() {
             }))
           );
         }
+      } else if (acteWithRelations.type === 'ag_ordinaire') {
+        // Formater l'heure AG si elle existe
+        let heureAG = '14:00';
+        if (acteWithRelations.heure_ag) {
+          // Convertir de "HHhmm" ou "HH:mm" à "HH:mm"
+          const heureStr = acteWithRelations.heure_ag.toString();
+          if (heureStr.includes('h')) {
+            const [h, m] = heureStr.split('h');
+            heureAG = `${h.padStart(2, '0')}:${(m || '00').padStart(2, '0')}`;
+          } else {
+            heureAG = heureStr;
+          }
+        }
+
+        setAGOrdinaireFormData({
+          date_acte: acteWithRelations.date_acte || '',
+          statut: acteWithRelations.statut || 'brouillon',
+          date_ag: acteWithRelations.date_ag || '',
+          heure_ag: heureAG,
+          lieu_ag: acteWithRelations.lieu_ag || '',
+          exercice_clos: acteWithRelations.exercice_clos || '',
+          resultat_exercice: acteWithRelations.resultat_exercice || '',
+          affectation_resultat: (acteWithRelations.affectation_resultat as 'report_nouveau' | 'reserves' | 'dividendes' | 'mixte') || '',
+          montant_dividendes: acteWithRelations.montant_dividendes || '',
+          montant_reserves: acteWithRelations.montant_reserves || '',
+          montant_report: acteWithRelations.montant_report || '',
+          quitus_president: acteWithRelations.quitus_president ?? true,
+          votes_pour_comptes: acteWithRelations.votes_pour_comptes || '',
+          votes_contre_comptes: acteWithRelations.votes_contre_comptes || 0,
+          votes_abstention_comptes: acteWithRelations.votes_abstention_comptes || 0,
+        });
       }
     } catch (err: any) {
       console.error('Erreur:', err);
@@ -273,6 +341,21 @@ export default function EditActePage() {
     value: ActeAugmentationCapitalFormData[Field]
   ) => {
     setAugmentationFormData((previous) => ({
+      ...previous,
+      [field]: value,
+    }));
+    setFormErrors((previous) => ({
+      ...previous,
+      [field]: undefined,
+      global: undefined,
+    }));
+  };
+
+  const handleAGOrdinaireChange = <Field extends keyof ActeAGOrdinaireFormData>(
+    field: Field,
+    value: ActeAGOrdinaireFormData[Field]
+  ) => {
+    setAGOrdinaireFormData((previous) => ({
       ...previous,
       [field]: value,
     }));
@@ -384,6 +467,64 @@ export default function EditActePage() {
       if (augmentationFormData.votes_contre === '' || Number(augmentationFormData.votes_contre) < 0) {
         newErrors.votes_contre = 'Le nombre de votes CONTRE est requis';
       }
+    } else if (acte.type === 'ag_ordinaire') {
+      // Validation pour AG Ordinaire
+      if (!agOrdinaireFormData.date_ag) {
+        newErrors.date_ag = "La date de l'assemblée générale est requise";
+      }
+      if (!agOrdinaireFormData.heure_ag) {
+        newErrors.heure_ag = "L'heure de l'assemblée générale est requise";
+      }
+      if (!agOrdinaireFormData.exercice_clos.trim()) {
+        newErrors.exercice_clos = "L'exercice clos est requis";
+      }
+      if (agOrdinaireFormData.resultat_exercice === '' || agOrdinaireFormData.resultat_exercice === null) {
+        newErrors.resultat_exercice = "Le résultat de l'exercice est requis";
+      }
+      if (!agOrdinaireFormData.affectation_resultat) {
+        newErrors.affectation_resultat = "L'affectation du résultat est requise";
+      }
+      if (agOrdinaireFormData.affectation_resultat === 'dividendes') {
+        if (agOrdinaireFormData.montant_dividendes === '' || Number(agOrdinaireFormData.montant_dividendes) <= 0) {
+          newErrors.montant_dividendes = "Le montant des dividendes est requis";
+        }
+        const resultat = Number(agOrdinaireFormData.resultat_exercice);
+        const dividendes = Number(agOrdinaireFormData.montant_dividendes);
+        if (resultat > 0 && dividendes !== resultat) {
+          newErrors.montant_dividendes = "Le montant des dividendes doit égaler le résultat de l'exercice";
+        }
+      }
+      if (agOrdinaireFormData.affectation_resultat === 'mixte') {
+        const resultat = Number(agOrdinaireFormData.resultat_exercice);
+        const dividendes = Number(agOrdinaireFormData.montant_dividendes || 0);
+        const reserves = Number(agOrdinaireFormData.montant_reserves || 0);
+        const report = Number(agOrdinaireFormData.montant_report || 0);
+        const somme = dividendes + reserves + report;
+        if (Math.abs(somme - resultat) > 0.01) {
+          newErrors.montant_dividendes = "La somme des montants doit égaler le résultat de l'exercice";
+        }
+      }
+      if (agOrdinaireFormData.votes_pour_comptes === '' || Number(agOrdinaireFormData.votes_pour_comptes) < 0) {
+        newErrors.votes_pour_comptes = "Le nombre de votes POUR est requis";
+      }
+      if (agOrdinaireFormData.votes_contre_comptes === '' || Number(agOrdinaireFormData.votes_contre_comptes) < 0) {
+        newErrors.votes_contre_comptes = "Le nombre de votes CONTRE est requis";
+      }
+      if (agOrdinaireFormData.votes_abstention_comptes === '' || Number(agOrdinaireFormData.votes_abstention_comptes) < 0) {
+        newErrors.votes_abstention_comptes = "Le nombre de votes ABSTENTION est requis";
+      }
+
+      // Validation du total des votes = nombre d'actions
+      if (acte.client && associes.length > 0) {
+        const nbActionsTotal = associes.reduce((sum, a) => sum + (a.nombre_actions || 0), 0);
+        const totalVotes = (Number(agOrdinaireFormData.votes_pour_comptes) || 0) + 
+                          (Number(agOrdinaireFormData.votes_contre_comptes) || 0) + 
+                          (Number(agOrdinaireFormData.votes_abstention_comptes) || 0);
+        
+        if (totalVotes !== nbActionsTotal) {
+          newErrors.votes_pour_comptes = `Le total des votes (${totalVotes}) doit égaler le nombre d'actions (${nbActionsTotal})`;
+        }
+      }
     }
 
     setFormErrors(newErrors);
@@ -402,8 +543,8 @@ export default function EditActePage() {
 
     try {
       const updateData: any = {
-        date_acte: acte.type === 'cession_actions' ? formData.date_acte : augmentationFormData.date_acte,
-        statut: acte.type === 'cession_actions' ? formData.statut : augmentationFormData.statut,
+        date_acte: acte.type === 'cession_actions' ? formData.date_acte : acte.type === 'augmentation_capital' ? augmentationFormData.date_acte : agOrdinaireFormData.date_acte,
+        statut: acte.type === 'cession_actions' ? formData.statut : acte.type === 'augmentation_capital' ? augmentationFormData.statut : agOrdinaireFormData.statut,
         updated_at: new Date().toISOString(),
       };
 
@@ -443,6 +584,20 @@ export default function EditActePage() {
               nombre_actions: Number(a.nombre_actions),
             }))
           : null;
+      } else if (acte.type === 'ag_ordinaire') {
+        updateData.date_ag = agOrdinaireFormData.date_ag;
+        updateData.heure_ag = agOrdinaireFormData.heure_ag;
+        updateData.lieu_ag = agOrdinaireFormData.lieu_ag || null;
+        updateData.exercice_clos = agOrdinaireFormData.exercice_clos.trim();
+        updateData.resultat_exercice = Number(agOrdinaireFormData.resultat_exercice);
+        updateData.affectation_resultat = agOrdinaireFormData.affectation_resultat;
+        updateData.montant_dividendes = agOrdinaireFormData.montant_dividendes !== '' ? Number(agOrdinaireFormData.montant_dividendes) : null;
+        updateData.montant_reserves = agOrdinaireFormData.montant_reserves !== '' ? Number(agOrdinaireFormData.montant_reserves) : null;
+        updateData.montant_report = agOrdinaireFormData.montant_report !== '' ? Number(agOrdinaireFormData.montant_report) : null;
+        updateData.quitus_president = agOrdinaireFormData.quitus_president;
+        updateData.votes_pour_comptes = Number(agOrdinaireFormData.votes_pour_comptes);
+        updateData.votes_contre_comptes = Number(agOrdinaireFormData.votes_contre_comptes || 0);
+        updateData.votes_abstention_comptes = Number(agOrdinaireFormData.votes_abstention_comptes || 0);
       }
 
       const { error } = await supabaseClient
@@ -525,6 +680,8 @@ export default function EditActePage() {
             ? "Modifiez les informations de cet acte de cession d'actions"
             : acte.type === 'augmentation_capital'
             ? "Modifiez les informations de cet acte d'augmentation de capital"
+            : acte.type === 'ag_ordinaire'
+            ? "Modifiez les informations de cet acte d'Assemblée Générale Ordinaire"
             : "Modifiez les informations de cet acte juridique"}
         </p>
       </div>
@@ -580,11 +737,19 @@ export default function EditActePage() {
                 <Input
                   id="date_acte"
                   type="date"
-                  value={acte.type === 'cession_actions' ? formData.date_acte : augmentationFormData.date_acte}
+                  value={
+                    acte.type === 'cession_actions' 
+                      ? formData.date_acte 
+                      : acte.type === 'augmentation_capital'
+                      ? augmentationFormData.date_acte
+                      : agOrdinaireFormData.date_acte
+                  }
                   onChange={(e) =>
                     acte.type === 'cession_actions'
                       ? handleChange('date_acte', e.target.value)
-                      : handleAugmentationChange('date_acte', e.target.value)
+                      : acte.type === 'augmentation_capital'
+                      ? handleAugmentationChange('date_acte', e.target.value)
+                      : handleAGOrdinaireChange('date_acte', e.target.value)
                   }
                   required
                 />
@@ -598,11 +763,19 @@ export default function EditActePage() {
                   Statut <span className="text-red-500">*</span>
                 </Label>
                 <Select
-                  value={acte.type === 'cession_actions' ? formData.statut : augmentationFormData.statut}
+                  value={
+                    acte.type === 'cession_actions' 
+                      ? formData.statut 
+                      : acte.type === 'augmentation_capital'
+                      ? augmentationFormData.statut
+                      : agOrdinaireFormData.statut
+                  }
                   onValueChange={(value) =>
                     acte.type === 'cession_actions'
                       ? handleChange('statut', value as 'brouillon' | 'validé' | 'signé')
-                      : handleAugmentationChange('statut', value as 'brouillon' | 'validé' | 'signé')
+                      : acte.type === 'augmentation_capital'
+                      ? handleAugmentationChange('statut', value as 'brouillon' | 'validé' | 'signé')
+                      : handleAGOrdinaireChange('statut', value as 'brouillon' | 'validé' | 'signé')
                   }
                 >
                   <SelectTrigger id="statut">
@@ -1240,6 +1413,302 @@ export default function EditActePage() {
                     </div>
                   </Card>
                 ))}
+              </CardContent>
+            </Card>
+          </>
+        )}
+
+        {/* Formulaire AG Ordinaire */}
+        {acte.type === 'ag_ordinaire' && (
+          <>
+            {/* Section Assemblée Générale */}
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>Assemblée Générale</CardTitle>
+                <CardDescription>
+                  Informations sur l'assemblée générale ordinaire
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="date_ag">
+                      Date de l'AG <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="date_ag"
+                      type="date"
+                      value={agOrdinaireFormData.date_ag}
+                      onChange={(e) => handleAGOrdinaireChange("date_ag", e.target.value)}
+                      required
+                    />
+                    {formErrors.date_ag && (
+                      <p className="text-sm text-red-500">{formErrors.date_ag}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="heure_ag">
+                      Heure de l'AG <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="heure_ag"
+                      type="time"
+                      value={agOrdinaireFormData.heure_ag}
+                      onChange={(e) => handleAGOrdinaireChange("heure_ag", e.target.value)}
+                      required
+                    />
+                    {formErrors.heure_ag && (
+                      <p className="text-sm text-red-500">{formErrors.heure_ag}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="lieu_ag">
+                    Lieu de l'AG
+                  </Label>
+                  <Input
+                    id="lieu_ag"
+                    type="text"
+                    value={agOrdinaireFormData.lieu_ag}
+                    onChange={(e) => handleAGOrdinaireChange("lieu_ag", e.target.value)}
+                    placeholder="Au siège social"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="exercice_clos">
+                    Exercice clos <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="exercice_clos"
+                    type="text"
+                    value={agOrdinaireFormData.exercice_clos}
+                    onChange={(e) => handleAGOrdinaireChange("exercice_clos", e.target.value)}
+                    placeholder="2024"
+                    required
+                  />
+                  {formErrors.exercice_clos && (
+                    <p className="text-sm text-red-500">{formErrors.exercice_clos}</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Section Résultat et Affectation */}
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>Résultat et Affectation</CardTitle>
+                <CardDescription>
+                  Résultat de l'exercice et son affectation
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="resultat_exercice">
+                    Résultat de l'exercice (€) <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="resultat_exercice"
+                    type="number"
+                    step="0.01"
+                    value={agOrdinaireFormData.resultat_exercice}
+                    onChange={(e) => handleAGOrdinaireChange("resultat_exercice", e.target.value === '' ? '' : Number(e.target.value))}
+                    required
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    Indiquer montant négatif si perte
+                  </p>
+                  {formErrors.resultat_exercice && (
+                    <p className="text-sm text-red-500">{formErrors.resultat_exercice}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="affectation_resultat">
+                    Affectation du résultat <span className="text-red-500">*</span>
+                  </Label>
+                  <Select
+                    value={agOrdinaireFormData.affectation_resultat}
+                    onValueChange={(value) =>
+                      handleAGOrdinaireChange("affectation_resultat", value as 'report_nouveau' | 'reserves' | 'dividendes' | 'mixte')
+                    }
+                  >
+                    <SelectTrigger id="affectation_resultat">
+                      <SelectValue placeholder="Sélectionnez une affectation" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="report_nouveau">Report à nouveau</SelectItem>
+                      <SelectItem value="reserves">Affectation aux réserves</SelectItem>
+                      <SelectItem value="dividendes">Distribution de dividendes</SelectItem>
+                      <SelectItem value="mixte">Affectation mixte</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {formErrors.affectation_resultat && (
+                    <p className="text-sm text-red-500">{formErrors.affectation_resultat}</p>
+                  )}
+                </div>
+
+                {/* Champs conditionnels selon l'affectation */}
+                {(agOrdinaireFormData.affectation_resultat === 'dividendes' || agOrdinaireFormData.affectation_resultat === 'mixte') && (
+                  <div className="space-y-2">
+                    <Label htmlFor="montant_dividendes">
+                      Montant des dividendes (€) <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="montant_dividendes"
+                      type="number"
+                      step="0.01"
+                      min="0.01"
+                      value={agOrdinaireFormData.montant_dividendes}
+                      onChange={(e) => handleAGOrdinaireChange("montant_dividendes", e.target.value === '' ? '' : Number(e.target.value))}
+                      required
+                    />
+                    {formErrors.montant_dividendes && (
+                      <p className="text-sm text-red-500">{formErrors.montant_dividendes}</p>
+                    )}
+                  </div>
+                )}
+
+                {(agOrdinaireFormData.affectation_resultat === 'reserves' || agOrdinaireFormData.affectation_resultat === 'mixte') && (
+                  <div className="space-y-2">
+                    <Label htmlFor="montant_reserves">
+                      Montant mis en réserves (€) <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="montant_reserves"
+                      type="number"
+                      step="0.01"
+                      min="0.01"
+                      value={agOrdinaireFormData.montant_reserves}
+                      onChange={(e) => handleAGOrdinaireChange("montant_reserves", e.target.value === '' ? '' : Number(e.target.value))}
+                      required
+                    />
+                    {formErrors.montant_reserves && (
+                      <p className="text-sm text-red-500">{formErrors.montant_reserves}</p>
+                    )}
+                  </div>
+                )}
+
+                {(agOrdinaireFormData.affectation_resultat === 'report_nouveau' || agOrdinaireFormData.affectation_resultat === 'mixte') && (
+                  <div className="space-y-2">
+                    <Label htmlFor="montant_report">
+                      Montant reporté à nouveau (€) <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="montant_report"
+                      type="number"
+                      step="0.01"
+                      min="0.01"
+                      value={agOrdinaireFormData.montant_report}
+                      onChange={(e) => handleAGOrdinaireChange("montant_report", e.target.value === '' ? '' : Number(e.target.value))}
+                      required
+                    />
+                    {formErrors.montant_report && (
+                      <p className="text-sm text-red-500">{formErrors.montant_report}</p>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Section Vote */}
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>Vote</CardTitle>
+                <CardDescription>
+                  Décisions de l'assemblée générale
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="quitus_president"
+                    checked={agOrdinaireFormData.quitus_president}
+                    onCheckedChange={(checked) =>
+                      handleAGOrdinaireChange("quitus_president", checked === true)
+                    }
+                  />
+                  <Label htmlFor="quitus_president" className="cursor-pointer">
+                    Accorder le quitus au Président
+                  </Label>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="votes_pour_comptes">
+                      Votes POUR <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="votes_pour_comptes"
+                      type="number"
+                      min="0"
+                      value={agOrdinaireFormData.votes_pour_comptes}
+                      onChange={(e) => handleAGOrdinaireChange("votes_pour_comptes", e.target.value === '' ? '' : Number(e.target.value))}
+                      required
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      Nombre de voix pour l'approbation des comptes
+                    </p>
+                    {formErrors.votes_pour_comptes && (
+                      <p className="text-sm text-red-500">{formErrors.votes_pour_comptes}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="votes_contre_comptes">
+                      Votes CONTRE
+                    </Label>
+                    <Input
+                      id="votes_contre_comptes"
+                      type="number"
+                      min="0"
+                      value={agOrdinaireFormData.votes_contre_comptes}
+                      onChange={(e) => handleAGOrdinaireChange("votes_contre_comptes", e.target.value === '' ? 0 : Number(e.target.value))}
+                    />
+                    {formErrors.votes_contre_comptes && (
+                      <p className="text-sm text-red-500">{formErrors.votes_contre_comptes}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="votes_abstention_comptes">
+                      Votes ABSTENTION
+                    </Label>
+                    <Input
+                      id="votes_abstention_comptes"
+                      type="number"
+                      min="0"
+                      value={agOrdinaireFormData.votes_abstention_comptes}
+                      onChange={(e) => handleAGOrdinaireChange("votes_abstention_comptes", e.target.value === '' ? 0 : Number(e.target.value))}
+                    />
+                    {formErrors.votes_abstention_comptes && (
+                      <p className="text-sm text-red-500">{formErrors.votes_abstention_comptes}</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Helper text pour le total des votes */}
+                {acte.client && associes.length > 0 && (() => {
+                  const nbActionsTotal = associes.reduce((sum, a) => sum + (a.nombre_actions || 0), 0);
+                  const totalVotes = (Number(agOrdinaireFormData.votes_pour_comptes) || 0) + 
+                                     (Number(agOrdinaireFormData.votes_contre_comptes) || 0) + 
+                                     (Number(agOrdinaireFormData.votes_abstention_comptes) || 0);
+                  const isValid = totalVotes === nbActionsTotal;
+                  
+                  return (
+                    <div className="mt-2">
+                      <p className={`text-sm ${isValid ? 'text-muted-foreground' : 'text-red-500 font-medium'}`}>
+                        Total votes : {totalVotes} / {nbActionsTotal} actions
+                        {!isValid && ' ⚠️ Le total ne correspond pas'}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        ⚠️ Le total des votes (pour + contre + abstention) doit égaler le nombre total d'actions de la société ({nbActionsTotal} actions)
+                      </p>
+                    </div>
+                  );
+                })()}
               </CardContent>
             </Card>
           </>

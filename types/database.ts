@@ -258,6 +258,32 @@ export type ActeJuridique = {
   votes_pour?: number | null;
   /** Nombre de voix contre (pour augmentation de capital). */
   votes_contre?: number | null;
+  /** Date de l'assemblée générale ordinaire (pour AG ordinaire). */
+  date_ag?: string | null;
+  /** Heure de l'assemblée générale ordinaire (pour AG ordinaire, format HH:mm). */
+  heure_ag?: string | null;
+  /** Lieu de l'assemblée générale ordinaire (pour AG ordinaire). */
+  lieu_ag?: string | null;
+  /** Exercice clos (pour AG ordinaire). */
+  exercice_clos?: string | null;
+  /** Résultat net de l'exercice en euros (pour AG ordinaire). */
+  resultat_exercice?: number | null;
+  /** Affectation du résultat (pour AG ordinaire). */
+  affectation_resultat?: 'report_nouveau' | 'reserves' | 'dividendes' | 'mixte' | null;
+  /** Montant des dividendes distribués (pour AG ordinaire). */
+  montant_dividendes?: number | null;
+  /** Montant mis en réserves (pour AG ordinaire). */
+  montant_reserves?: number | null;
+  /** Montant reporté à nouveau (pour AG ordinaire). */
+  montant_report?: number | null;
+  /** Quitus accordé au président (pour AG ordinaire). */
+  quitus_president?: boolean | null;
+  /** Nombre de votes POUR l'approbation des comptes (pour AG ordinaire). */
+  votes_pour_comptes?: number | null;
+  /** Nombre de votes CONTRE l'approbation des comptes (pour AG ordinaire). */
+  votes_contre_comptes?: number | null;
+  /** Nombre de votes ABSTENTION pour l'approbation des comptes (pour AG ordinaire). */
+  votes_abstention_comptes?: number | null;
   /** Date de création de l'enregistrement (format ISO 8601). */
   created_at: string;
   /** Date de dernière mise à jour de l'enregistrement (format ISO 8601). */
