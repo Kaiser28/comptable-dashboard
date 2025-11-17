@@ -99,6 +99,14 @@ const formatMontant = (montant: number | null | undefined): string => {
   }).format(montant);
 };
 
+const formatCurrency = (amount: number | null | undefined): string => {
+  if (amount === null || amount === undefined) return "0,00 €";
+  return new Intl.NumberFormat("fr-FR", {
+    style: "currency",
+    currency: "EUR",
+  }).format(amount);
+};
+
 const getModaliteBadge = (modalite: string | null | undefined) => {
   switch (modalite) {
     case 'numeraire':
@@ -657,6 +665,51 @@ export default function ActeDetailPage() {
                         acte.nouveau_capital / ((client.nb_actions || 0) + acte.nombre_nouvelles_actions)
                       )} €
                     </p>
+                  </div>
+                )}
+
+                {/* Section Apports en nature */}
+                {acte.apport_nature && (
+                  <div className="mt-6 border-t pt-6">
+                    <h3 className="text-lg font-semibold mb-4">Apports en nature</h3>
+                    
+                    <div className="space-y-3 text-sm">
+                      <div>
+                        <span className="font-medium">Description :</span>
+                        <p className="text-gray-600 mt-1">{acte.apport_nature_description || 'Non renseignée'}</p>
+                      </div>
+                      
+                      <div>
+                        <span className="font-medium">Montant total :</span>
+                        <span className="ml-2 text-gray-600">{formatCurrency(acte.apport_nature_montant_total || 0)}</span>
+                      </div>
+                      
+                      <div>
+                        <span className="font-medium">Part du capital :</span>
+                        <span className="ml-2 text-gray-600">{acte.apport_nature_pourcentage_capital?.toFixed(2) || '0'}%</span>
+                      </div>
+                      
+                      {acte.bien_superieur_30k && (
+                        <div className="bg-orange-50 border border-orange-200 rounded p-3 mt-3">
+                          <span className="text-orange-800 font-medium">⚠️ Bien supérieur à 30 000€</span>
+                        </div>
+                      )}
+                      
+                      {acte.commissaire_obligatoire && acte.commissaire_nom && (
+                        <div className="bg-blue-50 border border-blue-200 rounded p-3 mt-3">
+                          <span className="font-medium text-blue-900">Commissaire aux apports :</span>
+                          <p className="text-blue-800 mt-1">{acte.commissaire_nom}</p>
+                        </div>
+                      )}
+                      
+                      {acte.commissaire_obligatoire && !acte.commissaire_nom && (
+                        <div className="bg-yellow-50 border border-yellow-200 rounded p-3 mt-3">
+                          <span className="text-yellow-800 text-xs">
+                            ⚠️ Absence de commissaire : Les associés sont responsables solidairement pendant 5 ans de la valeur des apports.
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </CardContent>

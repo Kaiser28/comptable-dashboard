@@ -59,6 +59,14 @@ type ActeAugmentationCapitalFormData = {
   quorum: number | '';
   votes_pour: number | '';
   votes_contre: number | '';
+  // Apports en nature
+  apport_nature?: boolean;
+  apport_nature_description?: string;
+  apport_nature_montant_total?: number;
+  apport_nature_pourcentage_capital?: number;
+  commissaire_obligatoire?: boolean;
+  commissaire_nom?: string;
+  bien_superieur_30k?: boolean;
 };
 
 type NouvelAssocie = {
@@ -133,6 +141,14 @@ export default function EditActePage() {
     quorum: '',
     votes_pour: '',
     votes_contre: '',
+    // Apports en nature
+    apport_nature: false,
+    apport_nature_description: '',
+    apport_nature_montant_total: 0,
+    apport_nature_pourcentage_capital: 0,
+    commissaire_obligatoire: false,
+    commissaire_nom: '',
+    bien_superieur_30k: false,
   });
 
   const [agOrdinaireFormData, setAGOrdinaireFormData] = useState<ActeAGOrdinaireFormData>({
@@ -155,6 +171,9 @@ export default function EditActePage() {
 
   const [nouveauxAssocies, setNouveauxAssocies] = useState<NouvelAssocie[]>([]);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
+  
+  // État pour la checkbox "commissaire désigné"
+  const [commissaireDesigne, setCommissaireDesigne] = useState(false);
 
   useEffect(() => {
     if (acteId) {
@@ -266,6 +285,14 @@ export default function EditActePage() {
           quorum: acteWithRelations.quorum || '',
           votes_pour: acteWithRelations.votes_pour || '',
           votes_contre: acteWithRelations.votes_contre || '',
+          // Apports en nature
+          apport_nature: acteWithRelations.apport_nature === true,
+          apport_nature_description: acteWithRelations.apport_nature_description || '',
+          apport_nature_montant_total: acteWithRelations.apport_nature_montant_total || 0,
+          apport_nature_pourcentage_capital: acteWithRelations.apport_nature_pourcentage_capital || 0,
+          commissaire_obligatoire: acteWithRelations.commissaire_obligatoire === true,
+          commissaire_nom: acteWithRelations.commissaire_nom || '',
+          bien_superieur_30k: acteWithRelations.bien_superieur_30k === true,
         });
 
         // Pré-remplir les nouveaux associés si présents
@@ -280,6 +307,9 @@ export default function EditActePage() {
             }))
           );
         }
+        
+        // Initialiser l'état de la checkbox "commissaire désigné"
+        setCommissaireDesigne(!!acteWithRelations.commissaire_nom);
       } else if (acteWithRelations.type === 'ag_ordinaire') {
         // Formater l'heure AG si elle existe
         let heureAG = '14:00';
@@ -467,6 +497,22 @@ export default function EditActePage() {
       if (augmentationFormData.votes_contre === '' || Number(augmentationFormData.votes_contre) < 0) {
         newErrors.votes_contre = 'Le nombre de votes CONTRE est requis';
       }
+
+      // Validation des apports en nature
+      if (augmentationFormData.apport_nature) {
+        if (!augmentationFormData.apport_nature_description || augmentationFormData.apport_nature_description.trim() === '') {
+          newErrors.apport_nature_description = "La description des apports en nature est requise";
+        }
+        if (!augmentationFormData.apport_nature_montant_total || augmentationFormData.apport_nature_montant_total <= 0) {
+          newErrors.apport_nature_montant_total = "Le montant total des apports en nature est requis et doit être supérieur à 0";
+        }
+        if (augmentationFormData.commissaire_obligatoire && !commissaireDesigne) {
+          newErrors.commissaire_nom = "Un commissaire aux apports est OBLIGATOIRE pour cette augmentation";
+        }
+        if (commissaireDesigne && (!augmentationFormData.commissaire_nom || augmentationFormData.commissaire_nom.trim() === '')) {
+          newErrors.commissaire_nom = "Le nom du commissaire aux apports est requis";
+        }
+      }
     } else if (acte.type === 'ag_ordinaire') {
       // Validation pour AG Ordinaire
       if (!agOrdinaireFormData.date_ag) {
@@ -584,6 +630,15 @@ export default function EditActePage() {
               nombre_actions: Number(a.nombre_actions),
             }))
           : null;
+        
+        // Apports en nature
+        updateData.apport_nature = augmentationFormData.apport_nature || false;
+        updateData.apport_nature_description = augmentationFormData.apport_nature ? (augmentationFormData.apport_nature_description || null) : null;
+        updateData.apport_nature_montant_total = augmentationFormData.apport_nature ? (augmentationFormData.apport_nature_montant_total || null) : null;
+        updateData.apport_nature_pourcentage_capital = augmentationFormData.apport_nature ? (augmentationFormData.apport_nature_pourcentage_capital || null) : null;
+        updateData.commissaire_obligatoire = augmentationFormData.commissaire_obligatoire || false;
+        updateData.commissaire_nom = commissaireDesigne ? (augmentationFormData.commissaire_nom ? augmentationFormData.commissaire_nom.trim() : null) : null;
+        updateData.bien_superieur_30k = (augmentationFormData.apport_nature_montant_total || 0) > 30000;
       } else if (acte.type === 'ag_ordinaire') {
         updateData.date_ag = agOrdinaireFormData.date_ag;
         updateData.heure_ag = agOrdinaireFormData.heure_ag;
@@ -1202,6 +1257,150 @@ export default function EditActePage() {
                 )}
               </CardContent>
             </Card>
+
+            {/* Section Apports en nature */}
+            {acte?.type === 'augmentation_capital' && (
+              <Card className="mb-6">
+                <CardHeader>
+                  <CardTitle>Apports en nature</CardTitle>
+                  <CardDescription>
+                    Gestion des apports en nature et commissaire aux apports
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {/* APPORTS EN NATURE - NOUVEAU BLOC */}
+                  <div className="space-y-4">
+                    {/* Checkbox activation */}
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="apport_nature"
+                        checked={augmentationFormData.apport_nature || false}
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+                            handleAugmentationChange("apport_nature", checked);
+                            if (!checked) {
+                              handleAugmentationChange("apport_nature_description", '');
+                              handleAugmentationChange("apport_nature_montant_total", 0);
+                              handleAugmentationChange("apport_nature_pourcentage_capital", 0);
+                              handleAugmentationChange("commissaire_obligatoire", false);
+                              handleAugmentationChange("commissaire_nom", '');
+                              handleAugmentationChange("bien_superieur_30k", false);
+                              setCommissaireDesigne(false);
+                            }
+                          }}
+                      />
+                      <label htmlFor="apport_nature" className="cursor-pointer">Cette augmentation inclut des apports en nature</label>
+                    </div>
+
+                    {augmentationFormData.apport_nature && (
+                      <>
+                        {/* Description */}
+                        <div>
+                          <label className="block text-sm font-medium mb-1">
+                            Description des biens apportés *
+                          </label>
+                          <textarea
+                            className="w-full border rounded p-2"
+                            placeholder="Ex: Immeuble 3 rue Jacques Duclos, valeur 100 000€"
+                            rows={3}
+                            value={augmentationFormData.apport_nature_description || ''}
+                            onChange={(e) => handleAugmentationChange("apport_nature_description", e.target.value)}
+                          />
+                        </div>
+
+                        {/* Montant */}
+                        <div>
+                          <label className="block text-sm font-medium mb-1">
+                            Montant total des apports en nature (€) *
+                          </label>
+                          <input
+                            type="number"
+                            className="w-full border rounded p-2"
+                            value={augmentationFormData.apport_nature_montant_total || ''}
+                            onChange={(e) => {
+                              const montant = parseFloat(e.target.value) || 0;
+                              const nouveauCap = Number(augmentationFormData.nouveau_capital) || 0;
+                              const pourcentage = nouveauCap > 0 ? (montant / nouveauCap) * 100 : 0;
+
+                              // Déterminer si commissaire obligatoire
+                              const obligatoire = montant > 30000 || pourcentage > 50;
+
+                              handleAugmentationChange("apport_nature_montant_total", montant);
+                              handleAugmentationChange("apport_nature_pourcentage_capital", pourcentage);
+                              handleAugmentationChange("commissaire_obligatoire", obligatoire);
+                              handleAugmentationChange("bien_superieur_30k", montant > 30000);
+                            }}
+                          />
+                          {augmentationFormData.apport_nature_montant_total && augmentationFormData.apport_nature_montant_total > 0 && augmentationFormData.nouveau_capital && Number(augmentationFormData.nouveau_capital) > 0 && (
+                            <p className="text-sm text-blue-600 mt-1">
+                              📊 {augmentationFormData.apport_nature_pourcentage_capital?.toFixed(2)}% du nouveau capital
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Alerte commissaire obligatoire */}
+                        {augmentationFormData.commissaire_obligatoire && (
+                          <div className="bg-orange-100 border border-orange-300 rounded p-3">
+                            <p className="font-bold text-orange-800">⚠️ COMMISSAIRE AUX APPORTS OBLIGATOIRE</p>
+                            <p className="text-sm text-orange-700">
+                              {augmentationFormData.bien_superieur_30k && augmentationFormData.apport_nature_pourcentage_capital && augmentationFormData.apport_nature_pourcentage_capital > 50
+                                ? "Bien > 30 000€ ET apports > 50% du capital"
+                                : augmentationFormData.bien_superieur_30k
+                                  ? "Au moins un bien excède 30 000€"
+                                  : "Les apports dépassent 50% du capital social"}
+                            </p>
+                            <p className="text-xs text-orange-600 mt-1">Article L227-1 Code de commerce</p>
+                          </div>
+                        )}
+
+                        {/* Commissaire désigné */}
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            id="commissaire_designe"
+                            checked={commissaireDesigne}
+                            onChange={(e) => {
+                              const checked = e.target.checked;
+                              setCommissaireDesigne(checked);
+                              if (!checked) {
+                                handleAugmentationChange("commissaire_nom", '');
+                              }
+                            }}
+                          />
+                          <label htmlFor="commissaire_designe" className="cursor-pointer">Un commissaire aux apports a été désigné</label>
+                        </div>
+
+                        {commissaireDesigne && (
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Nom du commissaire *</label>
+                            <input
+                              type="text"
+                              className="w-full border rounded p-2"
+                              placeholder="Ex: Jean Martin, Expert-comptable"
+                              value={augmentationFormData.commissaire_nom || ''}
+                              onChange={(e) => handleAugmentationChange("commissaire_nom", e.target.value)}
+                            />
+                            {formErrors.commissaire_nom && (
+                              <p className="text-sm text-red-500 mt-1">{formErrors.commissaire_nom}</p>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Alerte responsabilité si pas de commissaire */}
+                        {!commissaireDesigne && (
+                          <div className="bg-yellow-100 border border-yellow-300 rounded p-3">
+                            <p className="text-sm text-yellow-800">
+                              ⚠️ Sans commissaire, les associés sont solidairement responsables pendant 5 ans de la valeur attribuée (L227-1)
+                            </p>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Section Actions */}
             <Card className="mb-6">

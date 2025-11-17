@@ -30,6 +30,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { supabaseClient } from "@/lib/supabase";
 import { nombreEnLettres } from "@/lib/utils/nombreEnLettres";
 import type { Client, Associe } from "@/types/database";
+import { toast } from "sonner";
 
 type ActeCessionFormData = {
   date_acte: string;
@@ -75,6 +76,14 @@ type ActeAugmentationCapitalFormData = {
   quorum: number | '';
   votes_pour: number | '';
   votes_contre: number | '';
+  // Apports en nature
+  apport_nature?: boolean;
+  apport_nature_description?: string;
+  apport_nature_montant_total?: number;
+  apport_nature_pourcentage_capital?: number;
+  commissaire_obligatoire?: boolean;
+  commissaire_nom?: string;
+  bien_superieur_30k?: boolean;
 };
 
 type NouvelAssocie = {
@@ -135,6 +144,14 @@ const initialAugmentationFormState: ActeAugmentationCapitalFormData = {
   quorum: '',
   votes_pour: '',
   votes_contre: '',
+  // Apports en nature
+  apport_nature: false,
+  apport_nature_description: '',
+  apport_nature_montant_total: 0,
+  apport_nature_pourcentage_capital: 0,
+  commissaire_obligatoire: false,
+  commissaire_nom: '',
+  bien_superieur_30k: false,
 };
 
 export default function CreateActePage() {
@@ -152,6 +169,9 @@ export default function CreateActePage() {
   const [nouveauxAssocies, setNouveauxAssocies] = useState<NouvelAssocie[]>([]);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // État pour la checkbox "commissaire désigné"
+  const [commissaireDesigne, setCommissaireDesigne] = useState(false);
 
   // Fetch clients du cabinet
   useEffect(() => {
@@ -341,13 +361,15 @@ export default function CreateActePage() {
     );
   };
 
-  const validateForm = (): boolean => {
+  const validateForm = (): { isValid: boolean; errors: string[] } => {
     const newErrors: FormErrors = {};
+    const errorMessages: string[] = [];
 
     if (!selectedClientId) {
       newErrors.global = "Veuillez sélectionner un client";
+      errorMessages.push("Veuillez sélectionner un client");
       setFormErrors(newErrors);
-      return false;
+      return { isValid: false, errors: errorMessages };
     }
 
     if (acteType === 'cession_actions') {
@@ -442,6 +464,30 @@ export default function CreateActePage() {
         newErrors.votes_contre = "Le nombre de votes CONTRE est requis";
       }
 
+      // Validation des apports en nature
+      if (augmentationFormData.apport_nature) {
+        if (!augmentationFormData.apport_nature_description || augmentationFormData.apport_nature_description.trim() === '') {
+          const errorMsg = "Description des apports en nature requise";
+          newErrors.apport_nature_description = errorMsg;
+          errorMessages.push(errorMsg);
+        }
+        if (!augmentationFormData.apport_nature_montant_total || augmentationFormData.apport_nature_montant_total <= 0) {
+          const errorMsg = "Montant total des apports en nature requis";
+          newErrors.apport_nature_montant_total = errorMsg;
+          errorMessages.push(errorMsg);
+        }
+        if (augmentationFormData.commissaire_obligatoire && !commissaireDesigne) {
+          const errorMsg = "Nom du commissaire aux apports OBLIGATOIRE (bien > 30 000€ ou apports > 50% du capital)";
+          newErrors.commissaire_nom = errorMsg;
+          errorMessages.push(errorMsg);
+        }
+        if (commissaireDesigne && (!augmentationFormData.commissaire_nom || augmentationFormData.commissaire_nom.trim() === '')) {
+          const errorMsg = "Nom du commissaire aux apports OBLIGATOIRE (bien > 30 000€ ou apports > 50% du capital)";
+          newErrors.commissaire_nom = errorMsg;
+          errorMessages.push(errorMsg);
+        }
+      }
+
       // Validation des nouveaux associés si présents
       nouveauxAssocies.forEach((associe, index) => {
         if (!associe.nom.trim()) {
@@ -530,15 +576,30 @@ export default function CreateActePage() {
       }
     }
 
+    // Collecter toutes les erreurs pour le toast
+    Object.values(newErrors).forEach((error) => {
+      if (error && typeof error === 'string' && !errorMessages.includes(error)) {
+        errorMessages.push(error);
+      }
+    });
+
     setFormErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return { isValid: Object.keys(newErrors).length === 0, errors: errorMessages };
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setFormErrors({});
 
-    if (!validateForm()) {
+    const validationResult = validateForm();
+    if (!validationResult.isValid) {
+      // Afficher les erreurs avec toast
+      if (validationResult.errors.length > 0) {
+        toast.error("❌ Erreurs de validation", {
+          description: validationResult.errors.join(' • '),
+          duration: 5000,
+        });
+      }
       return;
     }
 
@@ -607,6 +668,14 @@ export default function CreateActePage() {
                 nombre_actions: Number(a.nombre_actions),
               }))
             : null,
+          // Apports en nature
+          apport_nature: augmentationFormData.apport_nature || false,
+          apport_nature_description: augmentationFormData.apport_nature ? (augmentationFormData.apport_nature_description || null) : null,
+          apport_nature_montant_total: augmentationFormData.apport_nature ? (augmentationFormData.apport_nature_montant_total || null) : null,
+          apport_nature_pourcentage_capital: augmentationFormData.apport_nature ? (augmentationFormData.apport_nature_pourcentage_capital || null) : null,
+          commissaire_obligatoire: augmentationFormData.commissaire_obligatoire || false,
+          commissaire_nom: commissaireDesigne ? (augmentationFormData.commissaire_nom ? augmentationFormData.commissaire_nom.trim() : null) : null,
+          bien_superieur_30k: (augmentationFormData.apport_nature_montant_total || 0) > 30000,
         };
       } else if (acteType === 'ag_ordinaire') {
         // Préparer les données pour l'AG Ordinaire
@@ -1294,6 +1363,150 @@ export default function CreateActePage() {
                 )}
               </CardContent>
             </Card>
+
+            {/* Section Apports en nature */}
+            {acteType === 'augmentation_capital' && (
+              <Card className="mb-6">
+                <CardHeader>
+                  <CardTitle>Apports en nature</CardTitle>
+                  <CardDescription>
+                    Gestion des apports en nature et commissaire aux apports
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {/* APPORTS EN NATURE - NOUVEAU BLOC */}
+                  <div className="space-y-4">
+                    {/* Checkbox activation */}
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="apport_nature"
+                        checked={augmentationFormData.apport_nature || false}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          handleAugmentationChange("apport_nature", checked);
+                          if (!checked) {
+                            handleAugmentationChange("apport_nature_description", '');
+                            handleAugmentationChange("apport_nature_montant_total", 0);
+                            handleAugmentationChange("apport_nature_pourcentage_capital", 0);
+                            handleAugmentationChange("commissaire_obligatoire", false);
+                            handleAugmentationChange("commissaire_nom", '');
+                            handleAugmentationChange("bien_superieur_30k", false);
+                            setCommissaireDesigne(false);
+                          }
+                        }}
+                      />
+                      <label htmlFor="apport_nature" className="cursor-pointer">Cette augmentation inclut des apports en nature</label>
+                    </div>
+
+                    {augmentationFormData.apport_nature && (
+                      <>
+                        {/* Description */}
+                        <div>
+                          <label className="block text-sm font-medium mb-1">
+                            Description des biens apportés *
+                          </label>
+                          <textarea
+                            className="w-full border rounded p-2"
+                            placeholder="Ex: Immeuble 3 rue Jacques Duclos, valeur 100 000€"
+                            rows={3}
+                            value={augmentationFormData.apport_nature_description || ''}
+                            onChange={(e) => handleAugmentationChange("apport_nature_description", e.target.value)}
+                          />
+                        </div>
+
+                        {/* Montant */}
+                        <div>
+                          <label className="block text-sm font-medium mb-1">
+                            Montant total des apports en nature (€) *
+                          </label>
+                          <input
+                            type="number"
+                            className="w-full border rounded p-2"
+                            value={augmentationFormData.apport_nature_montant_total || ''}
+                            onChange={(e) => {
+                              const montant = parseFloat(e.target.value) || 0;
+                              const nouveauCap = Number(augmentationFormData.nouveau_capital) || 0;
+                              const pourcentage = nouveauCap > 0 ? (montant / nouveauCap) * 100 : 0;
+
+                              // Déterminer si commissaire obligatoire
+                              const obligatoire = montant > 30000 || pourcentage > 50;
+
+                              handleAugmentationChange("apport_nature_montant_total", montant);
+                              handleAugmentationChange("apport_nature_pourcentage_capital", pourcentage);
+                              handleAugmentationChange("commissaire_obligatoire", obligatoire);
+                              handleAugmentationChange("bien_superieur_30k", montant > 30000);
+                            }}
+                          />
+                          {augmentationFormData.apport_nature_montant_total && augmentationFormData.apport_nature_montant_total > 0 && augmentationFormData.nouveau_capital && Number(augmentationFormData.nouveau_capital) > 0 && (
+                            <p className="text-sm text-blue-600 mt-1">
+                              📊 {augmentationFormData.apport_nature_pourcentage_capital?.toFixed(2)}% du nouveau capital
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Alerte commissaire obligatoire */}
+                        {augmentationFormData.commissaire_obligatoire && (
+                          <div className="bg-orange-100 border border-orange-300 rounded p-3">
+                            <p className="font-bold text-orange-800">⚠️ COMMISSAIRE AUX APPORTS OBLIGATOIRE</p>
+                            <p className="text-sm text-orange-700">
+                              {augmentationFormData.bien_superieur_30k && augmentationFormData.apport_nature_pourcentage_capital && augmentationFormData.apport_nature_pourcentage_capital > 50
+                                ? "Bien > 30 000€ ET apports > 50% du capital"
+                                : augmentationFormData.bien_superieur_30k
+                                  ? "Au moins un bien excède 30 000€"
+                                  : "Les apports dépassent 50% du capital social"}
+                            </p>
+                            <p className="text-xs text-orange-600 mt-1">Article L227-1 Code de commerce</p>
+                          </div>
+                        )}
+
+                        {/* Commissaire désigné */}
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            id="commissaire_designe"
+                            checked={commissaireDesigne}
+                            onChange={(e) => {
+                              const checked = e.target.checked;
+                              setCommissaireDesigne(checked);
+                              if (!checked) {
+                                handleAugmentationChange("commissaire_nom", '');
+                              }
+                            }}
+                          />
+                          <label htmlFor="commissaire_designe" className="cursor-pointer">Un commissaire aux apports a été désigné</label>
+                        </div>
+
+                        {commissaireDesigne && (
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Nom du commissaire *</label>
+                            <input
+                              type="text"
+                              className="w-full border rounded p-2"
+                              placeholder="Ex: Jean Martin, Expert-comptable"
+                              value={augmentationFormData.commissaire_nom || ''}
+                              onChange={(e) => handleAugmentationChange("commissaire_nom", e.target.value)}
+                            />
+                            {formErrors.commissaire_nom && (
+                              <p className="text-sm text-red-500 mt-1">{formErrors.commissaire_nom}</p>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Alerte responsabilité si pas de commissaire */}
+                        {!commissaireDesigne && (
+                          <div className="bg-yellow-100 border border-yellow-300 rounded p-3">
+                            <p className="text-sm text-yellow-800">
+                              ⚠️ Sans commissaire, les associés sont solidairement responsables pendant 5 ans de la valeur attribuée (L227-1)
+                            </p>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Section Actions */}
             <Card className="mb-6">

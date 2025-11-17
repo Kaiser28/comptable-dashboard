@@ -508,6 +508,98 @@ export async function generateCessionActions(
             spacing: { after: 360 },
           }),
 
+          // Section ARTICLE 5 - GARANTIES
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "ARTICLE 5 - GARANTIES",
+                bold: true,
+                size: 12 * 2,
+                font: "Arial",
+              }),
+            ],
+            spacing: { before: 200, after: 100 },
+          }),
+
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Le cédant garantit le cessionnaire contre tout passif non inscrit au bilan de la société à la date de cession, pour une durée de trois (3) ans à compter de la date des présentes.",
+                size: 11 * 2,
+                font: "Arial",
+              }),
+            ],
+            spacing: { after: 120 },
+          }),
+
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Le cédant garantit l'exactitude de toutes les informations qu'il a fournies au cessionnaire concernant la société et les actions cédées.",
+                size: 11 * 2,
+                font: "Arial",
+              }),
+            ],
+            spacing: { after: 120 },
+          }),
+
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "En cas de mise en œuvre de la garantie de passif, le cédant s'engage à indemniser intégralement le cessionnaire dans un délai de trente (30) jours suivant notification.",
+                size: 11 * 2,
+                font: "Arial",
+              }),
+            ],
+            spacing: { after: 360 },
+          }),
+
+          // Section ARTICLE 6 - FRAIS ET ENREGISTREMENT
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "ARTICLE 6 - FRAIS ET ENREGISTREMENT",
+                bold: true,
+                size: 12 * 2,
+                font: "Arial",
+              }),
+            ],
+            spacing: { before: 200, after: 100 },
+          }),
+
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `Les droits d'enregistrement, calculés au taux de 0,10% du prix de cession conformément à l'article 726 du Code Général des Impôts, sont à la charge du cessionnaire.`,
+                size: 11 * 2,
+                font: "Arial",
+              }),
+            ],
+            spacing: { after: 120 },
+          }),
+
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Le présent acte sera enregistré auprès du Service des Impôts des Entreprises (SIE) via le formulaire CERFA n°2759 dans un délai de trente (30) jours à compter de sa signature.",
+                size: 11 * 2,
+                font: "Arial",
+              }),
+            ],
+            spacing: { after: 120 },
+          }),
+
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Les frais de rédaction et d'enregistrement du présent acte sont répartis par moitié entre les parties, sauf convention contraire.",
+                size: 11 * 2,
+                font: "Arial",
+              }),
+            ],
+            spacing: { after: 360 },
+          }),
+
           // Signatures
           new Paragraph({
             children: [
@@ -517,7 +609,30 @@ export async function generateCessionActions(
                 font: "Arial",
               }),
             ],
-            spacing: { before: 480, after: 480 },
+            spacing: { before: 480, after: 240 },
+          }),
+
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Fait en deux exemplaires originaux, dont un pour chaque partie.",
+                size: 11 * 2,
+                font: "Arial",
+              }),
+            ],
+            spacing: { after: 240 },
+          }),
+
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `Mention manuscrite (avant signature) : 'Lu et approuvé, bon pour cession de ${nombreActions} action${nombreActions > 1 ? 's' : ''} de la société ${nomEntreprise} au prix de ${formatMontant(prixTotal)} euros.'`,
+                size: 11 * 2,
+                font: "Arial",
+                italics: true,
+              }),
+            ],
+            spacing: { after: 480 },
           }),
 
           new Paragraph({

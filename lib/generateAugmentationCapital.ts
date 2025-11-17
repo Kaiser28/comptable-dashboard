@@ -100,6 +100,19 @@ export async function generateAugmentationCapital(
     throw new Error("Le nombre de nouvelles actions doit être supérieur à zéro.");
   }
 
+  // Validations pour apports en nature
+  if (acte.apport_nature === true) {
+    if (!acte.apport_nature_description || acte.apport_nature_description.trim() === "") {
+      throw new Error("La description des apports en nature est requise.");
+    }
+    if (!acte.apport_nature_montant_total || acte.apport_nature_montant_total <= 0) {
+      throw new Error("Le montant total des apports en nature doit être supérieur à zéro.");
+    }
+    if (acte.commissaire_obligatoire === true && (!acte.commissaire_nom || acte.commissaire_nom.trim() === "")) {
+      throw new Error("Le nom du commissaire aux apports est requis lorsque celui-ci est obligatoire.");
+    }
+  }
+
   const client = acte.client;
   const ancienCapital = acte.ancien_capital;
   const nouveauCapital = acte.nouveau_capital;
@@ -122,6 +135,28 @@ export async function generateAugmentationCapital(
   const nouveauxAssocies: NouvelAssocie[] = Array.isArray(acte.nouveaux_associes)
     ? (acte.nouveaux_associes as NouvelAssocie[])
     : [];
+
+  // Variables pour apports en nature
+  const apportNature = acte.apport_nature === true;
+  const apportNatureMontant = acte.apport_nature_montant_total || 0;
+  const apportNatureDescription = acte.apport_nature_description || "";
+  const apportNaturePourcentage = apportNature && nouveauCapital > 0
+    ? ((apportNatureMontant / nouveauCapital) * 100)
+    : (acte.apport_nature_pourcentage_capital || 0);
+  const commissaireObligatoire = acte.commissaire_obligatoire === true;
+  const commissaireNom = acte.commissaire_nom || "";
+  const bienSuperieur30k = acte.bien_superieur_30k === true;
+  const apportsNatureDetails: Array<{
+    type: string;
+    description: string;
+    valeur: number;
+    apporteur: string;
+  }> = Array.isArray(acte.apports_nature_details) ? acte.apports_nature_details : [];
+
+  // Calcul du montant en numéraire si apports mixtes
+  const montantNumeraire = apportNature
+    ? montantAugmentation - apportNatureMontant
+    : montantAugmentation;
 
   const children: (Paragraph | Table)[] = [
     new Paragraph({
@@ -274,7 +309,132 @@ export async function generateAugmentationCapital(
     new Paragraph({
       children: [new TextRun({ text: "- Modification corrélative des statuts" })],
       spacing: { after: 400 },
-    }),
+    })
+  );
+
+  // Section APPORTS EN NATURE (si applicable)
+  if (apportNature) {
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: "APPORTS EN NATURE",
+            bold: true,
+            size: 24,
+          }),
+        ],
+        spacing: { before: 400, after: 200 },
+      }),
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: `L'augmentation de capital comprend des apports en nature pour un montant total de ${formatMontant(
+              apportNatureMontant
+            )} €, représentant ${formatMontant(apportNaturePourcentage)}% du nouveau capital.`,
+          }),
+        ],
+        spacing: { after: 200 },
+      }),
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: "Description des biens apportés :",
+            bold: true,
+          }),
+        ],
+        spacing: { after: 100 },
+      }),
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: apportNatureDescription,
+          }),
+        ],
+        spacing: { after: 200 },
+      })
+    );
+
+    if (apportsNatureDetails.length > 0) {
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Détail des apports :",
+              bold: true,
+            }),
+          ],
+          spacing: { after: 100 },
+        })
+      );
+
+      apportsNatureDetails.forEach((apport) => {
+        children.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `- ${apport.type || "Non spécifié"} : ${apport.description || "Non spécifié"}`,
+              }),
+            ],
+            spacing: { after: 50 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `  Valeur : ${formatMontant(apport.valeur)} €`,
+              }),
+            ],
+            spacing: { after: 50 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `  Apporté par : ${apport.apporteur || "Non spécifié"}`,
+              }),
+            ],
+            spacing: { after: 200 },
+          })
+        );
+      });
+    }
+
+    // Alerte si commissaire obligatoire
+    const pourcentageSuperieur50 = apportNaturePourcentage > 50;
+    if (bienSuperieur30k || pourcentageSuperieur50) {
+      let raison = "";
+      if (bienSuperieur30k && pourcentageSuperieur50) {
+        raison =
+          "Au moins un bien apporté excède 30 000 € ET les apports dépassent 50% du capital";
+      } else if (bienSuperieur30k) {
+        raison = "Au moins un bien apporté excède 30 000 €";
+      } else if (pourcentageSuperieur50) {
+        raison = "Les apports en nature représentent plus de 50% du capital social";
+      }
+
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "⚠️ ATTENTION : Commissaire aux apports OBLIGATOIRE",
+              bold: true,
+              color: "FF0000",
+            }),
+          ],
+          spacing: { before: 200, after: 100 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: `Motif : ${raison}`,
+              color: "FF0000",
+            }),
+          ],
+          spacing: { after: 400 },
+        })
+      );
+    }
+  }
+
+  children.push(
     new Paragraph({
       children: [
         new TextRun({
@@ -288,18 +448,28 @@ export async function generateAugmentationCapital(
     new Paragraph({
       children: [
         new TextRun({
-          text: `L'Assemblée Générale, après en avoir délibéré, décide d'augmenter le capital social de la société de ${formatMontant(
-            ancienCapital
-          )} € à ${formatMontant(nouveauCapital)} €, soit une augmentation de ${formatMontant(
-            montantAugmentation
-          )} €.`,
+          text: apportNature
+            ? `L'Assemblée Générale, après en avoir délibéré, DÉCIDE d'augmenter le capital social de la société de ${formatMontant(
+                ancienCapital
+              )} € à ${formatMontant(nouveauCapital)} €, soit une augmentation de ${formatMontant(
+                montantAugmentation
+              )} €, par :
+- Apports en numéraire : ${formatMontant(montantNumeraire)} €
+- Apports en nature : ${formatMontant(apportNatureMontant)} €`
+            : `L'Assemblée Générale, après en avoir délibéré, décide d'augmenter le capital social de la société de ${formatMontant(
+                ancienCapital
+              )} € à ${formatMontant(nouveauCapital)} €, soit une augmentation de ${formatMontant(
+                montantAugmentation
+              )} €, par ${acte.modalite === "numeraire" ? "apports en numéraire" : acte.modalite === "nature" ? "apports en nature" : "incorporation de réserves"}.`,
         }),
       ],
       spacing: { after: 200 },
     })
   );
 
-  switch (acte.modalite) {
+  // Si pas d'apports en nature, garder le texte modalité existant
+  if (!apportNature) {
+    switch (acte.modalite) {
     case "numeraire":
       children.push(
         new Paragraph({
@@ -342,13 +512,14 @@ export async function generateAugmentationCapital(
       break;
     default:
       break;
+    }
   }
 
   children.push(
     new Paragraph({
       children: [
         new TextRun({
-          text: "MODALITÉS",
+          text: "MODALITÉS DE L'AUGMENTATION",
           bold: true,
           size: 24,
         }),
@@ -363,9 +534,131 @@ export async function generateAugmentationCapital(
           )} € de valeur nominale.`,
         }),
       ],
-      spacing: { after: 400 },
+      spacing: { after: 200 },
     })
   );
+
+  // Détails des apports en nature dans MODALITÉS
+  if (apportNature) {
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: "Détail des apports en nature :",
+            bold: true,
+          }),
+        ],
+        spacing: { before: 200, after: 100 },
+      }),
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: apportNatureDescription || "Non renseigné",
+          }),
+        ],
+        spacing: { after: 100 },
+      }),
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: `Montant total des apports en nature : ${formatMontant(apportNatureMontant)} €`,
+          }),
+        ],
+        spacing: { after: 100 },
+      }),
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: `Représentant ${apportNaturePourcentage.toFixed(2)}% du nouveau capital social`,
+          }),
+        ],
+        spacing: { after: 200 },
+      })
+    );
+  }
+
+  // Section COMMISSAIRE AUX APPORTS dans MODALITÉS
+  if (apportNature) {
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: "COMMISSAIRE AUX APPORTS",
+            bold: true,
+            size: 24,
+          }),
+        ],
+        spacing: { before: 400, after: 200 },
+      })
+    );
+
+    if (commissaireObligatoire && commissaireNom) {
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Conformément à l'article L. 227-1 du Code de commerce, un commissaire aux apports a été désigné :",
+            }),
+          ],
+          spacing: { after: 100 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: `Nom du commissaire : ${commissaireNom}`,
+              bold: true,
+            }),
+          ],
+          spacing: { after: 100 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Le commissaire aux apports a établi un rapport annexé au présent procès-verbal, attestant que la valeur des apports correspond au moins au montant de l'augmentation de capital.",
+            }),
+          ],
+          spacing: { after: 200 },
+        })
+      );
+    } else {
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "L'assemblée constate que les conditions légales permettant de ne pas recourir à un commissaire aux apports sont remplies (article L. 227-1 du Code de commerce) :",
+            }),
+          ],
+          spacing: { after: 100 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "• Aucun bien apporté n'a une valeur excédant 30 000 euros",
+            }),
+          ],
+          spacing: { after: 50 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "• La valeur totale des apports en nature ne dépasse pas 50% du capital social",
+            }),
+          ],
+          spacing: { after: 100 },
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Les associés déclarent être informés qu'ils sont responsables solidairement pendant cinq ans, à l'égard des tiers, de la valeur attribuée aux apports en nature lors de la constitution de la société.",
+              italics: true,
+            }),
+          ],
+          spacing: { after: 200 },
+        })
+      );
+    }
+  }
+
 
   if (nouveauxAssocies.length > 0) {
     children.push(
@@ -417,6 +710,59 @@ export async function generateAugmentationCapital(
               })
           ),
         ],
+      })
+    );
+  }
+
+  // Résolution supplémentaire pour approbation du rapport du commissaire aux apports
+  if (commissaireObligatoire && apportNature) {
+    // Compter le nombre de résolutions existantes pour numéroter correctement
+    const numeroResolution = acte.modalite === "reserves" ? 2 : 2; // Toujours la 2ème résolution après l'augmentation
+    
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: `RÉSOLUTION N°${numeroResolution} - APPROBATION DU RAPPORT DU COMMISSAIRE AUX APPORTS`,
+            bold: true,
+            size: 24,
+          }),
+        ],
+        spacing: { before: 400, after: 200 },
+      }),
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: `L'Assemblée Générale, après avoir pris connaissance du rapport établi par ${commissaireNom}, commissaire aux apports,`,
+          }),
+        ],
+        spacing: { after: 200 },
+      }),
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: `APPROUVE les conclusions de ce rapport et la valeur attribuée aux biens apportés en nature, soit ${formatMontant(apportNatureMontant)} €.`,
+            bold: true,
+          }),
+        ],
+        spacing: { after: 200 },
+      }),
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: `Votes : POUR ${acte.votes_pour ?? "__"} - CONTRE ${acte.votes_contre ?? "__"}`,
+          }),
+        ],
+        spacing: { after: 200 },
+      }),
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: "La résolution est ADOPTÉE.",
+            bold: true,
+          }),
+        ],
+        spacing: { after: 400 },
       })
     );
   }
