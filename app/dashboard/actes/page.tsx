@@ -70,6 +70,8 @@ const getTypeBadge = (type: string) => {
       return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">Cession d'actions</Badge>;
     case 'augmentation_capital':
       return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">Augmentation capital</Badge>;
+    case 'reduction_capital':
+      return <Badge className="bg-red-100 text-red-700 hover:bg-red-100">Réduction capital</Badge>;
     case 'ag_ordinaire':
       return <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100">AG Ordinaire</Badge>;
     default:
@@ -111,6 +113,8 @@ export default function ActesPage() {
   const [generatingActeCessionId, setGeneratingActeCessionId] = useState<string | null>(null);
   const [generatingOMTId, setGeneratingOMTId] = useState<string | null>(null);
   const [generatingAugmentationId, setGeneratingAugmentationId] = useState<string | null>(null);
+  const [generatingReductionId, setGeneratingReductionId] = useState<string | null>(null);
+  const [generatingAGOrdinaireId, setGeneratingAGOrdinaireId] = useState<string | null>(null);
 
   // Fetch cabinet_id et données
   useEffect(() => {
@@ -287,6 +291,130 @@ export default function ActesPage() {
     }
   };
 
+  // Générer le PV de réduction de capital
+  const handleGenerateReduction = async (acte: ActeWithRelations) => {
+    if (!acte.id) return;
+
+    console.log('🚀 Génération depuis liste:', { acteId: acte.id, typeActe: acte.type });
+
+    setGeneratingReductionId(acte.id);
+
+    try {
+      const response = await fetch('/api/generate-reduction-capital', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ acte_id: acte.id }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Erreur génération' }));
+        throw new Error(errorData.error || 'Erreur génération');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const dateActe = acte.date_acte
+        ? new Date(acte.date_acte).toISOString().split('T')[0]
+        : new Date().toISOString().split('T')[0];
+      a.download = `PV_Reduction_Capital_${acte.client?.nom_entreprise || 'Client'}_${dateActe}.docx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      toast.success('PV de réduction de capital généré');
+    } catch (error: any) {
+      console.error('Erreur génération PV réduction:', error);
+      toast.error(error.message || 'Erreur lors de la génération');
+    } finally {
+      setGeneratingReductionId(null);
+    }
+  };
+
+  // Générer le PV d'AG Ordinaire
+  const handleGenerateAGOrdinaire = async (acte: ActeWithRelations) => {
+    if (!acte.id) return;
+
+    console.log('🚀 Génération depuis liste:', { acteId: acte.id, typeActe: acte.type });
+
+    setGeneratingAGOrdinaireId(acte.id);
+
+    try {
+      const response = await fetch('/api/generate-ag-ordinaire', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ acteId: acte.id }),
+      });
+
+      const contentType = response.headers.get('content-type');
+      
+      // Si la réponse est JSON (succès avec documentUrl)
+      if (contentType?.includes('application/json')) {
+        const data = await response.json();
+        
+        if (!response.ok || !data.success) {
+          toast.error('Impossible de générer le document', {
+            description: data.error || 'Erreur lors de la génération',
+            duration: 8000,
+          });
+          return;
+        }
+
+        if (data.success && data.documentUrl) {
+          // Télécharger depuis l'URL publique
+          const a = document.createElement('a');
+          a.href = data.documentUrl;
+          a.download = `PV_AG_Ordinaire_${acte.client?.nom_entreprise || 'Client'}_${acte.date_ag ? new Date(acte.date_ag).toLocaleDateString('fr-FR').replace(/\//g, '-') : new Date().toLocaleDateString('fr-FR').replace(/\//g, '-')}.docx`;
+          a.target = '_blank';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+
+          toast.success('PV d\'AG Ordinaire généré', {
+            description: 'Le document a été téléchargé',
+          });
+        } else {
+          toast.error('Impossible de générer le document', {
+            description: data.error || 'Erreur lors de la génération',
+            duration: 8000,
+          });
+        }
+      } else {
+        // Si la réponse est un blob (fallback si upload échoue)
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: 'Erreur génération' }));
+          toast.error('Impossible de générer le document', {
+            description: errorData.error || 'Erreur génération',
+            duration: 8000,
+          });
+          return;
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `PV_AG_Ordinaire_${acte.client?.nom_entreprise || 'Client'}_${acte.date_ag ? new Date(acte.date_ag).toLocaleDateString('fr-FR').replace(/\//g, '-') : new Date().toLocaleDateString('fr-FR').replace(/\//g, '-')}.docx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        toast.success('PV d\'AG Ordinaire généré');
+      }
+    } catch (error: any) {
+      console.error('❌ Erreur génération PV AG Ordinaire:', error);
+      toast.error('Impossible de générer le document', {
+        description: error.message || 'Une erreur est survenue',
+        duration: 8000,
+      });
+    } finally {
+      setGeneratingAGOrdinaireId(null);
+    }
+  };
+
   // Supprimer acte
   const handleDelete = async () => {
     if (!acteToDelete) return;
@@ -403,6 +531,7 @@ export default function ActesPage() {
                   <SelectItem value="all">Tous les types</SelectItem>
                   <SelectItem value="cession_actions">Cession d'actions</SelectItem>
                   <SelectItem value="augmentation_capital">Augmentation capital</SelectItem>
+                  <SelectItem value="reduction_capital">Réduction capital</SelectItem>
                   <SelectItem value="ag_ordinaire">AG Ordinaire</SelectItem>
                 </SelectContent>
               </Select>
@@ -512,12 +641,23 @@ export default function ActesPage() {
                               <FileText className="mr-2 h-4 w-4" />
                               {generatingAugmentationId === acte.id ? 'Génération...' : 'Générer le PV d\'augmentation'}
                             </DropdownMenuItem>
-                          ) : (
-                            <DropdownMenuItem disabled>
+                          ) : acte.type === 'reduction_capital' ? (
+                            <DropdownMenuItem
+                              onClick={() => handleGenerateReduction(acte)}
+                              disabled={generatingReductionId === acte.id}
+                            >
                               <FileText className="mr-2 h-4 w-4" />
-                              Génération non disponible
+                              {generatingReductionId === acte.id ? 'Génération...' : 'Générer le PV de réduction'}
                             </DropdownMenuItem>
-                          )}
+                          ) : acte.type === 'ag_ordinaire' ? (
+                            <DropdownMenuItem
+                              onClick={() => handleGenerateAGOrdinaire(acte)}
+                              disabled={generatingAGOrdinaireId === acte.id}
+                            >
+                              <FileText className="mr-2 h-4 w-4" />
+                              {generatingAGOrdinaireId === acte.id ? 'Génération...' : 'Générer le PV d\'AG Ordinaire'}
+                            </DropdownMenuItem>
+                          ) : null}
                           {acte.statut === 'brouillon' && (
                             <>
                               <DropdownMenuSeparator />

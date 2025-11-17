@@ -1,0 +1,82 @@
+{
+  "timestamp": "2025-11-17T11:04:52.954Z",
+  "duration": 1608,
+  "totalTests": 8,
+  "passed": 2,
+  "failed": 5,
+  "warnings": 1,
+  "results": [
+    {
+      "test": "Setup environnement",
+      "status": "success",
+      "message": "Cabinet ID: 70a126c3-b9ff-436d-a722-12664af5bcf9, Expert ID: bb3c764e-7b99-4dc1-9255-920b04208e9b",
+      "duration": 1208
+    },
+    {
+      "test": "Création client : TEST SAS Alpha",
+      "status": "error",
+      "message": "Échec : new row violates row-level security policy for table \"clients\"",
+      "duration": 64
+    },
+    {
+      "test": "Création client : TEST SASU Beta",
+      "status": "error",
+      "message": "Échec : new row violates row-level security policy for table \"clients\"",
+      "duration": 50
+    },
+    {
+      "test": "Création acte : Augmentation capital (numéraire)",
+      "status": "error",
+      "message": "Échec : null value in column \"client_id\" of relation \"actes_juridiques\" violates not-null constraint",
+      "details": {
+        "error": {
+          "code": "23502",
+          "details": null,
+          "hint": null,
+          "message": "null value in column \"client_id\" of relation \"actes_juridiques\" violates not-null constraint"
+        }
+      },
+      "duration": 63
+    },
+    {
+      "test": "Création acte : Réduction capital (rachat)",
+      "status": "error",
+      "message": "Échec : null value in column \"client_id\" of relation \"actes_juridiques\" violates not-null constraint",
+      "details": {
+        "error": {
+          "code": "23502",
+          "details": null,
+          "hint": null,
+          "message": "null value in column \"client_id\" of relation \"actes_juridiques\" violates not-null constraint"
+        }
+      },
+      "duration": 54
+    },
+    {
+      "test": "Création acte : AG Ordinaire",
+      "status": "error",
+      "message": "Échec : null value in column \"client_id\" of relation \"actes_juridiques\" violates not-null constraint",
+      "details": {
+        "error": {
+          "code": "23502",
+          "details": null,
+          "hint": null,
+          "message": "null value in column \"client_id\" of relation \"actes_juridiques\" violates not-null constraint"
+        }
+      },
+      "duration": 50
+    },
+    {
+      "test": "Génération documents",
+      "status": "warning",
+      "message": "Aucun acte disponible pour tester la génération",
+      "duration": 0
+    },
+    {
+      "test": "Validation : Capital final ≥ 1€",
+      "status": "success",
+      "message": "Validation bloque correctement",
+      "duration": 54
+    }
+  ]
+}

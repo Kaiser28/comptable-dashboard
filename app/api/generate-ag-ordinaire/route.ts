@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 
 import { generatePVAGOrdinaire, type AGOrdinaireData } from "@/lib/generatePVAGOrdinaire";
 
@@ -20,23 +21,48 @@ export async function POST(request: Request) {
       );
     }
 
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value;
-          },
-        },
-      }
-    );
+    // Vérifier le token dans le header Authorization (pour tests) ou cookies (pour navigateur)
+    const authHeader = request.headers.get('authorization');
+    const token = authHeader?.replace('Bearer ', '');
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    let supabase;
+    let user;
+    let authError;
+
+    if (token) {
+      // Utiliser le token du header pour les tests automatisés
+      supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          global: {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        }
+      );
+      const result = await supabase.auth.getUser(token);
+      user = result.data.user;
+      authError = result.error;
+    } else {
+      // Utiliser les cookies pour l'authentification navigateur
+      const cookieStore = await cookies();
+      supabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          cookies: {
+            get(name: string) {
+              return cookieStore.get(name)?.value;
+            },
+          },
+        }
+      );
+      const result = await supabase.auth.getUser();
+      user = result.data.user;
+      authError = result.error;
+    }
 
     if (authError || !user) {
       console.error('❌ Authentification échouée:', authError);
@@ -254,9 +280,14 @@ export async function POST(request: Request) {
     }
 
     // Extraire le buffer
-    const docBuffer = typeof generationResult === 'object' && 'buffer' in generationResult
-      ? generationResult.buffer!
-      : generationResult as Buffer;
+    let docBuffer: Buffer;
+    if (typeof generationResult === 'object' && 'buffer' in generationResult) {
+      docBuffer = Buffer.from(new Uint8Array(generationResult.buffer as ArrayBuffer));
+    } else if (Buffer.isBuffer(generationResult)) {
+      docBuffer = generationResult;
+    } else {
+      docBuffer = Buffer.from(new Uint8Array(generationResult as unknown as ArrayBuffer));
+    }
 
     if (!docBuffer) {
       return NextResponse.json(

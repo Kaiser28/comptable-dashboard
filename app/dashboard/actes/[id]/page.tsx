@@ -40,6 +40,18 @@ import type { ActeJuridique, Client, Associe } from "@/types/database";
 type ActeWithRelations = ActeJuridique & {
   cedant: Associe | Associe[] | null;
   client: Client | null;
+  // Apports en nature
+  apport_nature?: boolean | null;
+  apport_nature_description?: string | null;
+  apport_nature_montant_total?: number | null;
+  apport_nature_pourcentage_capital?: number | null;
+  apport_nature_modalite?: string | null;
+  commissaire_apports_requis?: boolean | null;
+  commissaire_apports_nom?: string | null;
+  commissaire_apports_adresse?: string | null;
+  commissaire_obligatoire?: boolean | null;
+  commissaire_nom?: string | null;
+  bien_superieur_30k?: boolean | null;
 };
 
 const formatDate = (dateString: string | null | undefined): string => {
@@ -58,6 +70,8 @@ const getTypeBadge = (type: string) => {
       return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">Cession d'actions</Badge>;
     case 'augmentation_capital':
       return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">Augmentation capital</Badge>;
+    case 'reduction_capital':
+      return <Badge className="bg-red-100 text-red-700 hover:bg-red-100">Réduction capital</Badge>;
     case 'ag_ordinaire':
       return <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100">AG Ordinaire</Badge>;
     default:
@@ -134,6 +148,7 @@ export default function ActeDetailPage() {
   const [generatingOMTId, setGeneratingOMTId] = useState(false);
   const [generatingAugmentationId, setGeneratingAugmentationId] = useState(false);
   const [generatingAGOrdinaireId, setGeneratingAGOrdinaireId] = useState(false);
+  const [generatingReductionId, setGeneratingReductionId] = useState(false);
 
   // Fetch acte avec relations
   useEffect(() => {
@@ -143,6 +158,13 @@ export default function ActeDetailPage() {
           .from("actes_juridiques")
           .select(`
             *,
+            ancien_capital,
+            nouveau_capital_apres_reduction,
+            modalite_reduction,
+            montant_reduction,
+            nombre_actions_rachetees,
+            ancienne_valeur_nominale,
+            nouvelle_valeur_nominale,
             cedant:associes(*),
             client:clients(*)
           `)
@@ -154,6 +176,14 @@ export default function ActeDetailPage() {
           router.push("/dashboard/actes");
           return;
         }
+
+        // Log de debug immédiat après chargement
+        console.log('🔍 ACTE CHARGÉ:', {
+          type: acteData?.type_acte,
+          ancien_capital: acteData?.ancien_capital,
+          nouveau_capital: acteData?.nouveau_capital_apres_reduction,
+          modalite: acteData?.modalite_reduction
+        });
 
         setActe(acteData as unknown as ActeWithRelations);
       } catch (err: any) {
@@ -387,6 +417,65 @@ export default function ActeDetailPage() {
       });
     } finally {
       setGeneratingAGOrdinaireId(false);
+    }
+  };
+
+  // Générer le PV de réduction de capital
+  const handleGenerateReductionCapital = async () => {
+    if (!acte?.id) return;
+
+    setGeneratingReductionId(true);
+
+    try {
+      // Log de debug avant envoi API
+      console.log('🚀 ENVOI API:', {
+        ancien_capital: acte.ancien_capital,
+        nouveau_capital: acte.nouveau_capital_apres_reduction,
+        modalite: acte.modalite_reduction
+      });
+
+      // Validation des données avant envoi
+      if (!acte.ancien_capital || !acte.nouveau_capital_apres_reduction || !acte.modalite_reduction) {
+        console.error('❌ DONNÉES MANQUANTES !');
+        alert('Erreur : Les données de réduction capital sont manquantes dans cet acte.');
+        setGeneratingReductionId(false);
+        return;
+      }
+
+      const response = await fetch('/api/generate-reduction-capital', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ acte_id: acte.id }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Erreur génération' }));
+        throw new Error(errorData.error || 'Erreur génération');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const dateActe = acte.date_acte
+        ? new Date(acte.date_acte).toISOString().split('T')[0]
+        : new Date().toISOString().split('T')[0];
+      a.download = `PV_Reduction_Capital_${acte.client?.nom_entreprise || 'Client'}_${dateActe}.docx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      toast.success('PV de réduction de capital généré', {
+        description: 'Le document a été téléchargé',
+      });
+    } catch (error: any) {
+      console.error('Erreur génération PV réduction:', error);
+      toast.error('Impossible de générer le document', {
+        description: error.message || 'Une erreur est survenue',
+      });
+    } finally {
+      setGeneratingReductionId(false);
     }
   };
 
@@ -903,6 +992,218 @@ export default function ActeDetailPage() {
             </Card>
           </>
         )}
+
+        {/* Cards pour Réduction de Capital */}
+        {acte.type === 'reduction_capital' && (
+          <>
+            {/* Card - Capital Social */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Capital Social</CardTitle>
+                <CardDescription>Évolution du capital social</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {acte.ancien_capital !== null && acte.ancien_capital !== undefined && (
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Capital actuel</Label>
+                    <p className="mt-1 text-lg">{formatCurrency(acte.ancien_capital)}</p>
+                  </div>
+                )}
+                {acte.montant_reduction !== null && acte.montant_reduction !== undefined && (
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Montant de réduction</Label>
+                    <p className="mt-1 text-lg font-bold text-red-600">
+                      -{formatCurrency(acte.montant_reduction)}
+                    </p>
+                  </div>
+                )}
+                {acte.nouveau_capital_apres_reduction !== null && acte.nouveau_capital_apres_reduction !== undefined && (
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Nouveau capital</Label>
+                    <p className="mt-1 text-2xl font-bold text-green-600">{formatCurrency(acte.nouveau_capital_apres_reduction)}</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Card - Modalités */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Modalités</CardTitle>
+                <CardDescription>Détails de la réduction</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {acte.modalite_reduction && (
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Type de réduction</Label>
+                    <div className="mt-1">
+                      {acte.modalite_reduction === 'rachat_annulation' && (
+                        <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">Rachat et annulation d'actions</Badge>
+                      )}
+                      {acte.modalite_reduction === 'reduction_valeur_nominale' && (
+                        <Badge className="bg-green-100 text-green-700 hover:bg-green-100">Réduction de la valeur nominale</Badge>
+                      )}
+                      {acte.modalite_reduction === 'coup_accordeon' && (
+                        <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-100">Coup d'accordéon</Badge>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Détails par modalité */}
+                {acte.modalite_reduction === 'rachat_annulation' && (
+                  <div className="bg-gray-50 rounded p-3 mt-3 space-y-2">
+                    <p className="text-sm font-medium">Détails du rachat :</p>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      {acte.nombre_actions_rachetees !== null && acte.nombre_actions_rachetees !== undefined && (
+                        <div>
+                          <span className="text-gray-600">Actions rachetées :</span>
+                          <span className="ml-2 font-medium">{acte.nombre_actions_rachetees}</span>
+                        </div>
+                      )}
+                      {acte.prix_rachat_par_action !== null && acte.prix_rachat_par_action !== undefined && (
+                        <div>
+                          <span className="text-gray-600">Prix unitaire :</span>
+                          <span className="ml-2 font-medium">{formatCurrency(acte.prix_rachat_par_action)}</span>
+                        </div>
+                      )}
+                      {client && client.nb_actions !== null && client.nb_actions !== undefined && 
+                       acte.nombre_actions_rachetees !== null && acte.nombre_actions_rachetees !== undefined && (
+                        <div>
+                          <span className="text-gray-600">Actions restantes :</span>
+                          <span className="ml-2 font-medium">{client.nb_actions - acte.nombre_actions_rachetees}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {acte.modalite_reduction === 'reduction_valeur_nominale' && (
+                  <div className="bg-gray-50 rounded p-3 mt-3 space-y-2">
+                    <p className="text-sm font-medium">Valeurs nominales :</p>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      {acte.ancienne_valeur_nominale !== null && acte.ancienne_valeur_nominale !== undefined && (
+                        <div>
+                          <span className="text-gray-600">Ancienne :</span>
+                          <span className="ml-2 font-medium">{formatCurrency(acte.ancienne_valeur_nominale)}</span>
+                        </div>
+                      )}
+                      {acte.nouvelle_valeur_nominale !== null && acte.nouvelle_valeur_nominale !== undefined && (
+                        <div>
+                          <span className="text-gray-600">Nouvelle :</span>
+                          <span className="ml-2 font-medium">{formatCurrency(acte.nouvelle_valeur_nominale)}</span>
+                        </div>
+                      )}
+                      {client && client.nb_actions !== null && client.nb_actions !== undefined && (
+                        <div className="col-span-2">
+                          <span className="text-gray-600">Nombre d'actions (inchangé) :</span>
+                          <span className="ml-2 font-medium">{client.nb_actions}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {acte.modalite_reduction === 'coup_accordeon' && (
+                  <div className="bg-orange-50 rounded p-3 mt-3 space-y-2">
+                    <p className="text-sm font-medium text-orange-900">Opération en deux temps :</p>
+                    <div className="text-sm space-y-1">
+                      <p>
+                        <span className="text-gray-700">1. Réduction à :</span>
+                        <span className="ml-2 font-medium">1,00 €</span>
+                      </p>
+                      {acte.coup_accordeon_augmentation_montant !== null && acte.coup_accordeon_augmentation_montant !== undefined && (
+                        <p>
+                          <span className="text-gray-700">2. Augmentation de :</span>
+                          <span className="ml-2 font-medium">{formatCurrency(acte.coup_accordeon_augmentation_montant)}</span>
+                        </p>
+                      )}
+                      {acte.coup_accordeon_nouveau_capital_final !== null && acte.coup_accordeon_nouveau_capital_final !== undefined && (
+                        <p className="pt-2 border-t border-orange-200">
+                          <span className="text-gray-700">Capital final :</span>
+                          <span className="ml-2 font-bold text-green-700">{formatCurrency(acte.coup_accordeon_nouveau_capital_final)}</span>
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Motif */}
+                {acte.motif_reduction && (
+                  <div className="mt-4">
+                    <Label className="text-sm font-medium text-muted-foreground">Motif de la réduction</Label>
+                    <p className="text-gray-600 mt-1 text-sm whitespace-pre-wrap">{acte.motif_reduction}</p>
+                  </div>
+                )}
+
+                {/* Droits créanciers */}
+                {acte.reduction_motivee_pertes ? (
+                  <div className="bg-green-50 border border-green-200 rounded p-3 mt-3">
+                    <p className="text-sm text-green-800">
+                      ✅ Réduction motivée par des pertes : Dispense du droit d'opposition des créanciers (art. L. 225-205)
+                    </p>
+                  </div>
+                ) : (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded p-3 mt-3">
+                    <p className="text-sm text-yellow-800">
+                      ⚠️ Droit d'opposition des créanciers : 20 jours après publication au BODACC (art. L. 225-204)
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Card - Assemblée Générale */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Assemblée Générale</CardTitle>
+                <CardDescription>Quorum et résultats du vote</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {acte.quorum !== null && acte.quorum !== undefined && (
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Quorum</Label>
+                    <p className="mt-1 font-medium">{acte.quorum}%</p>
+                  </div>
+                )}
+                {acte.votes_pour !== null && acte.votes_pour !== undefined && (
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Votes POUR</Label>
+                    <div className="mt-1 flex items-center gap-2">
+                      <CheckCircle2 className="h-5 w-5 text-green-600" />
+                      <p className="font-medium">{acte.votes_pour}</p>
+                    </div>
+                  </div>
+                )}
+                {acte.votes_contre !== null && acte.votes_contre !== undefined && (
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Votes CONTRE</Label>
+                    <div className="mt-1 flex items-center gap-2">
+                      <XCircle className="h-5 w-5 text-red-600" />
+                      <p className="font-medium">{acte.votes_contre}</p>
+                    </div>
+                  </div>
+                )}
+                {acte.votes_pour !== null && acte.votes_pour !== undefined &&
+                 acte.votes_contre !== null && acte.votes_contre !== undefined && (
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Résultat</Label>
+                    <div className="mt-1">
+                      {acte.votes_pour >= (acte.votes_pour + acte.votes_contre) * (2/3) ? (
+                        <Badge className="bg-green-100 text-green-700 hover:bg-green-100">ADOPTÉE (Majorité 2/3)</Badge>
+                      ) : (
+                        <Badge className="bg-red-100 text-red-700 hover:bg-red-100">REJETÉE (Majorité 2/3 non atteinte)</Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Majorité : {((acte.votes_pour / (acte.votes_pour + acte.votes_contre)) * 100).toFixed(2)}%
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </>
+        )}
       </div>
 
       {/* Section Actions */}
@@ -968,6 +1269,16 @@ export default function ActeDetailPage() {
               >
                 <FileText className="mr-2 h-4 w-4" />
                 {generatingAGOrdinaireId ? 'Génération...' : 'Générer le PV d\'AG Ordinaire'}
+              </Button>
+            )}
+            {acte.type === 'reduction_capital' && (
+              <Button
+                variant="outline"
+                onClick={handleGenerateReductionCapital}
+                disabled={generatingReductionId}
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                {generatingReductionId ? 'Génération...' : 'Générer le PV de réduction'}
               </Button>
             )}
           </div>

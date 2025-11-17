@@ -4,7 +4,7 @@ import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 
 import type { ActeJuridiqueData, ClientData, CabinetData } from "@/lib/types/database";
-import { generateAugmentationCapital } from "@/lib/generateAugmentationCapital";
+import { generateReductionCapital } from "@/lib/generateReductionCapital";
 
 export async function POST(request: Request) {
   try {
@@ -68,6 +68,13 @@ export async function POST(request: Request) {
       .select(
         `
         *,
+        ancien_capital,
+        nouveau_capital_apres_reduction,
+        modalite_reduction,
+        montant_reduction,
+        nombre_actions_rachetees,
+        ancienne_valeur_nominale,
+        nouvelle_valeur_nominale,
         client:clients(*)
       `
       )
@@ -82,9 +89,16 @@ export async function POST(request: Request) {
       );
     }
 
-    if (acte.type !== "augmentation_capital") {
+    // Log de debug après récupération
+    console.log('📥 API A REÇU:', {
+      ancien_capital: acte?.ancien_capital,
+      nouveau_capital: acte?.nouveau_capital_apres_reduction,
+      modalite: acte?.modalite_reduction
+    });
+
+    if (acte.type !== "reduction_capital") {
       return NextResponse.json(
-        { error: "Ce générateur est réservé aux actes d'augmentation de capital." },
+        { error: "Ce générateur est réservé aux actes de réduction de capital." },
         { status: 400 }
       );
     }
@@ -99,15 +113,14 @@ export async function POST(request: Request) {
     if (
       acte.ancien_capital === null ||
       acte.ancien_capital === undefined ||
-      acte.nouveau_capital === null ||
-      acte.nouveau_capital === undefined ||
-      !acte.modalite ||
-      !acte.nombre_nouvelles_actions
+      acte.nouveau_capital_apres_reduction === null ||
+      acte.nouveau_capital_apres_reduction === undefined ||
+      !acte.modalite_reduction
     ) {
       return NextResponse.json(
         {
           error:
-            "Les informations suivantes sont requises : ancien capital, nouveau capital, modalité et nombre de nouvelles actions.",
+            "Les informations suivantes sont requises : ancien capital, nouveau capital après réduction et modalité de réduction.",
         },
         { status: 400 }
       );
@@ -143,7 +156,7 @@ export async function POST(request: Request) {
 
     const acteWithRelations = acte as ActeJuridiqueData & { client: ClientData };
 
-    const documentBuffer = await generateAugmentationCapital(
+    const documentBuffer = await generateReductionCapital(
       acteWithRelations,
       cabinet as CabinetData
     );
@@ -161,11 +174,11 @@ export async function POST(request: Request) {
       headers: {
         "Content-Type":
           "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "Content-Disposition": `attachment; filename="PV_Augmentation_Capital_${nomEntrepriseSafe}_${dateActe}.docx"`,
+        "Content-Disposition": `attachment; filename="PV_Reduction_Capital_${nomEntrepriseSafe}_${dateActe}.docx"`,
       },
     });
   } catch (error) {
-    console.error("Erreur lors de la génération du PV d'augmentation de capital", error);
+    console.error("Erreur lors de la génération du PV de réduction de capital", error);
     return NextResponse.json(
       {
         error:

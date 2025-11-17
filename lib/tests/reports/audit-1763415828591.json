@@ -1,0 +1,1370 @@
+{
+  "timestamp": "2025-11-17T21:43:48.591Z",
+  "duration": 22982,
+  "totalTests": 108,
+  "passed": 56,
+  "failed": 52,
+  "warnings": 0,
+  "results": [
+    {
+      "test": "Setup: Environnement",
+      "status": "success",
+      "message": "Cabinet ID: 98c4dad7-70b7-4233-ae1a-a39eff2dc817, Expert ID: 7359fea5-8901-46f5-8b67-804589bd1b8d",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:27.182Z"
+    },
+    {
+      "test": "Création client: SAS Complet",
+      "status": "success",
+      "message": "ID: 971afec6-aaca-4f48-a87f-03fa8ca6f92e",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:27.278Z"
+    },
+    {
+      "test": "Création associé: Jean MARTIN",
+      "status": "error",
+      "message": "Exception : Échec création associé: {\"error\":\"Client non trouvé\"}",
+      "details": {
+        "stack": "Error: Échec création associé: {\"error\":\"Client non trouvé\"}\n    at LexiGenAuditBot.createAssocies (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:515:17)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async LexiGenAuditBot.createTestClients (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:401:11)\n    at async LexiGenAuditBot.run (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:102:7)\n    at async main (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:1107:18)"
+      },
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:28.109Z"
+    },
+    {
+      "test": "Création associé: Marie DUPONT",
+      "status": "error",
+      "message": "Exception : Échec création associé: {\"error\":\"Client non trouvé\"}",
+      "details": {
+        "stack": "Error: Échec création associé: {\"error\":\"Client non trouvé\"}\n    at LexiGenAuditBot.createAssocies (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:515:17)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async LexiGenAuditBot.createTestClients (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:401:11)\n    at async LexiGenAuditBot.run (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:102:7)\n    at async main (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:1107:18)"
+      },
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:28.316Z"
+    },
+    {
+      "test": "Création associés: TEST SAS Complet",
+      "status": "success",
+      "message": "2 associé(s) créé(s)",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:28.316Z"
+    },
+    {
+      "test": "Création client: SAS Capital Minimum",
+      "status": "success",
+      "message": "ID: b826c99f-7138-4cce-acac-bdefaa296416",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:29.436Z"
+    },
+    {
+      "test": "Création associé: Jean MARTIN",
+      "status": "error",
+      "message": "Exception : Échec création associé: {\"error\":\"Client non trouvé\"}",
+      "details": {
+        "stack": "Error: Échec création associé: {\"error\":\"Client non trouvé\"}\n    at LexiGenAuditBot.createAssocies (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:515:17)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async LexiGenAuditBot.createTestClients (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:401:11)\n    at async LexiGenAuditBot.run (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:102:7)\n    at async main (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:1107:18)"
+      },
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:29.675Z"
+    },
+    {
+      "test": "Création associé: Marie DUPONT",
+      "status": "error",
+      "message": "Exception : Échec création associé: {\"error\":\"Client non trouvé\"}",
+      "details": {
+        "stack": "Error: Échec création associé: {\"error\":\"Client non trouvé\"}\n    at LexiGenAuditBot.createAssocies (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:515:17)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async LexiGenAuditBot.createTestClients (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:401:11)\n    at async LexiGenAuditBot.run (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:102:7)\n    at async main (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:1107:18)"
+      },
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:29.861Z"
+    },
+    {
+      "test": "Création associés: TEST SAS Capital Min",
+      "status": "success",
+      "message": "2 associé(s) créé(s)",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:29.861Z"
+    },
+    {
+      "test": "Création client: SASU Complet",
+      "status": "success",
+      "message": "ID: be0e0a3d-50ad-451a-b550-3fc1a4ef0102",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:30.953Z"
+    },
+    {
+      "test": "Création associé: Jean MARTIN",
+      "status": "error",
+      "message": "Exception : Échec création associé: {\"error\":\"Client non trouvé\"}",
+      "details": {
+        "stack": "Error: Échec création associé: {\"error\":\"Client non trouvé\"}\n    at LexiGenAuditBot.createAssocies (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:515:17)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async LexiGenAuditBot.createTestClients (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:401:11)\n    at async LexiGenAuditBot.run (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:102:7)\n    at async main (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:1107:18)"
+      },
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:31.200Z"
+    },
+    {
+      "test": "Création associés: TEST SASU Complet",
+      "status": "success",
+      "message": "1 associé(s) créé(s)",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:31.200Z"
+    },
+    {
+      "test": "Création client: SAS Sans Président",
+      "status": "success",
+      "message": "ID: 44438524-9bee-492d-b6ca-7fde873d1724",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:32.320Z"
+    },
+    {
+      "test": "Création associé: Jean MARTIN",
+      "status": "error",
+      "message": "Exception : Échec création associé: {\"error\":\"Client non trouvé\"}",
+      "details": {
+        "stack": "Error: Échec création associé: {\"error\":\"Client non trouvé\"}\n    at LexiGenAuditBot.createAssocies (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:515:17)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async LexiGenAuditBot.createTestClients (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:401:11)\n    at async LexiGenAuditBot.run (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:102:7)\n    at async main (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:1107:18)"
+      },
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:32.521Z"
+    },
+    {
+      "test": "Création associé: Marie DUPONT",
+      "status": "error",
+      "message": "Exception : Échec création associé: {\"error\":\"Client non trouvé\"}",
+      "details": {
+        "stack": "Error: Échec création associé: {\"error\":\"Client non trouvé\"}\n    at LexiGenAuditBot.createAssocies (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:515:17)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async LexiGenAuditBot.createTestClients (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:401:11)\n    at async LexiGenAuditBot.run (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:102:7)\n    at async main (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:1107:18)"
+      },
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:32.707Z"
+    },
+    {
+      "test": "Création associés: TEST SAS Sans Président",
+      "status": "success",
+      "message": "2 associé(s) créé(s)",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:32.707Z"
+    },
+    {
+      "test": "Création client: SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: a5d41e37-e5f3-4fa3-9e56-4a8c9407bcc0",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:33.812Z"
+    },
+    {
+      "test": "Création associé: Jean MARTIN",
+      "status": "error",
+      "message": "Exception : Échec création associé: {\"error\":\"Client non trouvé\"}",
+      "details": {
+        "stack": "Error: Échec création associé: {\"error\":\"Client non trouvé\"}\n    at LexiGenAuditBot.createAssocies (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:515:17)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async LexiGenAuditBot.createTestClients (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:401:11)\n    at async LexiGenAuditBot.run (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:102:7)\n    at async main (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:1107:18)"
+      },
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:34.026Z"
+    },
+    {
+      "test": "Création associé: Marie DUPONT",
+      "status": "error",
+      "message": "Exception : Échec création associé: {\"error\":\"Client non trouvé\"}",
+      "details": {
+        "stack": "Error: Échec création associé: {\"error\":\"Client non trouvé\"}\n    at LexiGenAuditBot.createAssocies (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:515:17)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async LexiGenAuditBot.createTestClients (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:401:11)\n    at async LexiGenAuditBot.run (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:102:7)\n    at async main (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:1107:18)"
+      },
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:34.233Z"
+    },
+    {
+      "test": "Création associés: TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "2 associé(s) créé(s)",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:34.233Z"
+    },
+    {
+      "test": "Création client: SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: b6332b8c-cdc9-4e4f-9c92-cbd6144b6d57",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:35.330Z"
+    },
+    {
+      "test": "Création associé: Jean MARTIN",
+      "status": "error",
+      "message": "Exception : Échec création associé: {\"error\":\"Client non trouvé\"}",
+      "details": {
+        "stack": "Error: Échec création associé: {\"error\":\"Client non trouvé\"}\n    at LexiGenAuditBot.createAssocies (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:515:17)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async LexiGenAuditBot.createTestClients (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:401:11)\n    at async LexiGenAuditBot.run (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:102:7)\n    at async main (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:1107:18)"
+      },
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:35.554Z"
+    },
+    {
+      "test": "Création associés: TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "1 associé(s) créé(s)",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:35.554Z"
+    },
+    {
+      "test": "Acte augmentation (numeraire) - TEST SAS Complet",
+      "status": "success",
+      "message": "ID: 367d784b-c90a-4c7c-875f-6061eedd8e5c",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:36.666Z"
+    },
+    {
+      "test": "Acte augmentation (nature) - TEST SAS Complet",
+      "status": "success",
+      "message": "ID: f54f5af2-3aa5-4507-ab9e-94132d3eeb22",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:36.744Z"
+    },
+    {
+      "test": "Acte augmentation (reserves) - TEST SAS Complet",
+      "status": "success",
+      "message": "ID: fff7238c-5dd2-4eff-a28d-488ff5b4c01f",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:36.827Z"
+    },
+    {
+      "test": "Acte réduction (rachat_annulation) - TEST SAS Complet",
+      "status": "success",
+      "message": "ID: 4aa351c6-4b0d-4eb9-958a-a527c9c2179b",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:36.910Z"
+    },
+    {
+      "test": "Acte réduction (reduction_valeur_nominale) - TEST SAS Complet",
+      "status": "success",
+      "message": "ID: 29284ef0-c315-46ef-972d-b8fa2590c8c2",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:36.984Z"
+    },
+    {
+      "test": "Acte réduction (coup_accordeon) - TEST SAS Complet",
+      "status": "success",
+      "message": "ID: 3288d6f8-9900-4391-a7da-c917957daad0",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:37.075Z"
+    },
+    {
+      "test": "Acte AG Ordinaire - TEST SAS Complet",
+      "status": "success",
+      "message": "ID: d4db4bbe-e72c-4a1c-b1e0-c698673bd62e",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:37.148Z"
+    },
+    {
+      "test": "Acte augmentation (numeraire) - TEST SAS Capital Min",
+      "status": "success",
+      "message": "ID: c8a23f83-3515-4580-9315-f4514855c9b5",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:37.225Z"
+    },
+    {
+      "test": "Acte augmentation (nature) - TEST SAS Capital Min",
+      "status": "success",
+      "message": "ID: ddbebe0f-e20e-4f2a-af15-1c41a1beb921",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:37.302Z"
+    },
+    {
+      "test": "Acte augmentation (reserves) - TEST SAS Capital Min",
+      "status": "success",
+      "message": "ID: c8e342e9-738c-4a56-a35c-a0136eb6eddd",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:37.385Z"
+    },
+    {
+      "test": "Acte réduction (rachat_annulation) - TEST SAS Capital Min",
+      "status": "success",
+      "message": "ID: 85f8b6f0-30d2-4cbd-8b7a-187529c22b6d",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:37.460Z"
+    },
+    {
+      "test": "Acte réduction (reduction_valeur_nominale) - TEST SAS Capital Min",
+      "status": "success",
+      "message": "ID: 04ffb529-c67a-4f96-a04a-771a567735b7",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:37.547Z"
+    },
+    {
+      "test": "Acte réduction (coup_accordeon) - TEST SAS Capital Min",
+      "status": "success",
+      "message": "ID: 79ba7b7c-7550-488e-95dc-05b22b364e91",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:37.631Z"
+    },
+    {
+      "test": "Acte AG Ordinaire - TEST SAS Capital Min",
+      "status": "success",
+      "message": "ID: 150279df-ace5-4a43-91e0-1188fa3e8856",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:37.718Z"
+    },
+    {
+      "test": "Acte augmentation (numeraire) - TEST SASU Complet",
+      "status": "success",
+      "message": "ID: c22e8e0a-b7b4-4f2b-967b-0841ebd23ef9",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:37.792Z"
+    },
+    {
+      "test": "Acte augmentation (nature) - TEST SASU Complet",
+      "status": "success",
+      "message": "ID: 07300cac-3f97-409d-9f6f-3d89b55402f2",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:37.885Z"
+    },
+    {
+      "test": "Acte augmentation (reserves) - TEST SASU Complet",
+      "status": "success",
+      "message": "ID: 030947c9-3125-4295-8343-0c632631c724",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:37.965Z"
+    },
+    {
+      "test": "Acte réduction (rachat_annulation) - TEST SASU Complet",
+      "status": "success",
+      "message": "ID: 88b50216-ed79-443c-8964-d3bf959360f3",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:38.048Z"
+    },
+    {
+      "test": "Acte réduction (reduction_valeur_nominale) - TEST SASU Complet",
+      "status": "success",
+      "message": "ID: b2eee2bc-f7df-417e-86f9-caf112d660c3",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:38.147Z"
+    },
+    {
+      "test": "Acte réduction (coup_accordeon) - TEST SASU Complet",
+      "status": "success",
+      "message": "ID: 197dd2d3-887a-4374-a436-febe1c18a16f",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:38.234Z"
+    },
+    {
+      "test": "Acte AG Ordinaire - TEST SASU Complet",
+      "status": "success",
+      "message": "ID: afc9e437-1a58-4639-b64b-2e1db8f2538b",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:38.310Z"
+    },
+    {
+      "test": "Acte augmentation (numeraire) - TEST SAS Sans Président",
+      "status": "success",
+      "message": "ID: 41de92c7-a5c8-4060-9796-ee7aa5f17c59",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:38.401Z"
+    },
+    {
+      "test": "Acte augmentation (nature) - TEST SAS Sans Président",
+      "status": "success",
+      "message": "ID: 8a69db42-4640-47cc-a024-31337e074ea3",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:38.488Z"
+    },
+    {
+      "test": "Acte augmentation (reserves) - TEST SAS Sans Président",
+      "status": "success",
+      "message": "ID: 71f73e0d-13da-4eeb-ab6d-58263d3b78c0",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:38.564Z"
+    },
+    {
+      "test": "Acte réduction (rachat_annulation) - TEST SAS Sans Président",
+      "status": "success",
+      "message": "ID: 4c08667d-622a-437e-bfae-11c085fe050f",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:38.646Z"
+    },
+    {
+      "test": "Acte réduction (reduction_valeur_nominale) - TEST SAS Sans Président",
+      "status": "success",
+      "message": "ID: 4c76fbbc-1403-42c5-808e-6a6e25959c57",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:38.727Z"
+    },
+    {
+      "test": "Acte réduction (coup_accordeon) - TEST SAS Sans Président",
+      "status": "success",
+      "message": "ID: bbc2afc7-3b11-4457-8a10-c5b4c2b5559a",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:38.811Z"
+    },
+    {
+      "test": "Acte AG Ordinaire - TEST SAS Sans Président",
+      "status": "success",
+      "message": "ID: 858b6c1c-dcd0-4880-9c13-72c4ad6c4e63",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:38.900Z"
+    },
+    {
+      "test": "Acte augmentation (numeraire) - TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: 480d46dd-5c0c-44f4-bc07-cdbcea1023f8",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:38.979Z"
+    },
+    {
+      "test": "Acte augmentation (nature) - TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: e59431cd-017d-4c8b-bd51-6be093b1bf97",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:39.050Z"
+    },
+    {
+      "test": "Acte augmentation (reserves) - TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: fa8e9dfe-3ad2-404f-a091-fee319a6abe6",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:39.123Z"
+    },
+    {
+      "test": "Acte réduction (rachat_annulation) - TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: 4136d9e4-c7c8-4fef-a6c6-cf334284e883",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:39.213Z"
+    },
+    {
+      "test": "Acte réduction (reduction_valeur_nominale) - TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: 2e34ebb2-90d0-489a-8f2b-18187bb07f84",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:39.306Z"
+    },
+    {
+      "test": "Acte réduction (coup_accordeon) - TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: 1cee431a-644a-4181-9290-9a513815908f",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:39.385Z"
+    },
+    {
+      "test": "Acte AG Ordinaire - TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: ce389983-2e14-40ea-955a-8cde4365f5f3",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:39.485Z"
+    },
+    {
+      "test": "Acte augmentation (numeraire) - TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: 4dec603f-cabd-4ab9-90ac-14995679ae2a",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:39.565Z"
+    },
+    {
+      "test": "Acte augmentation (nature) - TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: d0db0acd-9a45-4f11-afa9-f678e68c15b1",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:39.642Z"
+    },
+    {
+      "test": "Acte augmentation (reserves) - TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: b4ddd09c-9363-46fa-932f-411793e718a2",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:39.718Z"
+    },
+    {
+      "test": "Acte réduction (rachat_annulation) - TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: 1ea702e2-ab77-45ab-b620-c160610e3ee8",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:39.798Z"
+    },
+    {
+      "test": "Acte réduction (reduction_valeur_nominale) - TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: e93b5440-01f8-4b54-9532-28a5ee603f38",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:39.877Z"
+    },
+    {
+      "test": "Acte réduction (coup_accordeon) - TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: 665e55d8-0015-482d-8118-cdb64589c9cb",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:39.961Z"
+    },
+    {
+      "test": "Acte AG Ordinaire - TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: 6813447d-22e0-44ce-84be-1bcc0f2afad9",
+      "duration": 0,
+      "timestamp": "2025-11-17T21:43:40.047Z"
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+      "details": {
+        "acte_id": "367d784b-c90a-4c7c-875f-6061eedd8e5c"
+      },
+      "duration": 576
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+      "details": {
+        "acte_id": "f54f5af2-3aa5-4507-ab9e-94132d3eeb22"
+      },
+      "duration": 175
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+      "details": {
+        "acte_id": "fff7238c-5dd2-4eff-a28d-488ff5b4c01f"
+      },
+      "duration": 185
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+      "details": {
+        "acte_id": "4aa351c6-4b0d-4eb9-958a-a527c9c2179b"
+      },
+      "duration": 291
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+      "details": {
+        "acte_id": "29284ef0-c315-46ef-972d-b8fa2590c8c2"
+      },
+      "duration": 215
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+      "details": {
+        "acte_id": "3288d6f8-9900-4391-a7da-c917957daad0"
+      },
+      "duration": 209
+    },
+    {
+      "test": "Génération doc : ag_ordinaire",
+      "status": "error",
+      "message": "Échec : 404: {\"success\":false,\"error\":\"Acte introuvable\"}",
+      "details": {
+        "acte_id": "d4db4bbe-e72c-4a1c-b1e0-c698673bd62e"
+      },
+      "duration": 235
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+      "details": {
+        "acte_id": "c8a23f83-3515-4580-9315-f4514855c9b5"
+      },
+      "duration": 206
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+      "details": {
+        "acte_id": "ddbebe0f-e20e-4f2a-af15-1c41a1beb921"
+      },
+      "duration": 173
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+      "details": {
+        "acte_id": "c8e342e9-738c-4a56-a35c-a0136eb6eddd"
+      },
+      "duration": 194
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+      "details": {
+        "acte_id": "85f8b6f0-30d2-4cbd-8b7a-187529c22b6d"
+      },
+      "duration": 190
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+      "details": {
+        "acte_id": "04ffb529-c67a-4f96-a04a-771a567735b7"
+      },
+      "duration": 188
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+      "details": {
+        "acte_id": "79ba7b7c-7550-488e-95dc-05b22b364e91"
+      },
+      "duration": 192
+    },
+    {
+      "test": "Génération doc : ag_ordinaire",
+      "status": "error",
+      "message": "Échec : 404: {\"success\":false,\"error\":\"Acte introuvable\"}",
+      "details": {
+        "acte_id": "150279df-ace5-4a43-91e0-1188fa3e8856"
+      },
+      "duration": 187
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+      "details": {
+        "acte_id": "c22e8e0a-b7b4-4f2b-967b-0841ebd23ef9"
+      },
+      "duration": 163
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+      "details": {
+        "acte_id": "07300cac-3f97-409d-9f6f-3d89b55402f2"
+      },
+      "duration": 176
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+      "details": {
+        "acte_id": "030947c9-3125-4295-8343-0c632631c724"
+      },
+      "duration": 189
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+      "details": {
+        "acte_id": "88b50216-ed79-443c-8964-d3bf959360f3"
+      },
+      "duration": 176
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+      "details": {
+        "acte_id": "b2eee2bc-f7df-417e-86f9-caf112d660c3"
+      },
+      "duration": 174
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+      "details": {
+        "acte_id": "197dd2d3-887a-4374-a436-febe1c18a16f"
+      },
+      "duration": 251
+    },
+    {
+      "test": "Génération doc : ag_ordinaire",
+      "status": "error",
+      "message": "Échec : 404: {\"success\":false,\"error\":\"Acte introuvable\"}",
+      "details": {
+        "acte_id": "afc9e437-1a58-4639-b64b-2e1db8f2538b"
+      },
+      "duration": 170
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+      "details": {
+        "acte_id": "41de92c7-a5c8-4060-9796-ee7aa5f17c59"
+      },
+      "duration": 203
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+      "details": {
+        "acte_id": "8a69db42-4640-47cc-a024-31337e074ea3"
+      },
+      "duration": 164
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+      "details": {
+        "acte_id": "71f73e0d-13da-4eeb-ab6d-58263d3b78c0"
+      },
+      "duration": 185
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+      "details": {
+        "acte_id": "4c08667d-622a-437e-bfae-11c085fe050f"
+      },
+      "duration": 190
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+      "details": {
+        "acte_id": "4c76fbbc-1403-42c5-808e-6a6e25959c57"
+      },
+      "duration": 184
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+      "details": {
+        "acte_id": "bbc2afc7-3b11-4457-8a10-c5b4c2b5559a"
+      },
+      "duration": 226
+    },
+    {
+      "test": "Génération doc : ag_ordinaire",
+      "status": "error",
+      "message": "Échec : 404: {\"success\":false,\"error\":\"Acte introuvable\"}",
+      "details": {
+        "acte_id": "858b6c1c-dcd0-4880-9c13-72c4ad6c4e63"
+      },
+      "duration": 189
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+      "details": {
+        "acte_id": "480d46dd-5c0c-44f4-bc07-cdbcea1023f8"
+      },
+      "duration": 165
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+      "details": {
+        "acte_id": "e59431cd-017d-4c8b-bd51-6be093b1bf97"
+      },
+      "duration": 178
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+      "details": {
+        "acte_id": "fa8e9dfe-3ad2-404f-a091-fee319a6abe6"
+      },
+      "duration": 179
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+      "details": {
+        "acte_id": "4136d9e4-c7c8-4fef-a6c6-cf334284e883"
+      },
+      "duration": 204
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+      "details": {
+        "acte_id": "2e34ebb2-90d0-489a-8f2b-18187bb07f84"
+      },
+      "duration": 203
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+      "details": {
+        "acte_id": "1cee431a-644a-4181-9290-9a513815908f"
+      },
+      "duration": 185
+    },
+    {
+      "test": "Génération doc : ag_ordinaire",
+      "status": "error",
+      "message": "Échec : 404: {\"success\":false,\"error\":\"Acte introuvable\"}",
+      "details": {
+        "acte_id": "ce389983-2e14-40ea-955a-8cde4365f5f3"
+      },
+      "duration": 183
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+      "details": {
+        "acte_id": "4dec603f-cabd-4ab9-90ac-14995679ae2a"
+      },
+      "duration": 202
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+      "details": {
+        "acte_id": "d0db0acd-9a45-4f11-afa9-f678e68c15b1"
+      },
+      "duration": 192
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+      "details": {
+        "acte_id": "b4ddd09c-9363-46fa-932f-411793e718a2"
+      },
+      "duration": 232
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+      "details": {
+        "acte_id": "1ea702e2-ab77-45ab-b620-c160610e3ee8"
+      },
+      "duration": 184
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+      "details": {
+        "acte_id": "e93b5440-01f8-4b54-9532-28a5ee603f38"
+      },
+      "duration": 178
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+      "details": {
+        "acte_id": "665e55d8-0015-482d-8118-cdb64589c9cb"
+      },
+      "duration": 190
+    },
+    {
+      "test": "Génération doc : ag_ordinaire",
+      "status": "error",
+      "message": "Échec : 404: {\"success\":false,\"error\":\"Acte introuvable\"}",
+      "details": {
+        "acte_id": "6813447d-22e0-44ce-84be-1bcc0f2afad9"
+      },
+      "duration": 193
+    },
+    {
+      "test": "Validation : Capital final ≥ 1€",
+      "status": "success",
+      "message": "Validation bloque correctement",
+      "duration": 0
+    }
+  ],
+  "errorsByType": {
+    "Création associé": [
+      {
+        "test": "Création associé: Jean MARTIN",
+        "status": "error",
+        "message": "Exception : Échec création associé: {\"error\":\"Client non trouvé\"}",
+        "details": {
+          "stack": "Error: Échec création associé: {\"error\":\"Client non trouvé\"}\n    at LexiGenAuditBot.createAssocies (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:515:17)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async LexiGenAuditBot.createTestClients (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:401:11)\n    at async LexiGenAuditBot.run (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:102:7)\n    at async main (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:1107:18)"
+        },
+        "duration": 0,
+        "timestamp": "2025-11-17T21:43:28.109Z"
+      },
+      {
+        "test": "Création associé: Marie DUPONT",
+        "status": "error",
+        "message": "Exception : Échec création associé: {\"error\":\"Client non trouvé\"}",
+        "details": {
+          "stack": "Error: Échec création associé: {\"error\":\"Client non trouvé\"}\n    at LexiGenAuditBot.createAssocies (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:515:17)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async LexiGenAuditBot.createTestClients (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:401:11)\n    at async LexiGenAuditBot.run (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:102:7)\n    at async main (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:1107:18)"
+        },
+        "duration": 0,
+        "timestamp": "2025-11-17T21:43:28.316Z"
+      },
+      {
+        "test": "Création associé: Jean MARTIN",
+        "status": "error",
+        "message": "Exception : Échec création associé: {\"error\":\"Client non trouvé\"}",
+        "details": {
+          "stack": "Error: Échec création associé: {\"error\":\"Client non trouvé\"}\n    at LexiGenAuditBot.createAssocies (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:515:17)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async LexiGenAuditBot.createTestClients (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:401:11)\n    at async LexiGenAuditBot.run (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:102:7)\n    at async main (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:1107:18)"
+        },
+        "duration": 0,
+        "timestamp": "2025-11-17T21:43:29.675Z"
+      },
+      {
+        "test": "Création associé: Marie DUPONT",
+        "status": "error",
+        "message": "Exception : Échec création associé: {\"error\":\"Client non trouvé\"}",
+        "details": {
+          "stack": "Error: Échec création associé: {\"error\":\"Client non trouvé\"}\n    at LexiGenAuditBot.createAssocies (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:515:17)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async LexiGenAuditBot.createTestClients (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:401:11)\n    at async LexiGenAuditBot.run (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:102:7)\n    at async main (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:1107:18)"
+        },
+        "duration": 0,
+        "timestamp": "2025-11-17T21:43:29.861Z"
+      },
+      {
+        "test": "Création associé: Jean MARTIN",
+        "status": "error",
+        "message": "Exception : Échec création associé: {\"error\":\"Client non trouvé\"}",
+        "details": {
+          "stack": "Error: Échec création associé: {\"error\":\"Client non trouvé\"}\n    at LexiGenAuditBot.createAssocies (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:515:17)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async LexiGenAuditBot.createTestClients (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:401:11)\n    at async LexiGenAuditBot.run (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:102:7)\n    at async main (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:1107:18)"
+        },
+        "duration": 0,
+        "timestamp": "2025-11-17T21:43:31.200Z"
+      },
+      {
+        "test": "Création associé: Jean MARTIN",
+        "status": "error",
+        "message": "Exception : Échec création associé: {\"error\":\"Client non trouvé\"}",
+        "details": {
+          "stack": "Error: Échec création associé: {\"error\":\"Client non trouvé\"}\n    at LexiGenAuditBot.createAssocies (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:515:17)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async LexiGenAuditBot.createTestClients (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:401:11)\n    at async LexiGenAuditBot.run (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:102:7)\n    at async main (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:1107:18)"
+        },
+        "duration": 0,
+        "timestamp": "2025-11-17T21:43:32.521Z"
+      },
+      {
+        "test": "Création associé: Marie DUPONT",
+        "status": "error",
+        "message": "Exception : Échec création associé: {\"error\":\"Client non trouvé\"}",
+        "details": {
+          "stack": "Error: Échec création associé: {\"error\":\"Client non trouvé\"}\n    at LexiGenAuditBot.createAssocies (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:515:17)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async LexiGenAuditBot.createTestClients (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:401:11)\n    at async LexiGenAuditBot.run (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:102:7)\n    at async main (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:1107:18)"
+        },
+        "duration": 0,
+        "timestamp": "2025-11-17T21:43:32.707Z"
+      },
+      {
+        "test": "Création associé: Jean MARTIN",
+        "status": "error",
+        "message": "Exception : Échec création associé: {\"error\":\"Client non trouvé\"}",
+        "details": {
+          "stack": "Error: Échec création associé: {\"error\":\"Client non trouvé\"}\n    at LexiGenAuditBot.createAssocies (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:515:17)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async LexiGenAuditBot.createTestClients (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:401:11)\n    at async LexiGenAuditBot.run (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:102:7)\n    at async main (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:1107:18)"
+        },
+        "duration": 0,
+        "timestamp": "2025-11-17T21:43:34.026Z"
+      },
+      {
+        "test": "Création associé: Marie DUPONT",
+        "status": "error",
+        "message": "Exception : Échec création associé: {\"error\":\"Client non trouvé\"}",
+        "details": {
+          "stack": "Error: Échec création associé: {\"error\":\"Client non trouvé\"}\n    at LexiGenAuditBot.createAssocies (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:515:17)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async LexiGenAuditBot.createTestClients (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:401:11)\n    at async LexiGenAuditBot.run (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:102:7)\n    at async main (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:1107:18)"
+        },
+        "duration": 0,
+        "timestamp": "2025-11-17T21:43:34.233Z"
+      },
+      {
+        "test": "Création associé: Jean MARTIN",
+        "status": "error",
+        "message": "Exception : Échec création associé: {\"error\":\"Client non trouvé\"}",
+        "details": {
+          "stack": "Error: Échec création associé: {\"error\":\"Client non trouvé\"}\n    at LexiGenAuditBot.createAssocies (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:515:17)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async LexiGenAuditBot.createTestClients (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:401:11)\n    at async LexiGenAuditBot.run (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:102:7)\n    at async main (C:\\Users\\jeanl\\Documents\\saas-statuts-juridiques\\lib\\tests\\bot-audit.ts:1107:18)"
+        },
+        "duration": 0,
+        "timestamp": "2025-11-17T21:43:35.554Z"
+      }
+    ],
+    "Génération doc ": [
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+        "details": {
+          "acte_id": "367d784b-c90a-4c7c-875f-6061eedd8e5c"
+        },
+        "duration": 576
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+        "details": {
+          "acte_id": "f54f5af2-3aa5-4507-ab9e-94132d3eeb22"
+        },
+        "duration": 175
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+        "details": {
+          "acte_id": "fff7238c-5dd2-4eff-a28d-488ff5b4c01f"
+        },
+        "duration": 185
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+        "details": {
+          "acte_id": "4aa351c6-4b0d-4eb9-958a-a527c9c2179b"
+        },
+        "duration": 291
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+        "details": {
+          "acte_id": "29284ef0-c315-46ef-972d-b8fa2590c8c2"
+        },
+        "duration": 215
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+        "details": {
+          "acte_id": "3288d6f8-9900-4391-a7da-c917957daad0"
+        },
+        "duration": 209
+      },
+      {
+        "test": "Génération doc : ag_ordinaire",
+        "status": "error",
+        "message": "Échec : 404: {\"success\":false,\"error\":\"Acte introuvable\"}",
+        "details": {
+          "acte_id": "d4db4bbe-e72c-4a1c-b1e0-c698673bd62e"
+        },
+        "duration": 235
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+        "details": {
+          "acte_id": "c8a23f83-3515-4580-9315-f4514855c9b5"
+        },
+        "duration": 206
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+        "details": {
+          "acte_id": "ddbebe0f-e20e-4f2a-af15-1c41a1beb921"
+        },
+        "duration": 173
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+        "details": {
+          "acte_id": "c8e342e9-738c-4a56-a35c-a0136eb6eddd"
+        },
+        "duration": 194
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+        "details": {
+          "acte_id": "85f8b6f0-30d2-4cbd-8b7a-187529c22b6d"
+        },
+        "duration": 190
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+        "details": {
+          "acte_id": "04ffb529-c67a-4f96-a04a-771a567735b7"
+        },
+        "duration": 188
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+        "details": {
+          "acte_id": "79ba7b7c-7550-488e-95dc-05b22b364e91"
+        },
+        "duration": 192
+      },
+      {
+        "test": "Génération doc : ag_ordinaire",
+        "status": "error",
+        "message": "Échec : 404: {\"success\":false,\"error\":\"Acte introuvable\"}",
+        "details": {
+          "acte_id": "150279df-ace5-4a43-91e0-1188fa3e8856"
+        },
+        "duration": 187
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+        "details": {
+          "acte_id": "c22e8e0a-b7b4-4f2b-967b-0841ebd23ef9"
+        },
+        "duration": 163
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+        "details": {
+          "acte_id": "07300cac-3f97-409d-9f6f-3d89b55402f2"
+        },
+        "duration": 176
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+        "details": {
+          "acte_id": "030947c9-3125-4295-8343-0c632631c724"
+        },
+        "duration": 189
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+        "details": {
+          "acte_id": "88b50216-ed79-443c-8964-d3bf959360f3"
+        },
+        "duration": 176
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+        "details": {
+          "acte_id": "b2eee2bc-f7df-417e-86f9-caf112d660c3"
+        },
+        "duration": 174
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+        "details": {
+          "acte_id": "197dd2d3-887a-4374-a436-febe1c18a16f"
+        },
+        "duration": 251
+      },
+      {
+        "test": "Génération doc : ag_ordinaire",
+        "status": "error",
+        "message": "Échec : 404: {\"success\":false,\"error\":\"Acte introuvable\"}",
+        "details": {
+          "acte_id": "afc9e437-1a58-4639-b64b-2e1db8f2538b"
+        },
+        "duration": 170
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+        "details": {
+          "acte_id": "41de92c7-a5c8-4060-9796-ee7aa5f17c59"
+        },
+        "duration": 203
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+        "details": {
+          "acte_id": "8a69db42-4640-47cc-a024-31337e074ea3"
+        },
+        "duration": 164
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+        "details": {
+          "acte_id": "71f73e0d-13da-4eeb-ab6d-58263d3b78c0"
+        },
+        "duration": 185
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+        "details": {
+          "acte_id": "4c08667d-622a-437e-bfae-11c085fe050f"
+        },
+        "duration": 190
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+        "details": {
+          "acte_id": "4c76fbbc-1403-42c5-808e-6a6e25959c57"
+        },
+        "duration": 184
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+        "details": {
+          "acte_id": "bbc2afc7-3b11-4457-8a10-c5b4c2b5559a"
+        },
+        "duration": 226
+      },
+      {
+        "test": "Génération doc : ag_ordinaire",
+        "status": "error",
+        "message": "Échec : 404: {\"success\":false,\"error\":\"Acte introuvable\"}",
+        "details": {
+          "acte_id": "858b6c1c-dcd0-4880-9c13-72c4ad6c4e63"
+        },
+        "duration": 189
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+        "details": {
+          "acte_id": "480d46dd-5c0c-44f4-bc07-cdbcea1023f8"
+        },
+        "duration": 165
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+        "details": {
+          "acte_id": "e59431cd-017d-4c8b-bd51-6be093b1bf97"
+        },
+        "duration": 178
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+        "details": {
+          "acte_id": "fa8e9dfe-3ad2-404f-a091-fee319a6abe6"
+        },
+        "duration": 179
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+        "details": {
+          "acte_id": "4136d9e4-c7c8-4fef-a6c6-cf334284e883"
+        },
+        "duration": 204
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+        "details": {
+          "acte_id": "2e34ebb2-90d0-489a-8f2b-18187bb07f84"
+        },
+        "duration": 203
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+        "details": {
+          "acte_id": "1cee431a-644a-4181-9290-9a513815908f"
+        },
+        "duration": 185
+      },
+      {
+        "test": "Génération doc : ag_ordinaire",
+        "status": "error",
+        "message": "Échec : 404: {\"success\":false,\"error\":\"Acte introuvable\"}",
+        "details": {
+          "acte_id": "ce389983-2e14-40ea-955a-8cde4365f5f3"
+        },
+        "duration": 183
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+        "details": {
+          "acte_id": "4dec603f-cabd-4ab9-90ac-14995679ae2a"
+        },
+        "duration": 202
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+        "details": {
+          "acte_id": "d0db0acd-9a45-4f11-afa9-f678e68c15b1"
+        },
+        "duration": 192
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+        "details": {
+          "acte_id": "b4ddd09c-9363-46fa-932f-411793e718a2"
+        },
+        "duration": 232
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+        "details": {
+          "acte_id": "1ea702e2-ab77-45ab-b620-c160610e3ee8"
+        },
+        "duration": 184
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+        "details": {
+          "acte_id": "e93b5440-01f8-4b54-9532-28a5ee603f38"
+        },
+        "duration": 178
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Acte juridique introuvable ou inaccessible.\"}",
+        "details": {
+          "acte_id": "665e55d8-0015-482d-8118-cdb64589c9cb"
+        },
+        "duration": 190
+      },
+      {
+        "test": "Génération doc : ag_ordinaire",
+        "status": "error",
+        "message": "Échec : 404: {\"success\":false,\"error\":\"Acte introuvable\"}",
+        "details": {
+          "acte_id": "6813447d-22e0-44ce-84be-1bcc0f2afad9"
+        },
+        "duration": 193
+      }
+    ]
+  },
+  "summary": {
+    "total": 108,
+    "passed": 56,
+    "failed": 52,
+    "warnings": 0,
+    "percentage": "52"
+  }
+}

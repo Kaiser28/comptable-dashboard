@@ -112,6 +112,32 @@ type ActeAGOrdinaireFormData = {
   votes_abstention_comptes: number | '';
 };
 
+type ActeReductionCapitalFormData = {
+  date_acte: string;
+  statut: 'brouillon' | 'validé' | 'signé';
+  ancien_capital: number | '';
+  nombre_actions: number | '';
+  valeur_nominale_actuelle: number | '';
+  modalite_reduction: 'rachat_annulation' | 'reduction_valeur_nominale' | 'coup_accordeon' | '';
+  montant_reduction: number | '';
+  nouveau_capital_apres_reduction: number | '';
+  // Modalité rachat_annulation
+  nombre_actions_rachetees: number | '';
+  prix_rachat_par_action: number | '';
+  // Modalité reduction_valeur_nominale
+  ancienne_valeur_nominale: number | '';
+  nouvelle_valeur_nominale: number | '';
+  // Modalité coup_accordeon
+  coup_accordeon_augmentation_montant: number | '';
+  coup_accordeon_nouveau_capital_final: number | '';
+  // Commun
+  motif_reduction: string;
+  reduction_motivee_pertes: boolean;
+  quorum: number | '';
+  votes_pour: number | '';
+  votes_contre: number | '';
+};
+
 const initialAGOrdinaireFormState: ActeAGOrdinaireFormData = {
   date_acte: new Date().toISOString().split('T')[0],
   statut: 'brouillon',
@@ -130,7 +156,29 @@ const initialAGOrdinaireFormState: ActeAGOrdinaireFormData = {
   votes_abstention_comptes: 0,
 };
 
-type FormErrors = Partial<Record<keyof (ActeCessionFormData & ActeAugmentationCapitalFormData & ActeAGOrdinaireFormData), string>> & { global?: string };
+const initialReductionCapitalFormState: ActeReductionCapitalFormData = {
+  date_acte: new Date().toISOString().split('T')[0],
+  statut: 'brouillon',
+  ancien_capital: '',
+  nombre_actions: '',
+  valeur_nominale_actuelle: '',
+  modalite_reduction: '',
+  montant_reduction: '',
+  nouveau_capital_apres_reduction: '',
+  nombre_actions_rachetees: '',
+  prix_rachat_par_action: '',
+  ancienne_valeur_nominale: '',
+  nouvelle_valeur_nominale: '',
+  coup_accordeon_augmentation_montant: '',
+  coup_accordeon_nouveau_capital_final: '',
+  motif_reduction: '',
+  reduction_motivee_pertes: false,
+  quorum: '',
+  votes_pour: '',
+  votes_contre: '',
+};
+
+type FormErrors = Partial<Record<keyof (ActeCessionFormData & ActeAugmentationCapitalFormData & ActeAGOrdinaireFormData & ActeReductionCapitalFormData), string>> & { global?: string };
 
 const initialAugmentationFormState: ActeAugmentationCapitalFormData = {
   date_acte: new Date().toISOString().split('T')[0],
@@ -156,7 +204,7 @@ const initialAugmentationFormState: ActeAugmentationCapitalFormData = {
 
 export default function CreateActePage() {
   const router = useRouter();
-  const [acteType, setActeType] = useState<'cession_actions' | 'augmentation_capital' | 'ag_ordinaire'>('cession_actions');
+  const [acteType, setActeType] = useState<'cession_actions' | 'augmentation_capital' | 'ag_ordinaire' | 'reduction_capital'>('cession_actions');
   const [selectedClientId, setSelectedClientId] = useState<string>('');
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [clients, setClients] = useState<Client[]>([]);
@@ -166,6 +214,7 @@ export default function CreateActePage() {
   const [formData, setFormData] = useState<ActeCessionFormData>(initialFormState);
   const [augmentationFormData, setAugmentationFormData] = useState<ActeAugmentationCapitalFormData>(initialAugmentationFormState);
   const [agOrdinaireFormData, setAGOrdinaireFormData] = useState<ActeAGOrdinaireFormData>(initialAGOrdinaireFormState);
+  const [reductionCapitalFormData, setReductionCapitalFormData] = useState<ActeReductionCapitalFormData>(initialReductionCapitalFormState);
   const [nouveauxAssocies, setNouveauxAssocies] = useState<NouvelAssocie[]>([]);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -259,6 +308,13 @@ export default function CreateActePage() {
         ancien_capital: selectedClient.capital_social || 0,
       }));
     }
+    if (selectedClient && acteType === 'reduction_capital') {
+      setReductionCapitalFormData((prev) => ({
+        ...prev,
+        ancien_capital: selectedClient.capital_social || 0,
+        nombre_actions: selectedClient.nb_actions || '',
+      }));
+    }
   }, [selectedClient, acteType]);
 
   // Calcul automatique du prix total (cession)
@@ -292,6 +348,110 @@ export default function CreateActePage() {
       }));
     }
   }, [augmentationFormData.ancien_capital, augmentationFormData.montant_augmentation]);
+
+  // Calcul automatique du nouveau capital après réduction
+  useEffect(() => {
+    if (reductionCapitalFormData.ancien_capital && reductionCapitalFormData.montant_reduction) {
+      const nouveau = Number(reductionCapitalFormData.ancien_capital) - Number(reductionCapitalFormData.montant_reduction);
+      setReductionCapitalFormData((prev) => ({
+        ...prev,
+        nouveau_capital_apres_reduction: nouveau >= 1 ? nouveau : '',
+      }));
+    } else {
+      setReductionCapitalFormData((prev) => ({
+        ...prev,
+        nouveau_capital_apres_reduction: '',
+      }));
+    }
+  }, [reductionCapitalFormData.ancien_capital, reductionCapitalFormData.montant_reduction]);
+
+  // Calcul automatique montant réduction (rachat_annulation)
+  useEffect(() => {
+    if (reductionCapitalFormData.modalite_reduction === 'rachat_annulation' && 
+        reductionCapitalFormData.nombre_actions_rachetees && 
+        reductionCapitalFormData.prix_rachat_par_action) {
+      const montant = Number(reductionCapitalFormData.nombre_actions_rachetees) * Number(reductionCapitalFormData.prix_rachat_par_action);
+      setReductionCapitalFormData((prev) => ({
+        ...prev,
+        montant_reduction: montant,
+      }));
+    } else if (reductionCapitalFormData.modalite_reduction === 'rachat_annulation') {
+      setReductionCapitalFormData((prev) => ({
+        ...prev,
+        montant_reduction: '',
+      }));
+    }
+  }, [reductionCapitalFormData.modalite_reduction, reductionCapitalFormData.nombre_actions_rachetees, reductionCapitalFormData.prix_rachat_par_action]);
+
+  // Calcul automatique montant réduction (reduction_valeur_nominale)
+  useEffect(() => {
+    if (reductionCapitalFormData.modalite_reduction === 'reduction_valeur_nominale' && 
+        selectedClient && 
+        reductionCapitalFormData.ancienne_valeur_nominale && 
+        reductionCapitalFormData.nouvelle_valeur_nominale) {
+      const nbActions = selectedClient.nb_actions || 0;
+      const ancienne = Number(reductionCapitalFormData.ancienne_valeur_nominale);
+      const nouvelle = Number(reductionCapitalFormData.nouvelle_valeur_nominale);
+      const montant = nbActions * (ancienne - nouvelle);
+      setReductionCapitalFormData((prev) => ({
+        ...prev,
+        montant_reduction: montant > 0 ? montant : '',
+      }));
+    } else if (reductionCapitalFormData.modalite_reduction === 'reduction_valeur_nominale') {
+      // Ne pas réinitialiser si on est dans cette modalité mais que les champs ne sont pas remplis
+    }
+  }, [reductionCapitalFormData.modalite_reduction, reductionCapitalFormData.ancienne_valeur_nominale, reductionCapitalFormData.nouvelle_valeur_nominale, selectedClient]);
+
+  // Calcul automatique capital final (coup_accordeon)
+  useEffect(() => {
+    if (reductionCapitalFormData.modalite_reduction === 'coup_accordeon' && 
+        reductionCapitalFormData.nouveau_capital_apres_reduction && 
+        reductionCapitalFormData.coup_accordeon_augmentation_montant) {
+      const capitalFinal = Number(reductionCapitalFormData.nouveau_capital_apres_reduction) + Number(reductionCapitalFormData.coup_accordeon_augmentation_montant);
+      setReductionCapitalFormData((prev) => ({
+        ...prev,
+        coup_accordeon_nouveau_capital_final: capitalFinal,
+      }));
+    } else if (reductionCapitalFormData.modalite_reduction === 'coup_accordeon') {
+      setReductionCapitalFormData((prev) => ({
+        ...prev,
+        coup_accordeon_nouveau_capital_final: '',
+      }));
+    }
+  }, [reductionCapitalFormData.modalite_reduction, reductionCapitalFormData.nouveau_capital_apres_reduction, reductionCapitalFormData.coup_accordeon_augmentation_montant]);
+
+  // Calcul automatique de la valeur nominale actuelle
+  useEffect(() => {
+    if (reductionCapitalFormData.ancien_capital && reductionCapitalFormData.nombre_actions && 
+        Number(reductionCapitalFormData.nombre_actions) > 0) {
+      const valeurNominale = Number(reductionCapitalFormData.ancien_capital) / Number(reductionCapitalFormData.nombre_actions);
+      setReductionCapitalFormData((prev) => ({
+        ...prev,
+        valeur_nominale_actuelle: valeurNominale,
+      }));
+    } else {
+      setReductionCapitalFormData((prev) => ({
+        ...prev,
+        valeur_nominale_actuelle: '',
+      }));
+    }
+  }, [reductionCapitalFormData.ancien_capital, reductionCapitalFormData.nombre_actions]);
+
+  // Pré-remplir automatiquement ancienne_valeur_nominale avec la valeur nominale calculée
+  useEffect(() => {
+    if (reductionCapitalFormData.modalite_reduction === 'reduction_valeur_nominale' && 
+        reductionCapitalFormData.valeur_nominale_actuelle !== undefined && 
+        reductionCapitalFormData.valeur_nominale_actuelle !== '' &&
+        Number(reductionCapitalFormData.valeur_nominale_actuelle) > 0 &&
+        (reductionCapitalFormData.ancienne_valeur_nominale === undefined || 
+         reductionCapitalFormData.ancienne_valeur_nominale === '' ||
+         reductionCapitalFormData.ancienne_valeur_nominale === null)) {
+      setReductionCapitalFormData((prev) => ({
+        ...prev,
+        ancienne_valeur_nominale: Number(prev.valeur_nominale_actuelle),
+      }));
+    }
+  }, [reductionCapitalFormData.modalite_reduction, reductionCapitalFormData.valeur_nominale_actuelle]);
 
   const handleChange = <Field extends keyof ActeCessionFormData>(
     field: Field,
@@ -328,6 +488,21 @@ export default function CreateActePage() {
     value: ActeAGOrdinaireFormData[Field]
   ) => {
     setAGOrdinaireFormData((previous) => ({
+      ...previous,
+      [field]: value,
+    }));
+    setFormErrors((previous) => ({
+      ...previous,
+      [field]: undefined,
+      global: undefined,
+    }));
+  };
+
+  const handleReductionCapitalChange = <Field extends keyof ActeReductionCapitalFormData>(
+    field: Field,
+    value: ActeReductionCapitalFormData[Field]
+  ) => {
+    setReductionCapitalFormData((previous) => ({
       ...previous,
       [field]: value,
     }));
@@ -574,6 +749,132 @@ export default function CreateActePage() {
           newErrors.votes_pour_comptes = `Le total des votes (${totalVotes}) doit égaler le nombre d'actions (${nbActionsTotal})`;
         }
       }
+    } else if (acteType === 'reduction_capital') {
+      // Validation pour réduction de capital
+      // Champs obligatoires de base
+      if (!reductionCapitalFormData.date_acte) {
+        newErrors.date_acte = "La date de l'acte est requise";
+      }
+
+      if (!reductionCapitalFormData.ancien_capital || Number(reductionCapitalFormData.ancien_capital) < 1) {
+        newErrors.ancien_capital = "Le capital social actuel est requis et doit être supérieur à 0";
+      }
+
+      if (!reductionCapitalFormData.nombre_actions || Number(reductionCapitalFormData.nombre_actions) < 1) {
+        newErrors.nombre_actions = "Le nombre d'actions existantes est requis et doit être supérieur à 0";
+      }
+
+      if (!reductionCapitalFormData.montant_reduction || Number(reductionCapitalFormData.montant_reduction) < 0.01) {
+        newErrors.montant_reduction = "Le montant de la réduction est requis et doit être supérieur à 0";
+      }
+
+      // RÈGLE 1 : Montant réduction ≤ Capital actuel
+      if (reductionCapitalFormData.montant_reduction && reductionCapitalFormData.ancien_capital && 
+          Number(reductionCapitalFormData.montant_reduction) > Number(reductionCapitalFormData.ancien_capital)) {
+        newErrors.montant_reduction = "RÈGLE 1 : Le montant de réduction ne peut pas dépasser le capital actuel";
+      }
+
+      // RÈGLE 2 : Capital final ≥ 1€
+      if (reductionCapitalFormData.nouveau_capital_apres_reduction !== undefined && 
+          Number(reductionCapitalFormData.nouveau_capital_apres_reduction) < 1) {
+        newErrors.nouveau_capital_apres_reduction = "RÈGLE 2 : Le capital ne peut pas descendre en dessous de 1€ (minimum légal SAS)";
+      }
+
+      if (!reductionCapitalFormData.modalite_reduction) {
+        newErrors.modalite_reduction = "La modalité de réduction est requise";
+      }
+
+      // Validations spécifiques : RACHAT ET ANNULATION
+      if (reductionCapitalFormData.modalite_reduction === 'rachat_annulation') {
+        if (!reductionCapitalFormData.nombre_actions_rachetees || Number(reductionCapitalFormData.nombre_actions_rachetees) < 1) {
+          newErrors.nombre_actions_rachetees = "Le nombre d'actions rachetées est requis et doit être supérieur à 0";
+        }
+        if (!reductionCapitalFormData.prix_rachat_par_action || Number(reductionCapitalFormData.prix_rachat_par_action) < 0.01) {
+          newErrors.prix_rachat_par_action = "Le prix de rachat par action est requis et doit être supérieur à 0";
+        }
+
+        // RÈGLE 3 : Cohérence montant rachat
+        if (reductionCapitalFormData.nombre_actions_rachetees && reductionCapitalFormData.prix_rachat_par_action) {
+          const montantCalcule = Number(reductionCapitalFormData.nombre_actions_rachetees) * Number(reductionCapitalFormData.prix_rachat_par_action);
+          if (Math.abs(montantCalcule - (Number(reductionCapitalFormData.montant_reduction) || 0)) > 0.01) {
+            newErrors.montant_reduction = `RÈGLE 3 : Incohérence montant - ${reductionCapitalFormData.nombre_actions_rachetees} × ${Number(reductionCapitalFormData.prix_rachat_par_action).toFixed(2)}€ = ${montantCalcule.toFixed(2)}€ (≠ ${Number(reductionCapitalFormData.montant_reduction).toFixed(2)}€)`;
+          }
+        }
+
+        // RÈGLE 4 : Nb actions rachetées ≤ Nb actions existantes
+        if (reductionCapitalFormData.nombre_actions_rachetees && reductionCapitalFormData.nombre_actions && 
+            Number(reductionCapitalFormData.nombre_actions_rachetees) > Number(reductionCapitalFormData.nombre_actions)) {
+          newErrors.nombre_actions_rachetees = `RÈGLE 4 : Impossible de racheter ${reductionCapitalFormData.nombre_actions_rachetees} actions (seulement ${reductionCapitalFormData.nombre_actions} existantes)`;
+        }
+
+        // RÈGLE 5 : Au moins 1 action restante
+        if (reductionCapitalFormData.nombre_actions && reductionCapitalFormData.nombre_actions_rachetees &&
+            (Number(reductionCapitalFormData.nombre_actions) - Number(reductionCapitalFormData.nombre_actions_rachetees)) < 1) {
+          newErrors.nombre_actions_rachetees = "RÈGLE 5 : Il doit rester au moins 1 action après le rachat";
+        }
+      }
+
+      // Validations spécifiques : RÉDUCTION VALEUR NOMINALE
+      if (reductionCapitalFormData.modalite_reduction === 'reduction_valeur_nominale') {
+        if (reductionCapitalFormData.ancienne_valeur_nominale === undefined || reductionCapitalFormData.ancienne_valeur_nominale === null || reductionCapitalFormData.ancienne_valeur_nominale === '') {
+          newErrors.ancienne_valeur_nominale = "L'ancienne valeur nominale est requise";
+        } else if (Number(reductionCapitalFormData.ancienne_valeur_nominale) <= 0) {
+          newErrors.ancienne_valeur_nominale = "L'ancienne valeur nominale doit être supérieure à 0";
+        }
+        if (reductionCapitalFormData.nouvelle_valeur_nominale === undefined || reductionCapitalFormData.nouvelle_valeur_nominale === null || reductionCapitalFormData.nouvelle_valeur_nominale === '') {
+          newErrors.nouvelle_valeur_nominale = "La nouvelle valeur nominale est requise";
+        } else if (Number(reductionCapitalFormData.nouvelle_valeur_nominale) <= 0) {
+          newErrors.nouvelle_valeur_nominale = "La nouvelle valeur nominale doit être supérieure à 0";
+        }
+
+        // RÈGLE 6 : Nouvelle < Ancienne
+        if (reductionCapitalFormData.nouvelle_valeur_nominale && reductionCapitalFormData.ancienne_valeur_nominale && 
+            Number(reductionCapitalFormData.nouvelle_valeur_nominale) >= Number(reductionCapitalFormData.ancienne_valeur_nominale)) {
+          newErrors.nouvelle_valeur_nominale = "RÈGLE 6 : La nouvelle valeur nominale doit être inférieure à l'ancienne";
+        }
+
+        // RÈGLE 7 : Cohérence montant
+        if (reductionCapitalFormData.ancienne_valeur_nominale && reductionCapitalFormData.nouvelle_valeur_nominale && reductionCapitalFormData.nombre_actions) {
+          const montantCalcule = (Number(reductionCapitalFormData.ancienne_valeur_nominale) - Number(reductionCapitalFormData.nouvelle_valeur_nominale)) * Number(reductionCapitalFormData.nombre_actions);
+          if (Math.abs(montantCalcule - (Number(reductionCapitalFormData.montant_reduction) || 0)) > 0.01) {
+            newErrors.montant_reduction = `RÈGLE 7 : Incohérence montant - (${Number(reductionCapitalFormData.ancienne_valeur_nominale).toFixed(2)}€ - ${Number(reductionCapitalFormData.nouvelle_valeur_nominale).toFixed(2)}€) × ${reductionCapitalFormData.nombre_actions} = ${montantCalcule.toFixed(2)}€ (≠ ${Number(reductionCapitalFormData.montant_reduction).toFixed(2)}€)`;
+          }
+        }
+      }
+
+      // Validations spécifiques : COUP D'ACCORDÉON
+      if (reductionCapitalFormData.modalite_reduction === 'coup_accordeon') {
+        if (!reductionCapitalFormData.coup_accordeon_augmentation_montant || 
+            Number(reductionCapitalFormData.coup_accordeon_augmentation_montant) < 0.01) {
+          newErrors.coup_accordeon_augmentation_montant = "Le montant d'augmentation après coup d'accordéon est requis et doit être supérieur à 0";
+        }
+      }
+
+      // RÈGLE 8 : Majorité 2/3 des votes
+      if (reductionCapitalFormData.votes_pour !== undefined && reductionCapitalFormData.votes_contre !== undefined &&
+          (Number(reductionCapitalFormData.votes_pour) + Number(reductionCapitalFormData.votes_contre)) > 0) {
+        const majorite = Number(reductionCapitalFormData.votes_pour) / (Number(reductionCapitalFormData.votes_pour) + Number(reductionCapitalFormData.votes_contre));
+        if (majorite < 0.6667) {
+          newErrors.votes_pour = `RÈGLE 8 : Majorité des 2/3 non atteinte (${(majorite * 100).toFixed(2)}% < 66.67%)`;
+        }
+      }
+
+      // Champs obligatoires finaux
+      if (!reductionCapitalFormData.motif_reduction || reductionCapitalFormData.motif_reduction.trim() === '') {
+        newErrors.motif_reduction = "Le motif de la réduction est requis";
+      }
+
+      if (!reductionCapitalFormData.quorum || Number(reductionCapitalFormData.quorum) < 50 || Number(reductionCapitalFormData.quorum) > 100) {
+        newErrors.quorum = "Le quorum est requis et doit être entre 50% et 100%";
+      }
+
+      if (reductionCapitalFormData.votes_pour === '' || Number(reductionCapitalFormData.votes_pour) < 0) {
+        newErrors.votes_pour = "Le nombre de votes POUR est requis";
+      }
+
+      if (reductionCapitalFormData.votes_contre === '' || Number(reductionCapitalFormData.votes_contre) < 0) {
+        newErrors.votes_contre = "Le nombre de votes CONTRE est requis";
+      }
     }
 
     // Collecter toutes les erreurs pour le toast
@@ -699,6 +1000,57 @@ export default function CreateActePage() {
           votes_contre_comptes: Number(agOrdinaireFormData.votes_contre_comptes || 0),
           votes_abstention_comptes: Number(agOrdinaireFormData.votes_abstention_comptes || 0),
         };
+      } else if (acteType === 'reduction_capital') {
+        // Récupérer le capital du client sélectionné
+        const clientCapital = selectedClient?.capital_social || 0;
+        const clientNbActions = selectedClient?.nb_actions || 0;
+        const montantReduction = reductionCapitalFormData.montant_reduction ? Number(reductionCapitalFormData.montant_reduction) : 0;
+        const nouveauCapital = clientCapital - montantReduction;
+
+        // Préparer les données pour la réduction de capital
+        acteData = {
+          client_id: selectedClientId,
+          cabinet_id: cabinetIdData,
+          type: 'reduction_capital',
+          date_acte: reductionCapitalFormData.date_acte,
+          statut: reductionCapitalFormData.statut,
+          // COLONNES CRITIQUES : Utiliser les valeurs du client directement
+          ancien_capital: clientCapital,
+          montant_reduction: montantReduction,
+          nouveau_capital_apres_reduction: nouveauCapital,
+          nombre_actions: clientNbActions, // Nombre d'actions existantes du client
+          modalite_reduction: reductionCapitalFormData.modalite_reduction || null,
+          motif_reduction: reductionCapitalFormData.motif_reduction ? reductionCapitalFormData.motif_reduction.trim() : null,
+          reduction_motivee_pertes: reductionCapitalFormData.reduction_motivee_pertes || false,
+          quorum: reductionCapitalFormData.quorum ? Number(reductionCapitalFormData.quorum) : null,
+          votes_pour: reductionCapitalFormData.votes_pour ? Number(reductionCapitalFormData.votes_pour) : null,
+          votes_contre: reductionCapitalFormData.votes_contre ? Number(reductionCapitalFormData.votes_contre) : null,
+        };
+
+        // Gérer les cas spéciaux par modalité
+        if (reductionCapitalFormData.modalite_reduction === 'rachat_annulation') {
+          acteData.nombre_actions_rachetees = reductionCapitalFormData.nombre_actions_rachetees ? Number(reductionCapitalFormData.nombre_actions_rachetees) : null;
+          acteData.prix_rachat_par_action = reductionCapitalFormData.prix_rachat_par_action ? Number(reductionCapitalFormData.prix_rachat_par_action) : null;
+        }
+
+        if (reductionCapitalFormData.modalite_reduction === 'reduction_valeur_nominale') {
+          acteData.ancienne_valeur_nominale = reductionCapitalFormData.ancienne_valeur_nominale ? Number(reductionCapitalFormData.ancienne_valeur_nominale) : null;
+          acteData.nouvelle_valeur_nominale = reductionCapitalFormData.nouvelle_valeur_nominale ? Number(reductionCapitalFormData.nouvelle_valeur_nominale) : null;
+        }
+
+        if (reductionCapitalFormData.modalite_reduction === 'coup_accordeon') {
+          acteData.coup_accordeon_augmentation_montant = reductionCapitalFormData.coup_accordeon_augmentation_montant ? Number(reductionCapitalFormData.coup_accordeon_augmentation_montant) : null;
+          acteData.coup_accordeon_nouveau_capital_final = reductionCapitalFormData.coup_accordeon_nouveau_capital_final ? Number(reductionCapitalFormData.coup_accordeon_nouveau_capital_final) : null;
+        }
+
+        // Log de vérification avant insertion
+        console.log('💾 CRÉATION ACTE RÉDUCTION:', {
+          ancien_capital: acteData.ancien_capital,
+          montant_reduction: acteData.montant_reduction,
+          nouveau_capital: acteData.nouveau_capital_apres_reduction,
+          modalite: acteData.modalite_reduction,
+          nombre_actions: acteData.nombre_actions
+        });
       }
 
       const { error: insertError } = await supabaseClient
@@ -710,7 +1062,10 @@ export default function CreateActePage() {
       }
 
       // Succès - redirection
-      const acteTypeLabel = acteType === 'cession_actions' ? 'de cession' : acteType === 'augmentation_capital' ? "d'augmentation de capital" : "d'AG Ordinaire";
+      const acteTypeLabel = acteType === 'cession_actions' ? 'de cession' 
+        : acteType === 'augmentation_capital' ? "d'augmentation de capital" 
+        : acteType === 'reduction_capital' ? "de réduction de capital"
+        : "d'AG Ordinaire";
       alert(`✅ Acte ${acteTypeLabel} créé avec succès !`);
       router.push("/dashboard/actes");
     } catch (err: any) {
@@ -827,7 +1182,7 @@ export default function CreateActePage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <RadioGroup value={acteType} onValueChange={(value) => setActeType(value as 'cession_actions' | 'augmentation_capital' | 'ag_ordinaire')} className="space-y-3">
+            <RadioGroup value={acteType} onValueChange={(value) => setActeType(value as 'cession_actions' | 'augmentation_capital' | 'ag_ordinaire' | 'reduction_capital')} className="space-y-3">
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="cession_actions" id="type-cession" />
                 <Label htmlFor="type-cession" className="cursor-pointer flex items-center gap-2">
@@ -838,6 +1193,12 @@ export default function CreateActePage() {
                 <RadioGroupItem value="augmentation_capital" id="type-augmentation" />
                 <Label htmlFor="type-augmentation" className="cursor-pointer flex items-center gap-2">
                   <span>Augmentation de capital</span>
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="reduction_capital" id="type-reduction" />
+                <Label htmlFor="type-reduction" className="cursor-pointer flex items-center gap-2">
+                  <span>Réduction de capital</span>
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
@@ -1738,6 +2099,668 @@ export default function CreateActePage() {
           </>
         )}
 
+        {/* FORMULAIRE RÉDUCTION DE CAPITAL (affiché si client sélectionné et type = reduction_capital) */}
+        {selectedClientId && acteType === 'reduction_capital' && (
+          <>
+            {/* Section Informations générales */}
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>Informations générales</CardTitle>
+                <CardDescription>
+                  Date et statut de l'acte
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="red_date_acte">
+                      Date de l'acte <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="red_date_acte"
+                      type="date"
+                      value={reductionCapitalFormData.date_acte}
+                      onChange={(e) => handleReductionCapitalChange("date_acte", e.target.value)}
+                      required
+                    />
+                    {formErrors.date_acte && (
+                      <p className="text-sm text-red-500">{formErrors.date_acte}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="red_statut">
+                      Statut <span className="text-red-500">*</span>
+                    </Label>
+                    <Select
+                      value={reductionCapitalFormData.statut}
+                      onValueChange={(value) =>
+                        handleReductionCapitalChange("statut", value as 'brouillon' | 'validé' | 'signé')
+                      }
+                    >
+                      <SelectTrigger id="red_statut">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="brouillon">Brouillon</SelectItem>
+                        <SelectItem value="validé">Validé</SelectItem>
+                        <SelectItem value="signé">Signé</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Section Capital social */}
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>Capital social</CardTitle>
+                <CardDescription>
+                  Montants avant et après réduction
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="red_ancien_capital">
+                      Capital social actuel (€) <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="red_ancien_capital"
+                      type="number"
+                      min="1"
+                      step="0.01"
+                      value={reductionCapitalFormData.ancien_capital}
+                      onChange={(e) =>
+                        handleReductionCapitalChange("ancien_capital", e.target.value === '' ? '' : Number(e.target.value))
+                      }
+                      required
+                    />
+                    {formErrors.ancien_capital && (
+                      <p className="text-sm text-red-500">{formErrors.ancien_capital}</p>
+                    )}
+                    <p className="text-sm text-muted-foreground">Capital actuel selon nos données</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="red_nombre_actions">
+                      Nombre d'actions existantes <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="red_nombre_actions"
+                      type="number"
+                      min="1"
+                      value={reductionCapitalFormData.nombre_actions}
+                      onChange={(e) =>
+                        handleReductionCapitalChange("nombre_actions", e.target.value === '' ? '' : Number(e.target.value))
+                      }
+                      placeholder="1000"
+                      required
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Nombre total d'actions avant réduction</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="red_montant_reduction">
+                      Montant de la réduction (€) <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="red_montant_reduction"
+                      type="number"
+                      min="0.01"
+                      step="0.01"
+                      value={reductionCapitalFormData.montant_reduction}
+                      onChange={(e) =>
+                        handleReductionCapitalChange("montant_reduction", e.target.value === '' ? '' : Number(e.target.value))
+                      }
+                      required
+                      readOnly={reductionCapitalFormData.modalite_reduction === 'rachat_annulation' || reductionCapitalFormData.modalite_reduction === 'reduction_valeur_nominale'}
+                      className={reductionCapitalFormData.modalite_reduction === 'rachat_annulation' || reductionCapitalFormData.modalite_reduction === 'reduction_valeur_nominale' ? 'bg-muted' : ''}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Montant en euros à réduire</p>
+                    {formErrors.montant_reduction && (
+                      <p className="text-sm text-red-500">{formErrors.montant_reduction}</p>
+                    )}
+                    
+                    {/* RÈGLE 1 : Montant ≤ Capital */}
+                    {reductionCapitalFormData.montant_reduction && reductionCapitalFormData.ancien_capital && 
+                     Number(reductionCapitalFormData.montant_reduction) > Number(reductionCapitalFormData.ancien_capital) && (
+                      <div className="bg-red-50 border border-red-300 rounded p-2 mt-2">
+                        <p className="text-red-700 text-sm font-medium">
+                          ❌ RÈGLE 1 VIOLÉE : Le montant de réduction ({Number(reductionCapitalFormData.montant_reduction).toFixed(2)}€) dépasse le capital actuel ({Number(reductionCapitalFormData.ancien_capital).toFixed(2)}€)
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="red_nouveau_capital">
+                      Nouveau capital social (€)
+                    </Label>
+                    <Input
+                      id="red_nouveau_capital"
+                      type="number"
+                      value={reductionCapitalFormData.nouveau_capital_apres_reduction}
+                      readOnly
+                      className="bg-muted"
+                    />
+                    
+                    {/* RÈGLE 2 : Capital final ≥ 1€ */}
+                    {reductionCapitalFormData.nouveau_capital_apres_reduction !== undefined && Number(reductionCapitalFormData.nouveau_capital_apres_reduction) < 1 && (
+                      <div className="bg-red-50 border border-red-300 rounded p-2 mt-2">
+                        <p className="text-red-700 text-sm font-medium">
+                          ❌ RÈGLE 2 VIOLÉE : Le capital ne peut pas être inférieur à 1€ (minimum légal SAS)
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Valeur nominale calculée automatiquement */}
+                {reductionCapitalFormData.nombre_actions && reductionCapitalFormData.ancien_capital && Number(reductionCapitalFormData.nombre_actions) > 0 && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-blue-900">Valeur nominale actuelle par action :</span>
+                      <span className="text-lg font-bold text-blue-900">
+                        {Number(reductionCapitalFormData.valeur_nominale_actuelle).toFixed(2)} €
+                      </span>
+                    </div>
+                    <p className="text-xs text-blue-700 mt-1">
+                      Calculé automatiquement : {Number(reductionCapitalFormData.ancien_capital).toFixed(2)}€ ÷ {reductionCapitalFormData.nombre_actions} actions
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Section Modalité de réduction */}
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>Modalité de réduction</CardTitle>
+                <CardDescription>
+                  Choisissez le type de réduction de capital
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>
+                    Modalité <span className="text-red-500">*</span>
+                  </Label>
+                  <RadioGroup
+                    value={reductionCapitalFormData.modalite_reduction}
+                    onValueChange={(value) =>
+                      handleReductionCapitalChange("modalite_reduction", value as 'rachat_annulation' | 'reduction_valeur_nominale' | 'coup_accordeon')
+                    }
+                    className="space-y-3"
+                  >
+                    <div className="flex items-center space-x-2 p-3 rounded-lg border border-blue-200 bg-blue-50">
+                      <RadioGroupItem value="rachat_annulation" id="modalite-rachat" />
+                      <Label htmlFor="modalite-rachat" className="cursor-pointer">
+                        <span className="font-medium text-blue-900">Rachat et annulation d'actions</span>
+                        <span className="text-sm text-blue-700 ml-2 block">- La société rachète des actions puis les annule</span>
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2 p-3 rounded-lg border border-green-200 bg-green-50">
+                      <RadioGroupItem value="reduction_valeur_nominale" id="modalite-valeur" />
+                      <Label htmlFor="modalite-valeur" className="cursor-pointer">
+                        <span className="font-medium text-green-900">Réduction de la valeur nominale</span>
+                        <span className="text-sm text-green-700 ml-2 block">- Diminution de la valeur nominale des actions</span>
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2 p-3 rounded-lg border border-orange-200 bg-orange-50">
+                      <RadioGroupItem value="coup_accordeon" id="modalite-accordeon" />
+                      <Label htmlFor="modalite-accordeon" className="cursor-pointer">
+                        <span className="font-medium text-orange-900">Coup d'accordéon</span>
+                        <span className="text-sm text-orange-700 ml-2 block">- Réduction à 1€ puis augmentation immédiate</span>
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                  {formErrors.modalite_reduction && (
+                    <p className="text-sm text-red-500">{formErrors.modalite_reduction}</p>
+                  )}
+                </div>
+
+                {/* Modalité rachat_annulation */}
+                {reductionCapitalFormData.modalite_reduction === 'rachat_annulation' && (
+                  <div className="space-y-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <h4 className="font-semibold text-blue-900">Détails du rachat et annulation</h4>
+                    {reductionCapitalFormData.valeur_nominale_actuelle && (
+                      <p className="text-xs text-blue-700 bg-blue-100 p-2 rounded">
+                        💡 Suggestion : Valeur nominale actuelle = {Number(reductionCapitalFormData.valeur_nominale_actuelle).toFixed(2)} € par action
+                      </p>
+                    )}
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="nombre_actions_rachetees">
+                          Nombre d'actions rachetées <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="nombre_actions_rachetees"
+                          type="number"
+                          min="1"
+                          value={reductionCapitalFormData.nombre_actions_rachetees}
+                          onChange={(e) =>
+                            handleReductionCapitalChange("nombre_actions_rachetees", e.target.value === '' ? '' : Number(e.target.value))
+                          }
+                          required
+                        />
+                        {formErrors.nombre_actions_rachetees && (
+                          <p className="text-sm text-red-500">{formErrors.nombre_actions_rachetees}</p>
+                        )}
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="prix_rachat_par_action">
+                          Prix de rachat par action (€) <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="prix_rachat_par_action"
+                          type="number"
+                          min="0.01"
+                          step="0.01"
+                          value={reductionCapitalFormData.prix_rachat_par_action}
+                          onChange={(e) =>
+                            handleReductionCapitalChange("prix_rachat_par_action", e.target.value === '' ? '' : Number(e.target.value))
+                          }
+                          required
+                        />
+                        {formErrors.prix_rachat_par_action && (
+                          <p className="text-sm text-red-500">{formErrors.prix_rachat_par_action}</p>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Validations rachat et annulation */}
+                    {reductionCapitalFormData.nombre_actions_rachetees && reductionCapitalFormData.prix_rachat_par_action && (
+                      <>
+                        {/* Calcul automatique */}
+                        <div className="bg-blue-100 border border-blue-300 rounded p-2 mt-3">
+                          <p className="text-sm text-blue-900">
+                            <strong>Calcul automatique :</strong><br/>
+                            {reductionCapitalFormData.nombre_actions_rachetees} actions × {Number(reductionCapitalFormData.prix_rachat_par_action).toFixed(2)}€ = {(Number(reductionCapitalFormData.nombre_actions_rachetees) * Number(reductionCapitalFormData.prix_rachat_par_action)).toFixed(2)}€
+                          </p>
+                        </div>
+                        
+                        {/* RÈGLE 3 : Cohérence montant rachat */}
+                        {Math.abs((Number(reductionCapitalFormData.nombre_actions_rachetees) * Number(reductionCapitalFormData.prix_rachat_par_action)) - (Number(reductionCapitalFormData.montant_reduction) || 0)) > 0.01 && (
+                          <div className="bg-red-50 border border-red-300 rounded p-2 mt-2">
+                            <p className="text-red-700 text-sm font-medium">
+                              ❌ RÈGLE 3 VIOLÉE : Le montant calculé ({(Number(reductionCapitalFormData.nombre_actions_rachetees) * Number(reductionCapitalFormData.prix_rachat_par_action)).toFixed(2)}€) 
+                              ne correspond pas au montant de réduction saisi ({Number(reductionCapitalFormData.montant_reduction).toFixed(2)}€)
+                            </p>
+                          </div>
+                        )}
+                        
+                        {/* RÈGLE 4 : Nb actions rachetées ≤ Nb actions existantes */}
+                        {Number(reductionCapitalFormData.nombre_actions_rachetees) > (Number(reductionCapitalFormData.nombre_actions) || 0) && (
+                          <div className="bg-red-50 border border-red-300 rounded p-2 mt-2">
+                            <p className="text-red-700 text-sm font-medium">
+                              ❌ RÈGLE 4 VIOLÉE : Impossible de racheter {reductionCapitalFormData.nombre_actions_rachetees} actions (seulement {reductionCapitalFormData.nombre_actions} existantes)
+                            </p>
+                          </div>
+                        )}
+                        
+                        {/* RÈGLE 5 : Au moins 1 action restante */}
+                        {reductionCapitalFormData.nombre_actions && reductionCapitalFormData.nombre_actions_rachetees && 
+                         (Number(reductionCapitalFormData.nombre_actions) - Number(reductionCapitalFormData.nombre_actions_rachetees)) < 1 && (
+                          <div className="bg-red-50 border border-red-300 rounded p-2 mt-2">
+                            <p className="text-red-700 text-sm font-medium">
+                              ❌ RÈGLE 5 VIOLÉE : Il doit rester au moins 1 action après le rachat 
+                              ({reductionCapitalFormData.nombre_actions} - {reductionCapitalFormData.nombre_actions_rachetees} = {Number(reductionCapitalFormData.nombre_actions) - Number(reductionCapitalFormData.nombre_actions_rachetees)})
+                            </p>
+                          </div>
+                        )}
+                        
+                        {/* RÈGLE 12 : Prix rachat élevé (avertissement) */}
+                        {reductionCapitalFormData.valeur_nominale_actuelle && 
+                         Number(reductionCapitalFormData.prix_rachat_par_action) > Number(reductionCapitalFormData.valeur_nominale_actuelle) * 3 && (
+                          <div className="bg-yellow-50 border border-yellow-300 rounded p-2 mt-2">
+                            <p className="text-yellow-700 text-sm">
+                              ⚠️ RÈGLE 12 : Prix de rachat élevé ({Number(reductionCapitalFormData.prix_rachat_par_action).toFixed(2)}€) par rapport à la valeur nominale 
+                              ({Number(reductionCapitalFormData.valeur_nominale_actuelle).toFixed(2)}€). Assurez-vous que ce prix est justifié.
+                            </p>
+                          </div>
+                        )}
+                        
+                        {/* RÈGLE 13 : Prix rachat faible (avertissement) */}
+                        {reductionCapitalFormData.valeur_nominale_actuelle && 
+                         Number(reductionCapitalFormData.prix_rachat_par_action) < Number(reductionCapitalFormData.valeur_nominale_actuelle) * 0.5 && (
+                          <div className="bg-yellow-50 border border-yellow-300 rounded p-2 mt-2">
+                            <p className="text-yellow-700 text-sm">
+                              ⚠️ RÈGLE 13 : Prix de rachat faible ({Number(reductionCapitalFormData.prix_rachat_par_action).toFixed(2)}€) par rapport à la valeur nominale 
+                              ({Number(reductionCapitalFormData.valeur_nominale_actuelle).toFixed(2)}€). Cela pourrait léser les associés sortants.
+                            </p>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                )}
+
+                {/* Modalité reduction_valeur_nominale */}
+                {reductionCapitalFormData.modalite_reduction === 'reduction_valeur_nominale' && (
+                  <div className="space-y-4 p-4 bg-green-50 rounded-lg border border-green-200">
+                    <h4 className="font-semibold text-green-900">Réduction de la valeur nominale</h4>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="ancienne_valeur_nominale">
+                          Ancienne valeur nominale (€) <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="ancienne_valeur_nominale"
+                          type="number"
+                          min="0.01"
+                          step="0.01"
+                          value={reductionCapitalFormData.ancienne_valeur_nominale !== undefined && reductionCapitalFormData.ancienne_valeur_nominale !== '' 
+                            ? reductionCapitalFormData.ancienne_valeur_nominale 
+                            : (reductionCapitalFormData.valeur_nominale_actuelle !== undefined && reductionCapitalFormData.valeur_nominale_actuelle !== '' 
+                              ? reductionCapitalFormData.valeur_nominale_actuelle 
+                              : '')}
+                          onChange={(e) => {
+                            const val = e.target.value === '' ? '' : Number(e.target.value);
+                            handleReductionCapitalChange("ancienne_valeur_nominale", val);
+                          }}
+                          onFocus={(e) => {
+                            // Auto-remplir si vide
+                            if ((reductionCapitalFormData.ancienne_valeur_nominale === undefined || reductionCapitalFormData.ancienne_valeur_nominale === '') && 
+                                reductionCapitalFormData.valeur_nominale_actuelle !== undefined && 
+                                reductionCapitalFormData.valeur_nominale_actuelle !== '') {
+                              handleReductionCapitalChange("ancienne_valeur_nominale", Number(reductionCapitalFormData.valeur_nominale_actuelle));
+                            }
+                          }}
+                          placeholder={reductionCapitalFormData.valeur_nominale_actuelle ? Number(reductionCapitalFormData.valeur_nominale_actuelle).toFixed(2) : "10"}
+                          required
+                        />
+                        {formErrors.ancienne_valeur_nominale && (
+                          <p className="text-sm text-red-500">{formErrors.ancienne_valeur_nominale}</p>
+                        )}
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Valeur actuelle calculée : {reductionCapitalFormData.valeur_nominale_actuelle ? Number(reductionCapitalFormData.valeur_nominale_actuelle).toFixed(2) : '?'} €
+                        </p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="nouvelle_valeur_nominale">
+                          Nouvelle valeur nominale (€) <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="nouvelle_valeur_nominale"
+                          type="number"
+                          min="0.01"
+                          step="0.01"
+                          value={reductionCapitalFormData.nouvelle_valeur_nominale}
+                          onChange={(e) =>
+                            handleReductionCapitalChange("nouvelle_valeur_nominale", e.target.value === '' ? '' : Number(e.target.value))
+                          }
+                          required
+                        />
+                        {formErrors.nouvelle_valeur_nominale && (
+                          <p className="text-sm text-red-500">{formErrors.nouvelle_valeur_nominale}</p>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Validations réduction valeur nominale */}
+                    {reductionCapitalFormData.ancienne_valeur_nominale && reductionCapitalFormData.nouvelle_valeur_nominale && reductionCapitalFormData.nombre_actions && (
+                      <>
+                        {/* Calcul automatique */}
+                        <div className="bg-green-100 border border-green-300 rounded p-2 mt-3">
+                          <p className="text-sm text-green-900">
+                            <strong>Calcul automatique :</strong><br/>
+                            ({Number(reductionCapitalFormData.ancienne_valeur_nominale).toFixed(2)}€ - {Number(reductionCapitalFormData.nouvelle_valeur_nominale).toFixed(2)}€) × {reductionCapitalFormData.nombre_actions} actions = {((Number(reductionCapitalFormData.ancienne_valeur_nominale) - Number(reductionCapitalFormData.nouvelle_valeur_nominale)) * Number(reductionCapitalFormData.nombre_actions)).toFixed(2)}€
+                          </p>
+                        </div>
+                        
+                        {/* RÈGLE 6 : Nouvelle < Ancienne */}
+                        {Number(reductionCapitalFormData.nouvelle_valeur_nominale) >= Number(reductionCapitalFormData.ancienne_valeur_nominale) && (
+                          <div className="bg-red-50 border border-red-300 rounded p-2 mt-2">
+                            <p className="text-red-700 text-sm font-medium">
+                              ❌ RÈGLE 6 VIOLÉE : La nouvelle valeur nominale ({Number(reductionCapitalFormData.nouvelle_valeur_nominale).toFixed(2)}€) doit être INFÉRIEURE à l'ancienne ({Number(reductionCapitalFormData.ancienne_valeur_nominale).toFixed(2)}€)
+                            </p>
+                          </div>
+                        )}
+                        
+                        {/* RÈGLE 7 : Cohérence montant */}
+                        {Math.abs(((Number(reductionCapitalFormData.ancienne_valeur_nominale) - Number(reductionCapitalFormData.nouvelle_valeur_nominale)) * Number(reductionCapitalFormData.nombre_actions)) - (Number(reductionCapitalFormData.montant_reduction) || 0)) > 0.01 && (
+                          <div className="bg-red-50 border border-red-300 rounded p-2 mt-2">
+                            <p className="text-red-700 text-sm font-medium">
+                              ❌ RÈGLE 7 VIOLÉE : Le montant calculé ({((Number(reductionCapitalFormData.ancienne_valeur_nominale) - Number(reductionCapitalFormData.nouvelle_valeur_nominale)) * Number(reductionCapitalFormData.nombre_actions)).toFixed(2)}€) 
+                              ne correspond pas au montant de réduction saisi ({Number(reductionCapitalFormData.montant_reduction).toFixed(2)}€)
+                            </p>
+                          </div>
+                        )}
+                        
+                        {/* RÈGLE 11 : Valeur nominale < 1€ (avertissement) */}
+                        {Number(reductionCapitalFormData.nouvelle_valeur_nominale) < 1 && (
+                          <div className="bg-yellow-50 border border-yellow-300 rounded p-2 mt-2">
+                            <p className="text-yellow-700 text-sm">
+                              ⚠️ RÈGLE 11 : Valeur nominale finale très faible ({Number(reductionCapitalFormData.nouvelle_valeur_nominale).toFixed(2)}€). 
+                              Bien que légal, c'est inhabituel. Vérifiez la pertinence.
+                            </p>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                )}
+
+                {/* Modalité coup_accordeon */}
+                {reductionCapitalFormData.modalite_reduction === 'coup_accordeon' && (
+                  <div className="space-y-4 p-4 bg-orange-50 rounded-lg border border-orange-200">
+                    <h4 className="font-semibold text-orange-900">Coup d'accordéon</h4>
+                    <div className="bg-orange-100 border border-orange-300 rounded p-3 mb-3">
+                      <p className="text-sm text-orange-900 font-medium">⚠️ RÉSERVÉ AUX CAS GRAVES</p>
+                      <p className="text-xs text-orange-800 mt-1">
+                        Le coup d'accordéon est utilisé quand la société a des <strong>pertes importantes</strong> 
+                        (capitaux propres inférieurs à 50% du capital social). Il permet de repartir sur des bases saines 
+                        en annulant les pertes et en recapitalisant.
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="red_montant_reduction_accordeon">
+                        Montant de la réduction (€) <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        id="red_montant_reduction_accordeon"
+                        type="number"
+                        min="0.01"
+                        step="0.01"
+                        value={reductionCapitalFormData.montant_reduction}
+                        onChange={(e) =>
+                          handleReductionCapitalChange("montant_reduction", e.target.value === '' ? '' : Number(e.target.value))
+                        }
+                        required
+                      />
+                      {formErrors.montant_reduction && (
+                        <p className="text-sm text-red-500">{formErrors.montant_reduction}</p>
+                      )}
+                      {reductionCapitalFormData.nouveau_capital_apres_reduction && (
+                        <p className="text-sm text-muted-foreground">
+                          Capital après réduction : {formatMontant(Number(reductionCapitalFormData.nouveau_capital_apres_reduction))}€
+                        </p>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="coup_accordeon_augmentation_montant">
+                        Montant de l'augmentation après réduction (€) <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        id="coup_accordeon_augmentation_montant"
+                        type="number"
+                        min="0.01"
+                        step="0.01"
+                        value={reductionCapitalFormData.coup_accordeon_augmentation_montant}
+                        onChange={(e) =>
+                          handleReductionCapitalChange("coup_accordeon_augmentation_montant", e.target.value === '' ? '' : Number(e.target.value))
+                        }
+                        required
+                      />
+                      {formErrors.coup_accordeon_augmentation_montant && (
+                        <p className="text-sm text-red-500">{formErrors.coup_accordeon_augmentation_montant}</p>
+                      )}
+                    </div>
+                    {reductionCapitalFormData.coup_accordeon_nouveau_capital_final && (
+                      <div className="p-3 bg-orange-100 rounded">
+                        <p className="text-sm font-medium text-orange-900">
+                          💰 Capital final après coup d'accordéon : {formatMontant(Number(reductionCapitalFormData.coup_accordeon_nouveau_capital_final))}€
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Section Motif de réduction */}
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>Motif de réduction</CardTitle>
+                <CardDescription>
+                  Raison juridique de la réduction de capital
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="motif_reduction">
+                    Motif <span className="text-red-500">*</span>
+                  </Label>
+                  <Textarea
+                    id="motif_reduction"
+                    value={reductionCapitalFormData.motif_reduction}
+                    onChange={(e) => handleReductionCapitalChange("motif_reduction", e.target.value)}
+                    placeholder="Ex: Réduction pour compenser des pertes / Remboursement aux associés..."
+                    required
+                    rows={4}
+                  />
+                  {formErrors.motif_reduction && (
+                    <p className="text-sm text-red-500">{formErrors.motif_reduction}</p>
+                  )}
+                </div>
+
+                {/* RÈGLE 9 : Réduction motivée par pertes */}
+                <div className="bg-yellow-50 border border-yellow-200 rounded p-3 mt-3">
+                  <div className="flex items-start space-x-2">
+                    <input
+                      type="checkbox"
+                      id="reduction_motivee_pertes"
+                      checked={reductionCapitalFormData.reduction_motivee_pertes || false}
+                      onChange={(e) => handleReductionCapitalChange("reduction_motivee_pertes", e.target.checked)}
+                      className="mt-1"
+                    />
+                    <div>
+                      <label htmlFor="reduction_motivee_pertes" className="font-medium text-yellow-900 cursor-pointer">
+                        Cette réduction est motivée par des pertes
+                      </label>
+                      <p className="text-xs text-yellow-700 mt-1">
+                        {reductionCapitalFormData.reduction_motivee_pertes ? (
+                          "✅ Dispense du droit d'opposition des créanciers (article L. 225-205)"
+                        ) : (
+                          "⚠️ Les créanciers pourront faire opposition pendant 20 jours après publication au BODACC"
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Section Assemblée Générale */}
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>Assemblée Générale</CardTitle>
+                <CardDescription>
+                  Quorum et résultats du vote
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="red_quorum">
+                      Quorum (%) <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="red_quorum"
+                      type="number"
+                      min="50"
+                      max="100"
+                      value={reductionCapitalFormData.quorum}
+                      onChange={(e) =>
+                        handleReductionCapitalChange("quorum", e.target.value === '' ? '' : Number(e.target.value))
+                      }
+                      required
+                    />
+                    {formErrors.quorum && (
+                      <p className="text-sm text-red-500">{formErrors.quorum}</p>
+                    )}
+                    <p className="text-sm text-muted-foreground">Pourcentage du capital présent ou représenté</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="red_votes_pour">
+                      Votes POUR <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="red_votes_pour"
+                      type="number"
+                      min="0"
+                      value={reductionCapitalFormData.votes_pour}
+                      onChange={(e) =>
+                        handleReductionCapitalChange("votes_pour", e.target.value === '' ? '' : Number(e.target.value))
+                      }
+                      required
+                    />
+                    {formErrors.votes_pour && (
+                      <p className="text-sm text-red-500">{formErrors.votes_pour}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="red_votes_contre">
+                      Votes CONTRE <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="red_votes_contre"
+                      type="number"
+                      min="0"
+                      value={reductionCapitalFormData.votes_contre}
+                      onChange={(e) =>
+                        handleReductionCapitalChange("votes_contre", e.target.value === '' ? '' : Number(e.target.value))
+                      }
+                      required
+                    />
+                    {formErrors.votes_contre && (
+                      <p className="text-sm text-red-500">{formErrors.votes_contre}</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* RÈGLE 8 : Majorité 2/3 requise */}
+                {reductionCapitalFormData.votes_pour !== undefined && reductionCapitalFormData.votes_contre !== undefined && 
+                 (Number(reductionCapitalFormData.votes_pour) + Number(reductionCapitalFormData.votes_contre)) > 0 && (
+                  <>
+                    <div className="bg-blue-50 border border-blue-200 rounded p-3 mt-3">
+                      <p className="text-sm text-blue-900">
+                        <strong>Majorité actuelle :</strong> {((Number(reductionCapitalFormData.votes_pour) / (Number(reductionCapitalFormData.votes_pour) + Number(reductionCapitalFormData.votes_contre))) * 100).toFixed(2)}%
+                      </p>
+                      <p className="text-xs text-blue-700 mt-1">Minimum requis : 66.67% (2/3 des votes)</p>
+                    </div>
+                    
+                    {(Number(reductionCapitalFormData.votes_pour) / (Number(reductionCapitalFormData.votes_pour) + Number(reductionCapitalFormData.votes_contre))) < 0.6667 && (
+                      <div className="bg-red-50 border border-red-300 rounded p-2 mt-2">
+                        <p className="text-red-700 text-sm font-medium">
+                          ❌ RÈGLE 8 VIOLÉE : La majorité des 2/3 n&apos;est pas atteinte 
+                          ({((Number(reductionCapitalFormData.votes_pour) / (Number(reductionCapitalFormData.votes_pour) + Number(reductionCapitalFormData.votes_contre))) * 100).toFixed(2)}% &lt; 66.67%)
+                        </p>
+                      </div>
+                    )}
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </>
+        )}
+
         {/* FORMULAIRE AG ORDINAIRE (affiché si client sélectionné et type = ag_ordinaire) */}
         {selectedClientId && acteType === 'ag_ordinaire' && (
           <>
@@ -2109,4 +3132,5 @@ export default function CreateActePage() {
     </div>
   );
 }
+
 

@@ -1,0 +1,22 @@
+{
+  "timestamp": "2025-11-17T10:55:51.622Z",
+  "duration": 671,
+  "totalTests": 2,
+  "passed": 0,
+  "failed": 2,
+  "warnings": 0,
+  "results": [
+    {
+      "test": "Setup environnement",
+      "status": "error",
+      "message": "Échec setup : Erreur création expert: null value in column \"user_id\" of relation \"experts_comptables\" violates not-null constraint",
+      "duration": 670
+    },
+    {
+      "test": "Audit global",
+      "status": "error",
+      "message": "Erreur critique : Erreur création expert: null value in column \"user_id\" of relation \"experts_comptables\" violates not-null constraint",
+      "duration": 671
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "timestamp": "2025-11-17T10:58:45.043Z",
+  "duration": 436,
+  "totalTests": 2,
+  "passed": 0,
+  "failed": 2,
+  "warnings": 0,
+  "results": [
+    {
+      "test": "Setup environnement",
+      "status": "error",
+      "message": "Échec setup : Erreur création cabinet: duplicate key value violates unique constraint \"cabinets_email_key\"",
+      "duration": 435
+    },
+    {
+      "test": "Audit global",
+      "status": "error",
+      "message": "Erreur critique : Erreur création cabinet: duplicate key value violates unique constraint \"cabinets_email_key\"",
+      "duration": 436
+    }
+  ]
+}

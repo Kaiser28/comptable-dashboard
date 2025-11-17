@@ -1,0 +1,22 @@
+{
+  "timestamp": "2025-11-17T10:51:33.453Z",
+  "duration": 1135,
+  "totalTests": 2,
+  "passed": 0,
+  "failed": 2,
+  "warnings": 0,
+  "results": [
+    {
+      "test": "Setup environnement",
+      "status": "error",
+      "message": "Échec setup : null value in column \"cabinet_id\" of relation \"experts_comptables\" violates not-null constraint",
+      "duration": 1134
+    },
+    {
+      "test": "Audit global",
+      "status": "error",
+      "message": "Erreur critique : null value in column \"cabinet_id\" of relation \"experts_comptables\" violates not-null constraint",
+      "duration": 1135
+    }
+  ]
+}

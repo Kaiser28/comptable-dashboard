@@ -1,0 +1,91 @@
+{
+  "timestamp": "2025-11-17T11:17:22.650Z",
+  "duration": 2752,
+  "totalTests": 10,
+  "passed": 6,
+  "failed": 4,
+  "warnings": 0,
+  "results": [
+    {
+      "test": "Setup environnement",
+      "status": "success",
+      "message": "Cabinet ID: e2c2dd84-f061-4033-871e-0329cdbe9944, Expert ID: 6907a7a5-f256-4a87-93fb-335353509414",
+      "duration": 790
+    },
+    {
+      "test": "Création client : TEST SAS Alpha",
+      "status": "success",
+      "message": "Client créé avec ID 814da543-2618-4c83-a7ec-e46bdc919d8a",
+      "duration": 56
+    },
+    {
+      "test": "Création client : TEST SASU Beta",
+      "status": "success",
+      "message": "Client créé avec ID 6828dce8-1092-41ae-92d5-71380333fa94",
+      "duration": 62
+    },
+    {
+      "test": "Création acte : Augmentation capital (numéraire)",
+      "status": "success",
+      "message": "Acte créé avec ID 87b6db4b-ef65-4c1b-ad83-52b07fd2719c",
+      "details": {
+        "acte_id": "87b6db4b-ef65-4c1b-ad83-52b07fd2719c",
+        "type": "augmentation_capital"
+      },
+      "duration": 93
+    },
+    {
+      "test": "Création acte : Réduction capital (rachat)",
+      "status": "success",
+      "message": "Acte créé avec ID 9c9eeb48-62d2-440a-a7bb-17497dc13412",
+      "details": {
+        "acte_id": "9c9eeb48-62d2-440a-a7bb-17497dc13412",
+        "type": "reduction_capital"
+      },
+      "duration": 63
+    },
+    {
+      "test": "Création acte : AG Ordinaire",
+      "status": "success",
+      "message": "Acte créé avec ID 03c5b34f-d25f-4cb4-9863-5f6958c2e064",
+      "details": {
+        "acte_id": "03c5b34f-d25f-4cb4-9863-5f6958c2e064",
+        "type": "ag_ordinaire"
+      },
+      "duration": 60
+    },
+    {
+      "test": "Génération doc : ag_ordinaire",
+      "status": "error",
+      "message": "Échec : 500: {\"success\":false,\"error\":\"Cannot read properties of null (reading 'president_prenom')\"}",
+      "details": {
+        "acte_id": "03c5b34f-d25f-4cb4-9863-5f6958c2e064"
+      },
+      "duration": 767
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+      "details": {
+        "acte_id": "9c9eeb48-62d2-440a-a7bb-17497dc13412"
+      },
+      "duration": 456
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+      "details": {
+        "acte_id": "87b6db4b-ef65-4c1b-ad83-52b07fd2719c"
+      },
+      "duration": 287
+    },
+    {
+      "test": "Validation : Capital final ≥ 1€",
+      "status": "error",
+      "message": "Validation ne bloque pas",
+      "duration": 49
+    }
+  ]
+}

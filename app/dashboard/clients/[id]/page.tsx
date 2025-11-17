@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { Copy, Check, FileText } from "lucide-react";
+import { Copy, Check, FileText, Users } from "lucide-react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +34,8 @@ import {
   AlertDialogFooter,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AssociesList from "@/components/associes/AssociesList";
 import { supabaseClient } from "@/lib/supabase";
 import type { Client } from "@/types/database";
 import { validateStatutsData, ValidationResult } from "@/lib/validateStatuts";
@@ -484,7 +486,17 @@ export default function ClientDetailPage() {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <Tabs defaultValue="informations" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="informations">Informations</TabsTrigger>
+          <TabsTrigger value="associes" className="gap-2">
+            <Users className="h-4 w-4" />
+            Associés
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="informations" className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Informations générales</CardTitle>
@@ -812,6 +824,28 @@ export default function ClientDetailPage() {
           </CardContent>
         </Card>
       </div>
+        </TabsContent>
+
+        <TabsContent value="associes" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Associés</CardTitle>
+              <CardDescription>
+                Liste des actionnaires de la société
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <AssociesList
+                clientId={client.id || ''}
+                clientData={{
+                  capital_social: client.capital_social || 0,
+                  nb_actions: (client as any).nb_actions || 0,
+                }}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       {validationErrors && (
         <AlertDialog open={!!validationErrors} onOpenChange={() => setValidationErrors(null)}>

@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:audit": "tsx lib/tests/bot-audit.ts",
+    "test:audit:watch": "tsx watch lib/tests/bot-audit.ts"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.15",
@@ -49,10 +51,12 @@
     "@types/papaparse": "^5.5.0",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "dotenv": "^17.2.3",
     "eslint": "^8",
     "eslint-config-next": "14.2.33",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
+    "tsx": "^4.20.6",
     "typescript": "^5"
   }
 }

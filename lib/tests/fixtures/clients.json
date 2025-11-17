@@ -1,0 +1,25 @@
+[
+  {
+    "nom_entreprise": "TEST SAS Alpha",
+    "forme_juridique": "SAS",
+    "capital_social": 10000,
+    "nb_actions": 1000,
+    "siret": "12345678901234",
+    "adresse": "10 rue Test, 75001 Paris",
+    "objet_social": "Test automatique",
+    "duree_societe": 99,
+    "montant_libere": 10000
+  },
+  {
+    "nom_entreprise": "TEST SASU Beta",
+    "forme_juridique": "SASU",
+    "capital_social": 50000,
+    "nb_actions": 5000,
+    "siret": "98765432109876",
+    "adresse": "20 avenue Test, 69001 Lyon",
+    "objet_social": "Test automatique",
+    "duree_societe": 99,
+    "montant_libere": 50000
+  }
+]
+

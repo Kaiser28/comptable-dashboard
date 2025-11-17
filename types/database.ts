@@ -205,7 +205,7 @@ export type ActeJuridique = {
   /** Identifiant du cabinet (UUID). */
   cabinet_id: string;
   /** Type d'acte juridique. */
-  type: 'cession_actions' | 'augmentation_capital' | 'ag_ordinaire';
+  type: 'cession_actions' | 'augmentation_capital' | 'ag_ordinaire' | 'reduction_capital';
   /** Date de l'acte (format ISO 8601). */
   date_acte: string;
   /** Statut de l'acte. */
@@ -232,7 +232,7 @@ export type ActeJuridique = {
   date_agrement?: string | null;
   /** Modalités de paiement (pour cession d'actions). */
   modalites_paiement?: string | null;
-  /** Ancien capital social (pour augmentation de capital). */
+  /** Ancien capital social (pour augmentation ou réduction de capital). */
   ancien_capital?: number | null;
   /** Nouveau capital social (pour augmentation de capital). */
   nouveau_capital?: number | null;
@@ -284,6 +284,69 @@ export type ActeJuridique = {
   votes_contre_comptes?: number | null;
   /** Nombre de votes ABSTENTION pour l'approbation des comptes (pour AG ordinaire). */
   votes_abstention_comptes?: number | null;
+  /** Modalité de réduction (pour réduction de capital). */
+  modalite_reduction?: 'rachat_annulation' | 'reduction_valeur_nominale' | 'coup_accordeon' | null;
+  /** Montant de la réduction (pour réduction de capital). */
+  montant_reduction?: number | null;
+  /** Nouveau capital après réduction (pour réduction de capital). */
+  nouveau_capital_apres_reduction?: number | null;
+  /** Nombre d'actions rachetées (pour réduction de capital - modalité rachat). */
+  nombre_actions_rachetees?: number | null;
+  /** Prix de rachat par action (pour réduction de capital - modalité rachat). */
+  prix_rachat_par_action?: number | null;
+  /** Ancienne valeur nominale (pour réduction de capital - modalité valeur nominale). */
+  ancienne_valeur_nominale?: number | null;
+  /** Nouvelle valeur nominale (pour réduction de capital - modalité valeur nominale). */
+  nouvelle_valeur_nominale?: number | null;
+  /** Motif de la réduction (pour réduction de capital). */
+  motif_reduction?: string | null;
+  /** Réduction motivée par pertes (pour réduction de capital). */
+  reduction_motivee_pertes?: boolean | null;
+  /** Montant augmentation après coup d'accordéon (pour réduction de capital). */
+  coup_accordeon_augmentation_montant?: number | null;
+  /** Capital final après coup d'accordéon (pour réduction de capital). */
+  coup_accordeon_nouveau_capital_final?: number | null;
+  // Phase 16E - Apports en nature
+  /** Indique si un apport en nature est présent (pour augmentation de capital). */
+  apport_nature?: boolean | null;
+  /** Description de l'apport en nature (pour augmentation de capital). */
+  apport_nature_description?: string | null;
+  /** Montant total de l'apport en nature (pour augmentation de capital). */
+  apport_nature_montant_total?: number | null;
+  /** Pourcentage du capital représenté par l'apport en nature (pour augmentation de capital). */
+  apport_nature_pourcentage_capital?: number | null;
+  /** Modalité de l'apport en nature (pour augmentation de capital). */
+  apport_nature_modalite?: string | null;
+  /** Détails des apports en nature (tableau JSON pour augmentation de capital). */
+  apports_nature_details?: Array<{
+    type?: string;
+    description: string;
+    valeur: number;
+    apporteur: string;
+  }> | null;
+  /** Indique si un commissaire aux apports est requis (pour augmentation de capital). */
+  commissaire_apports_requis?: boolean | null;
+  /** Nom du commissaire aux apports (pour augmentation de capital). */
+  commissaire_apports_nom?: string | null;
+  /** Adresse du commissaire aux apports (pour augmentation de capital). */
+  commissaire_apports_adresse?: string | null;
+  /** Indique si un commissaire aux apports est obligatoire (pour augmentation de capital). */
+  commissaire_obligatoire?: boolean | null;
+  /** Nom du commissaire (pour augmentation de capital). */
+  commissaire_nom?: string | null;
+  /** Indique si le bien apporté est supérieur à 30 000€ (pour augmentation de capital). */
+  bien_superieur_30k?: boolean | null;
+  // Phase 16F - Réduction capital (propriétés supplémentaires)
+  /** Date de l'assemblée pour la réduction (pour réduction de capital). */
+  date_assemblee_reduction?: string | null;
+  /** Montant de la réduction de capital (alias de montant_reduction, pour réduction de capital). */
+  montant_reduction_capital?: number | null;
+  /** Nombre d'actions avant réduction (pour réduction de capital). */
+  nombre_actions_avant_reduction?: number | null;
+  /** Nombre d'actions après réduction (pour réduction de capital). */
+  nombre_actions_apres_reduction?: number | null;
+  /** Montant des pertes réduites (pour réduction de capital). */
+  reduction_pertes_montant?: number | null;
   /** Date de création de l'enregistrement (format ISO 8601). */
   created_at: string;
   /** Date de dernière mise à jour de l'enregistrement (format ISO 8601). */

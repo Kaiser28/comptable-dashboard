@@ -1,0 +1,1080 @@
+{
+  "timestamp": "2025-11-17T11:29:01.624Z",
+  "duration": 8982,
+  "totalTests": 86,
+  "passed": 43,
+  "failed": 43,
+  "warnings": 0,
+  "results": [
+    {
+      "test": "Setup: Environnement",
+      "status": "success",
+      "message": "Cabinet ID: d3a601a7-5c21-4c54-9276-543154c55453, Expert ID: 1bfb7b77-b234-4dcf-8682-399de5dd0ad1",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:53.616Z"
+    },
+    {
+      "test": "Création client: SAS Complet",
+      "status": "success",
+      "message": "ID: 39fcc991-98c7-4001-ac9f-0df661d4c739",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:53.684Z"
+    },
+    {
+      "test": "Création client: SAS Capital Minimum",
+      "status": "success",
+      "message": "ID: db13ccb7-0347-4553-b683-7b577a0da288",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:53.746Z"
+    },
+    {
+      "test": "Création client: SASU Complet",
+      "status": "success",
+      "message": "ID: 891d7fc8-3187-4009-ab03-26bce77abd16",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:53.802Z"
+    },
+    {
+      "test": "Création client: SAS Sans Président",
+      "status": "success",
+      "message": "ID: 3bef4f8b-acd2-478a-82e6-ebac5fd0a978",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:53.854Z"
+    },
+    {
+      "test": "Création client: SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: c5e56f30-28d8-435d-969e-ad4f5916d1ef",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:53.909Z"
+    },
+    {
+      "test": "Création client: SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: 9864cd6d-19d2-464a-a727-442428e87f80",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:53.970Z"
+    },
+    {
+      "test": "Acte augmentation (numeraire) - TEST SAS Complet",
+      "status": "success",
+      "message": "ID: 5c927f4e-30ef-44b9-8241-0f78f202d079",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:54.034Z"
+    },
+    {
+      "test": "Acte augmentation (nature) - TEST SAS Complet",
+      "status": "success",
+      "message": "ID: 4e3d7d6f-1f44-4edc-8e2e-8bee002fa30a",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:54.090Z"
+    },
+    {
+      "test": "Acte augmentation (incorporation_reserves) - TEST SAS Complet",
+      "status": "error",
+      "message": "Échec : new row for relation \"actes_juridiques\" violates check constraint \"actes_juridiques_modalite_check\"",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:54.150Z"
+    },
+    {
+      "test": "Acte réduction (rachat_annulation) - TEST SAS Complet",
+      "status": "success",
+      "message": "ID: 925a1698-813e-41bb-91de-3c43fab3cf9d",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:54.208Z"
+    },
+    {
+      "test": "Acte réduction (reduction_valeur_nominale) - TEST SAS Complet",
+      "status": "success",
+      "message": "ID: 73e78940-4f59-4097-8846-6883864acade",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:54.263Z"
+    },
+    {
+      "test": "Acte réduction (coup_accordeon) - TEST SAS Complet",
+      "status": "success",
+      "message": "ID: f651b259-2c6c-4c3e-977f-0ea964114140",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:54.337Z"
+    },
+    {
+      "test": "Acte AG Ordinaire - TEST SAS Complet",
+      "status": "success",
+      "message": "ID: be8602eb-f1d2-4e32-9f6d-cd7dc6489a9f",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:54.399Z"
+    },
+    {
+      "test": "Acte augmentation (numeraire) - TEST SAS Capital Min",
+      "status": "success",
+      "message": "ID: 3049b882-a2ad-4a1b-a6ae-59194f5a4e5e",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:54.458Z"
+    },
+    {
+      "test": "Acte augmentation (nature) - TEST SAS Capital Min",
+      "status": "success",
+      "message": "ID: 5a823b2b-d06c-4b10-a5f4-537bd18730b5",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:54.512Z"
+    },
+    {
+      "test": "Acte augmentation (incorporation_reserves) - TEST SAS Capital Min",
+      "status": "error",
+      "message": "Échec : new row for relation \"actes_juridiques\" violates check constraint \"actes_juridiques_modalite_check\"",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:54.571Z"
+    },
+    {
+      "test": "Acte réduction (rachat_annulation) - TEST SAS Capital Min",
+      "status": "success",
+      "message": "ID: eff68585-b92b-4d4d-8024-471be20f8f75",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:54.640Z"
+    },
+    {
+      "test": "Acte réduction (reduction_valeur_nominale) - TEST SAS Capital Min",
+      "status": "success",
+      "message": "ID: 96852491-50f1-4c46-bda1-7cb7a1bc2a51",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:54.706Z"
+    },
+    {
+      "test": "Acte réduction (coup_accordeon) - TEST SAS Capital Min",
+      "status": "success",
+      "message": "ID: 9dbc0668-cb89-4f9f-904a-3f26c5acf0d4",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:54.765Z"
+    },
+    {
+      "test": "Acte AG Ordinaire - TEST SAS Capital Min",
+      "status": "success",
+      "message": "ID: 56c837e5-07a9-4359-80c6-48e1efa69021",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:54.819Z"
+    },
+    {
+      "test": "Acte augmentation (numeraire) - TEST SASU Complet",
+      "status": "success",
+      "message": "ID: 2e8f66ca-ffb5-450c-bd7e-6dd6c0f13816",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:54.871Z"
+    },
+    {
+      "test": "Acte augmentation (nature) - TEST SASU Complet",
+      "status": "success",
+      "message": "ID: 5e15ad32-1c63-4bdb-8804-8c653aa8ff8c",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:54.921Z"
+    },
+    {
+      "test": "Acte augmentation (incorporation_reserves) - TEST SASU Complet",
+      "status": "error",
+      "message": "Échec : new row for relation \"actes_juridiques\" violates check constraint \"actes_juridiques_modalite_check\"",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:54.973Z"
+    },
+    {
+      "test": "Acte réduction (rachat_annulation) - TEST SASU Complet",
+      "status": "success",
+      "message": "ID: 23146a4d-c4e4-43b6-9572-86276c08ce5a",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:55.023Z"
+    },
+    {
+      "test": "Acte réduction (reduction_valeur_nominale) - TEST SASU Complet",
+      "status": "success",
+      "message": "ID: e9fae2ec-714a-40fb-a428-62510343f549",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:55.076Z"
+    },
+    {
+      "test": "Acte réduction (coup_accordeon) - TEST SASU Complet",
+      "status": "success",
+      "message": "ID: 6ccbdf4a-b795-413c-8179-1989910c333f",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:55.129Z"
+    },
+    {
+      "test": "Acte AG Ordinaire - TEST SASU Complet",
+      "status": "success",
+      "message": "ID: 9ffce608-2d1f-469f-931d-926c277de3bb",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:55.181Z"
+    },
+    {
+      "test": "Acte augmentation (numeraire) - TEST SAS Sans Président",
+      "status": "success",
+      "message": "ID: 72ec5aec-6a9d-4893-ad79-2ebe0a1ddac7",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:55.238Z"
+    },
+    {
+      "test": "Acte augmentation (nature) - TEST SAS Sans Président",
+      "status": "success",
+      "message": "ID: 373a61b7-7aff-4875-872b-41297ad8c995",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:55.290Z"
+    },
+    {
+      "test": "Acte augmentation (incorporation_reserves) - TEST SAS Sans Président",
+      "status": "error",
+      "message": "Échec : new row for relation \"actes_juridiques\" violates check constraint \"actes_juridiques_modalite_check\"",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:55.345Z"
+    },
+    {
+      "test": "Acte réduction (rachat_annulation) - TEST SAS Sans Président",
+      "status": "success",
+      "message": "ID: be28d327-19c6-4f3b-ae51-7cdb84406cbd",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:55.404Z"
+    },
+    {
+      "test": "Acte réduction (reduction_valeur_nominale) - TEST SAS Sans Président",
+      "status": "success",
+      "message": "ID: 69cbe2ab-3028-4095-90cd-3e04a4a0f999",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:55.456Z"
+    },
+    {
+      "test": "Acte réduction (coup_accordeon) - TEST SAS Sans Président",
+      "status": "success",
+      "message": "ID: fc142048-5f67-4d05-8d89-5b9322172117",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:55.507Z"
+    },
+    {
+      "test": "Acte AG Ordinaire - TEST SAS Sans Président",
+      "status": "success",
+      "message": "ID: dfb2ad08-045e-470e-9026-c6b141af9849",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:55.568Z"
+    },
+    {
+      "test": "Acte augmentation (numeraire) - TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: 41179ae3-021a-466b-8cc3-97401a4f3549",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:55.621Z"
+    },
+    {
+      "test": "Acte augmentation (nature) - TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: 9e394f4d-a857-48ab-9681-931b5bc192b5",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:55.678Z"
+    },
+    {
+      "test": "Acte augmentation (incorporation_reserves) - TEST SAS Capital Énorme",
+      "status": "error",
+      "message": "Échec : new row for relation \"actes_juridiques\" violates check constraint \"actes_juridiques_modalite_check\"",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:55.726Z"
+    },
+    {
+      "test": "Acte réduction (rachat_annulation) - TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: b339e82a-9ca2-4c89-bf0e-9ab6f3438500",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:55.778Z"
+    },
+    {
+      "test": "Acte réduction (reduction_valeur_nominale) - TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: 8bff7b49-819d-4594-b0dc-908386dfb567",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:55.836Z"
+    },
+    {
+      "test": "Acte réduction (coup_accordeon) - TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: 3690df31-1546-47d7-97ea-535f470305f7",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:55.915Z"
+    },
+    {
+      "test": "Acte AG Ordinaire - TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: 72d78ca0-e88b-47c8-96b0-323425e25769",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:55.983Z"
+    },
+    {
+      "test": "Acte augmentation (numeraire) - TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: 6364d91f-d51b-422c-84bc-08bee2515a19",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:56.034Z"
+    },
+    {
+      "test": "Acte augmentation (nature) - TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: 9881043d-cbe1-4fa6-8505-0b81f12c1c0f",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:56.087Z"
+    },
+    {
+      "test": "Acte augmentation (incorporation_reserves) - TEST SASU Capital Décimal",
+      "status": "error",
+      "message": "Échec : new row for relation \"actes_juridiques\" violates check constraint \"actes_juridiques_modalite_check\"",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:56.136Z"
+    },
+    {
+      "test": "Acte réduction (rachat_annulation) - TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: d4d2805e-506d-478d-83d1-12860205fea7",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:56.187Z"
+    },
+    {
+      "test": "Acte réduction (reduction_valeur_nominale) - TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: 74322832-b3e7-42f1-8a02-8490469553e5",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:56.237Z"
+    },
+    {
+      "test": "Acte réduction (coup_accordeon) - TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: 140c3ce7-5208-4c1d-824e-1aae83090bce",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:56.287Z"
+    },
+    {
+      "test": "Acte AG Ordinaire - TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: 716604fb-456d-4bb1-a460-501c67f8df2e",
+      "duration": 0,
+      "timestamp": "2025-11-17T11:28:56.349Z"
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+      "details": {
+        "acte_id": "5c927f4e-30ef-44b9-8241-0f78f202d079"
+      },
+      "duration": 186
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+      "details": {
+        "acte_id": "4e3d7d6f-1f44-4edc-8e2e-8bee002fa30a"
+      },
+      "duration": 128
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+      "details": {
+        "acte_id": "925a1698-813e-41bb-91de-3c43fab3cf9d"
+      },
+      "duration": 140
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+      "details": {
+        "acte_id": "73e78940-4f59-4097-8846-6883864acade"
+      },
+      "duration": 140
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+      "details": {
+        "acte_id": "f651b259-2c6c-4c3e-977f-0ea964114140"
+      },
+      "duration": 128
+    },
+    {
+      "test": "Génération doc : ag_ordinaire",
+      "status": "error",
+      "message": "Échec : 500: {\"success\":false,\"error\":\"Cannot read properties of null (reading 'president_prenom')\"}",
+      "details": {
+        "acte_id": "be8602eb-f1d2-4e32-9f6d-cd7dc6489a9f"
+      },
+      "duration": 192
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+      "details": {
+        "acte_id": "3049b882-a2ad-4a1b-a6ae-59194f5a4e5e"
+      },
+      "duration": 129
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+      "details": {
+        "acte_id": "5a823b2b-d06c-4b10-a5f4-537bd18730b5"
+      },
+      "duration": 125
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+      "details": {
+        "acte_id": "eff68585-b92b-4d4d-8024-471be20f8f75"
+      },
+      "duration": 176
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+      "details": {
+        "acte_id": "96852491-50f1-4c46-bda1-7cb7a1bc2a51"
+      },
+      "duration": 134
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+      "details": {
+        "acte_id": "9dbc0668-cb89-4f9f-904a-3f26c5acf0d4"
+      },
+      "duration": 150
+    },
+    {
+      "test": "Génération doc : ag_ordinaire",
+      "status": "error",
+      "message": "Échec : 500: {\"success\":false,\"error\":\"Cannot read properties of null (reading 'president_prenom')\"}",
+      "details": {
+        "acte_id": "56c837e5-07a9-4359-80c6-48e1efa69021"
+      },
+      "duration": 201
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+      "details": {
+        "acte_id": "2e8f66ca-ffb5-450c-bd7e-6dd6c0f13816"
+      },
+      "duration": 129
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+      "details": {
+        "acte_id": "5e15ad32-1c63-4bdb-8804-8c653aa8ff8c"
+      },
+      "duration": 135
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+      "details": {
+        "acte_id": "23146a4d-c4e4-43b6-9572-86276c08ce5a"
+      },
+      "duration": 127
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+      "details": {
+        "acte_id": "e9fae2ec-714a-40fb-a428-62510343f549"
+      },
+      "duration": 145
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+      "details": {
+        "acte_id": "6ccbdf4a-b795-413c-8179-1989910c333f"
+      },
+      "duration": 124
+    },
+    {
+      "test": "Génération doc : ag_ordinaire",
+      "status": "error",
+      "message": "Échec : 500: {\"success\":false,\"error\":\"Cannot read properties of null (reading 'president_prenom')\"}",
+      "details": {
+        "acte_id": "9ffce608-2d1f-469f-931d-926c277de3bb"
+      },
+      "duration": 187
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+      "details": {
+        "acte_id": "72ec5aec-6a9d-4893-ad79-2ebe0a1ddac7"
+      },
+      "duration": 132
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+      "details": {
+        "acte_id": "373a61b7-7aff-4875-872b-41297ad8c995"
+      },
+      "duration": 119
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+      "details": {
+        "acte_id": "be28d327-19c6-4f3b-ae51-7cdb84406cbd"
+      },
+      "duration": 144
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+      "details": {
+        "acte_id": "69cbe2ab-3028-4095-90cd-3e04a4a0f999"
+      },
+      "duration": 132
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+      "details": {
+        "acte_id": "fc142048-5f67-4d05-8d89-5b9322172117"
+      },
+      "duration": 122
+    },
+    {
+      "test": "Génération doc : ag_ordinaire",
+      "status": "error",
+      "message": "Échec : 500: {\"success\":false,\"error\":\"Cannot read properties of null (reading 'president_prenom')\"}",
+      "details": {
+        "acte_id": "dfb2ad08-045e-470e-9026-c6b141af9849"
+      },
+      "duration": 171
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+      "details": {
+        "acte_id": "41179ae3-021a-466b-8cc3-97401a4f3549"
+      },
+      "duration": 130
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+      "details": {
+        "acte_id": "9e394f4d-a857-48ab-9681-931b5bc192b5"
+      },
+      "duration": 123
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+      "details": {
+        "acte_id": "b339e82a-9ca2-4c89-bf0e-9ab6f3438500"
+      },
+      "duration": 125
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+      "details": {
+        "acte_id": "8bff7b49-819d-4594-b0dc-908386dfb567"
+      },
+      "duration": 124
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+      "details": {
+        "acte_id": "3690df31-1546-47d7-97ea-535f470305f7"
+      },
+      "duration": 147
+    },
+    {
+      "test": "Génération doc : ag_ordinaire",
+      "status": "error",
+      "message": "Échec : 500: {\"success\":false,\"error\":\"Cannot read properties of null (reading 'president_prenom')\"}",
+      "details": {
+        "acte_id": "72d78ca0-e88b-47c8-96b0-323425e25769"
+      },
+      "duration": 161
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+      "details": {
+        "acte_id": "6364d91f-d51b-422c-84bc-08bee2515a19"
+      },
+      "duration": 122
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+      "details": {
+        "acte_id": "9881043d-cbe1-4fa6-8505-0b81f12c1c0f"
+      },
+      "duration": 126
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+      "details": {
+        "acte_id": "d4d2805e-506d-478d-83d1-12860205fea7"
+      },
+      "duration": 140
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+      "details": {
+        "acte_id": "74322832-b3e7-42f1-8a02-8490469553e5"
+      },
+      "duration": 131
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+      "details": {
+        "acte_id": "140c3ce7-5208-4c1d-824e-1aae83090bce"
+      },
+      "duration": 124
+    },
+    {
+      "test": "Génération doc : ag_ordinaire",
+      "status": "error",
+      "message": "Échec : 500: {\"success\":false,\"error\":\"Cannot read properties of null (reading 'president_prenom')\"}",
+      "details": {
+        "acte_id": "716604fb-456d-4bb1-a460-501c67f8df2e"
+      },
+      "duration": 184
+    },
+    {
+      "test": "Validation : Capital final ≥ 1€",
+      "status": "error",
+      "message": "Validation ne bloque pas",
+      "duration": 125
+    }
+  ],
+  "errorsByType": {
+    "Acte augmentation (incorporation_reserves) - TEST SAS Complet": [
+      {
+        "test": "Acte augmentation (incorporation_reserves) - TEST SAS Complet",
+        "status": "error",
+        "message": "Échec : new row for relation \"actes_juridiques\" violates check constraint \"actes_juridiques_modalite_check\"",
+        "duration": 0,
+        "timestamp": "2025-11-17T11:28:54.150Z"
+      }
+    ],
+    "Acte augmentation (incorporation_reserves) - TEST SAS Capital Min": [
+      {
+        "test": "Acte augmentation (incorporation_reserves) - TEST SAS Capital Min",
+        "status": "error",
+        "message": "Échec : new row for relation \"actes_juridiques\" violates check constraint \"actes_juridiques_modalite_check\"",
+        "duration": 0,
+        "timestamp": "2025-11-17T11:28:54.571Z"
+      }
+    ],
+    "Acte augmentation (incorporation_reserves) - TEST SASU Complet": [
+      {
+        "test": "Acte augmentation (incorporation_reserves) - TEST SASU Complet",
+        "status": "error",
+        "message": "Échec : new row for relation \"actes_juridiques\" violates check constraint \"actes_juridiques_modalite_check\"",
+        "duration": 0,
+        "timestamp": "2025-11-17T11:28:54.973Z"
+      }
+    ],
+    "Acte augmentation (incorporation_reserves) - TEST SAS Sans Président": [
+      {
+        "test": "Acte augmentation (incorporation_reserves) - TEST SAS Sans Président",
+        "status": "error",
+        "message": "Échec : new row for relation \"actes_juridiques\" violates check constraint \"actes_juridiques_modalite_check\"",
+        "duration": 0,
+        "timestamp": "2025-11-17T11:28:55.345Z"
+      }
+    ],
+    "Acte augmentation (incorporation_reserves) - TEST SAS Capital Énorme": [
+      {
+        "test": "Acte augmentation (incorporation_reserves) - TEST SAS Capital Énorme",
+        "status": "error",
+        "message": "Échec : new row for relation \"actes_juridiques\" violates check constraint \"actes_juridiques_modalite_check\"",
+        "duration": 0,
+        "timestamp": "2025-11-17T11:28:55.726Z"
+      }
+    ],
+    "Acte augmentation (incorporation_reserves) - TEST SASU Capital Décimal": [
+      {
+        "test": "Acte augmentation (incorporation_reserves) - TEST SASU Capital Décimal",
+        "status": "error",
+        "message": "Échec : new row for relation \"actes_juridiques\" violates check constraint \"actes_juridiques_modalite_check\"",
+        "duration": 0,
+        "timestamp": "2025-11-17T11:28:56.136Z"
+      }
+    ],
+    "Génération doc ": [
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+        "details": {
+          "acte_id": "5c927f4e-30ef-44b9-8241-0f78f202d079"
+        },
+        "duration": 186
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+        "details": {
+          "acte_id": "4e3d7d6f-1f44-4edc-8e2e-8bee002fa30a"
+        },
+        "duration": 128
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+        "details": {
+          "acte_id": "925a1698-813e-41bb-91de-3c43fab3cf9d"
+        },
+        "duration": 140
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+        "details": {
+          "acte_id": "73e78940-4f59-4097-8846-6883864acade"
+        },
+        "duration": 140
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+        "details": {
+          "acte_id": "f651b259-2c6c-4c3e-977f-0ea964114140"
+        },
+        "duration": 128
+      },
+      {
+        "test": "Génération doc : ag_ordinaire",
+        "status": "error",
+        "message": "Échec : 500: {\"success\":false,\"error\":\"Cannot read properties of null (reading 'president_prenom')\"}",
+        "details": {
+          "acte_id": "be8602eb-f1d2-4e32-9f6d-cd7dc6489a9f"
+        },
+        "duration": 192
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+        "details": {
+          "acte_id": "3049b882-a2ad-4a1b-a6ae-59194f5a4e5e"
+        },
+        "duration": 129
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+        "details": {
+          "acte_id": "5a823b2b-d06c-4b10-a5f4-537bd18730b5"
+        },
+        "duration": 125
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+        "details": {
+          "acte_id": "eff68585-b92b-4d4d-8024-471be20f8f75"
+        },
+        "duration": 176
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+        "details": {
+          "acte_id": "96852491-50f1-4c46-bda1-7cb7a1bc2a51"
+        },
+        "duration": 134
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+        "details": {
+          "acte_id": "9dbc0668-cb89-4f9f-904a-3f26c5acf0d4"
+        },
+        "duration": 150
+      },
+      {
+        "test": "Génération doc : ag_ordinaire",
+        "status": "error",
+        "message": "Échec : 500: {\"success\":false,\"error\":\"Cannot read properties of null (reading 'president_prenom')\"}",
+        "details": {
+          "acte_id": "56c837e5-07a9-4359-80c6-48e1efa69021"
+        },
+        "duration": 201
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+        "details": {
+          "acte_id": "2e8f66ca-ffb5-450c-bd7e-6dd6c0f13816"
+        },
+        "duration": 129
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+        "details": {
+          "acte_id": "5e15ad32-1c63-4bdb-8804-8c653aa8ff8c"
+        },
+        "duration": 135
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+        "details": {
+          "acte_id": "23146a4d-c4e4-43b6-9572-86276c08ce5a"
+        },
+        "duration": 127
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+        "details": {
+          "acte_id": "e9fae2ec-714a-40fb-a428-62510343f549"
+        },
+        "duration": 145
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+        "details": {
+          "acte_id": "6ccbdf4a-b795-413c-8179-1989910c333f"
+        },
+        "duration": 124
+      },
+      {
+        "test": "Génération doc : ag_ordinaire",
+        "status": "error",
+        "message": "Échec : 500: {\"success\":false,\"error\":\"Cannot read properties of null (reading 'president_prenom')\"}",
+        "details": {
+          "acte_id": "9ffce608-2d1f-469f-931d-926c277de3bb"
+        },
+        "duration": 187
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+        "details": {
+          "acte_id": "72ec5aec-6a9d-4893-ad79-2ebe0a1ddac7"
+        },
+        "duration": 132
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+        "details": {
+          "acte_id": "373a61b7-7aff-4875-872b-41297ad8c995"
+        },
+        "duration": 119
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+        "details": {
+          "acte_id": "be28d327-19c6-4f3b-ae51-7cdb84406cbd"
+        },
+        "duration": 144
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+        "details": {
+          "acte_id": "69cbe2ab-3028-4095-90cd-3e04a4a0f999"
+        },
+        "duration": 132
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+        "details": {
+          "acte_id": "fc142048-5f67-4d05-8d89-5b9322172117"
+        },
+        "duration": 122
+      },
+      {
+        "test": "Génération doc : ag_ordinaire",
+        "status": "error",
+        "message": "Échec : 500: {\"success\":false,\"error\":\"Cannot read properties of null (reading 'president_prenom')\"}",
+        "details": {
+          "acte_id": "dfb2ad08-045e-470e-9026-c6b141af9849"
+        },
+        "duration": 171
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+        "details": {
+          "acte_id": "41179ae3-021a-466b-8cc3-97401a4f3549"
+        },
+        "duration": 130
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+        "details": {
+          "acte_id": "9e394f4d-a857-48ab-9681-931b5bc192b5"
+        },
+        "duration": 123
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+        "details": {
+          "acte_id": "b339e82a-9ca2-4c89-bf0e-9ab6f3438500"
+        },
+        "duration": 125
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+        "details": {
+          "acte_id": "8bff7b49-819d-4594-b0dc-908386dfb567"
+        },
+        "duration": 124
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+        "details": {
+          "acte_id": "3690df31-1546-47d7-97ea-535f470305f7"
+        },
+        "duration": 147
+      },
+      {
+        "test": "Génération doc : ag_ordinaire",
+        "status": "error",
+        "message": "Échec : 500: {\"success\":false,\"error\":\"Cannot read properties of null (reading 'president_prenom')\"}",
+        "details": {
+          "acte_id": "72d78ca0-e88b-47c8-96b0-323425e25769"
+        },
+        "duration": 161
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+        "details": {
+          "acte_id": "6364d91f-d51b-422c-84bc-08bee2515a19"
+        },
+        "duration": 122
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+        "details": {
+          "acte_id": "9881043d-cbe1-4fa6-8505-0b81f12c1c0f"
+        },
+        "duration": 126
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+        "details": {
+          "acte_id": "d4d2805e-506d-478d-83d1-12860205fea7"
+        },
+        "duration": 140
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+        "details": {
+          "acte_id": "74322832-b3e7-42f1-8a02-8490469553e5"
+        },
+        "duration": 131
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 404: {\"error\":\"Client introuvable pour cet acte.\"}",
+        "details": {
+          "acte_id": "140c3ce7-5208-4c1d-824e-1aae83090bce"
+        },
+        "duration": 124
+      },
+      {
+        "test": "Génération doc : ag_ordinaire",
+        "status": "error",
+        "message": "Échec : 500: {\"success\":false,\"error\":\"Cannot read properties of null (reading 'president_prenom')\"}",
+        "details": {
+          "acte_id": "716604fb-456d-4bb1-a460-501c67f8df2e"
+        },
+        "duration": 184
+      }
+    ],
+    "Validation ": [
+      {
+        "test": "Validation : Capital final ≥ 1€",
+        "status": "error",
+        "message": "Validation ne bloque pas",
+        "duration": 125
+      }
+    ]
+  },
+  "summary": {
+    "total": 86,
+    "passed": 43,
+    "failed": 43,
+    "warnings": 0,
+    "percentage": "50"
+  }
+}

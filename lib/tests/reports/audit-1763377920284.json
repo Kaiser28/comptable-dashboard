@@ -1,0 +1,91 @@
+{
+  "timestamp": "2025-11-17T11:12:00.283Z",
+  "duration": 2450,
+  "totalTests": 10,
+  "passed": 6,
+  "failed": 4,
+  "warnings": 0,
+  "results": [
+    {
+      "test": "Setup environnement",
+      "status": "success",
+      "message": "Cabinet ID: c7c31b6d-edcb-4014-9619-80b77ece4ad4, Expert ID: 532c793c-ec0f-4960-b5f5-d8fb2b3d11a7",
+      "duration": 1812
+    },
+    {
+      "test": "Création client : TEST SAS Alpha",
+      "status": "success",
+      "message": "Client créé avec ID 33378c4a-db63-41b1-af6e-08f1e424a940",
+      "duration": 56
+    },
+    {
+      "test": "Création client : TEST SASU Beta",
+      "status": "success",
+      "message": "Client créé avec ID c2bde5ea-9867-49a8-8b45-4415d8e62c81",
+      "duration": 106
+    },
+    {
+      "test": "Création acte : Augmentation capital (numéraire)",
+      "status": "success",
+      "message": "Acte créé avec ID 54edc0c6-ec52-4828-a5f7-a8b60ec03e36",
+      "details": {
+        "acte_id": "54edc0c6-ec52-4828-a5f7-a8b60ec03e36",
+        "type": "augmentation_capital"
+      },
+      "duration": 59
+    },
+    {
+      "test": "Création acte : Réduction capital (rachat)",
+      "status": "success",
+      "message": "Acte créé avec ID 8880023b-2984-4b87-8304-f587e43447bb",
+      "details": {
+        "acte_id": "8880023b-2984-4b87-8304-f587e43447bb",
+        "type": "reduction_capital"
+      },
+      "duration": 110
+    },
+    {
+      "test": "Création acte : AG Ordinaire",
+      "status": "success",
+      "message": "Acte créé avec ID 411cf8ff-16d4-4de4-98ee-5ac2e42c8d14",
+      "details": {
+        "acte_id": "411cf8ff-16d4-4de4-98ee-5ac2e42c8d14",
+        "type": "ag_ordinaire"
+      },
+      "duration": 55
+    },
+    {
+      "test": "Génération doc : ag_ordinaire",
+      "status": "error",
+      "message": "Échec : 401: {\"success\":false,\"error\":\"Non authentifié\"}",
+      "details": {
+        "acte_id": "411cf8ff-16d4-4de4-98ee-5ac2e42c8d14"
+      },
+      "duration": 22
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 401: {\"error\":\"Non authentifié\"}",
+      "details": {
+        "acte_id": "8880023b-2984-4b87-8304-f587e43447bb"
+      },
+      "duration": 16
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 401: {\"error\":\"Non authentifié\"}",
+      "details": {
+        "acte_id": "54edc0c6-ec52-4828-a5f7-a8b60ec03e36"
+      },
+      "duration": 14
+    },
+    {
+      "test": "Validation : Capital final ≥ 1€",
+      "status": "error",
+      "message": "Validation ne bloque pas",
+      "duration": 62
+    }
+  ]
+}

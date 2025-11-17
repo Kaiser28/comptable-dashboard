@@ -1,0 +1,32 @@
+[
+  {
+    "type": "augmentation_capital",
+    "label": "Augmentation capital (numéraire)",
+    "data": {
+      "ancien_capital": 10000,
+      "montant_augmentation": 20000,
+      "nouveau_capital": 30000,
+      "modalite": "numeraire",
+      "nombre_nouvelles_actions": 2000,
+      "quorum": 100,
+      "votes_pour": 1000,
+      "votes_contre": 0
+    }
+  },
+  {
+    "type": "augmentation_capital",
+    "label": "Augmentation capital (nature)",
+    "data": {
+      "ancien_capital": 10000,
+      "montant_augmentation": 15000,
+      "nouveau_capital": 25000,
+      "modalite": "nature",
+      "description_apport": "Matériel informatique",
+      "nombre_nouvelles_actions": 1500,
+      "quorum": 100,
+      "votes_pour": 1000,
+      "votes_contre": 0
+    }
+  }
+]
+

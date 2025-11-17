@@ -147,7 +147,7 @@ export async function generateAugmentationCapital(
   const commissaireNom = acte.commissaire_nom || "";
   const bienSuperieur30k = acte.bien_superieur_30k === true;
   const apportsNatureDetails: Array<{
-    type: string;
+    type?: string;
     description: string;
     valeur: number;
     apporteur: string;

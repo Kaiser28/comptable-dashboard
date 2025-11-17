@@ -100,6 +100,18 @@ type FormErrors = Partial<Record<keyof (ActeCessionFormData & ActeAugmentationCa
 type ActeWithRelations = ActeJuridique & {
   cedant: Associe | Associe[] | null;
   client: (Client & { associes?: Associe[] }) | null;
+  // Apports en nature
+  apport_nature?: boolean | null;
+  apport_nature_description?: string | null;
+  apport_nature_montant_total?: number | null;
+  apport_nature_pourcentage_capital?: number | null;
+  apport_nature_modalite?: string | null;
+  commissaire_apports_requis?: boolean | null;
+  commissaire_apports_nom?: string | null;
+  commissaire_apports_adresse?: string | null;
+  commissaire_obligatoire?: boolean | null;
+  commissaire_nom?: string | null;
+  bien_superieur_30k?: boolean | null;
 };
 
 export default function EditActePage() {

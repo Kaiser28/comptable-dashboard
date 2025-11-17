@@ -1,0 +1,37 @@
+[
+  {
+    "type": "reduction_capital",
+    "label": "Réduction capital (rachat)",
+    "data": {
+      "ancien_capital": 10000,
+      "montant_reduction": 5000,
+      "nouveau_capital_apres_reduction": 5000,
+      "modalite_reduction": "rachat_annulation",
+      "nombre_actions_rachetees": 500,
+      "prix_rachat_par_action": 10,
+      "motif_reduction": "Test automatique",
+      "reduction_motivee_pertes": false,
+      "quorum": 100,
+      "votes_pour": 700,
+      "votes_contre": 0
+    }
+  },
+  {
+    "type": "reduction_capital",
+    "label": "Réduction capital (valeur nominale)",
+    "data": {
+      "ancien_capital": 10000,
+      "montant_reduction": 3000,
+      "nouveau_capital_apres_reduction": 7000,
+      "modalite_reduction": "reduction_valeur_nominale",
+      "ancienne_valeur_nominale": 10,
+      "nouvelle_valeur_nominale": 7,
+      "motif_reduction": "Test automatique",
+      "reduction_motivee_pertes": false,
+      "quorum": 100,
+      "votes_pour": 700,
+      "votes_contre": 0
+    }
+  }
+]
+
