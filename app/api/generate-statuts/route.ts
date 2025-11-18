@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
+import { withRateLimit } from "@/lib/ratelimit-upstash";
 
 import type { ClientData, AssocieData } from "@/lib/types/database";
 import { generateStatuts } from "@/lib/generateStatuts";
@@ -8,8 +9,11 @@ import { generateStatuts } from "@/lib/generateStatuts";
 /**
  * Route POST /api/generate-statuts
  * Génère les statuts Word pour un client donné en s'appuyant sur les données Supabase.
+ * 
+ * Rate limiting strict : 20 req/min (génération documents - OWASP)
  */
-export async function POST(request: Request) {
+export const POST = withRateLimit(
+  async (request: Request) => {
   try {
     const body = await request.json().catch((): null => null);
     const clientId = body?.client_id as string | undefined;
@@ -103,4 +107,6 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-}
+  },
+  { limiter: "strict" } // 20 req/min pour génération documents (mutation sensible)
+);

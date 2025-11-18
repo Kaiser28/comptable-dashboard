@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
-import { withRateLimit, RATE_LIMITS } from "@/lib/withRateLimit";
+import { withRateLimit } from "@/lib/ratelimit-upstash";
 import { generateDocumentSchema } from "@/lib/validators/api";
 import { sanitizeObject } from "@/lib/sanitize";
 import { logAudit } from "@/lib/audit";
@@ -10,19 +10,13 @@ import { logAudit } from "@/lib/audit";
 import type { ActeJuridiqueData, ClientData, CabinetData } from "@/lib/types/database";
 import { generateReductionCapital } from "@/lib/generateReductionCapital";
 
-export async function POST(request: Request) {
-  try {
-    // ============================================
-    // SÉCURITÉ : Rate Limiting
-    // ============================================
-    const rateLimitResponse = await withRateLimit(request, RATE_LIMITS.DOCUMENT_GENERATION);
-    if (rateLimitResponse) {
-      return rateLimitResponse;
-    }
-
-    // ============================================
-    // SÉCURITÉ : Validation + Sanitization
-    // ============================================
+// Rate limiting strict : 20 req/min (génération documents - OWASP)
+export const POST = withRateLimit(
+  async (request: Request) => {
+    try {
+      // ============================================
+      // SÉCURITÉ : Validation + Sanitization
+      // ============================================
     const body = await request.json().catch((): null => null);
     if (!body) {
       return NextResponse.json({ error: "Corps de la requête invalide" }, { status: 400 });
@@ -236,5 +230,7 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-}
+  },
+  { limiter: "strict" } // 20 req/min pour génération documents (mutation sensible)
+);
 

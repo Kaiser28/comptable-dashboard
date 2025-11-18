@@ -19,6 +19,9 @@ export function rateLimit(options: RateLimitOptions) {
     ttl: options.interval || 60000, // TTL en ms
   });
 
+  // Map pour gérer les verrous par token (évite les race conditions)
+  const locks = new Map<string, Promise<void>>();
+
   return {
     /**
      * Vérifie si le token peut faire une requête
@@ -26,17 +29,37 @@ export function rateLimit(options: RateLimitOptions) {
      * @param token Identifiant unique (IP, user ID, etc.)
      * @throws Error si rate limit dépassé
      */
-    check: (limit: number, token: string): Promise<void> => {
-      return new Promise<void>((resolve, reject) => {
-        const tokenCount = (tokenCache.get(token) as number) || 0;
-        
-        if (tokenCount >= limit) {
-          reject(new Error('Rate limit exceeded'));
-        } else {
-          tokenCache.set(token, tokenCount + 1);
-          resolve();
-        }
+    check: async (limit: number, token: string): Promise<void> => {
+      // Attendre que toutes les requêtes précédentes pour ce token soient terminées
+      await locks.get(token);
+      
+      // Créer une nouvelle promesse pour cette requête
+      let resolveLock: () => void;
+      const lockPromise = new Promise<void>((resolve) => {
+        resolveLock = resolve;
       });
+      locks.set(token, lockPromise);
+
+      try {
+        // Opération atomique : lire, vérifier, incrémenter
+        const currentCount = (tokenCache.get(token) as number) || 0;
+        const newCount = currentCount + 1;
+        
+        if (currentCount >= limit) {
+          console.log(`[RATE LIMIT] Bloqué: ${token} (${currentCount}/${limit})`);
+          throw new Error('Rate limit exceeded');
+        } else {
+          tokenCache.set(token, newCount);
+          console.log(`[RATE LIMIT] Autorisé: ${token} (${newCount}/${limit})`);
+        }
+      } finally {
+        // Libérer le verrou
+        resolveLock!();
+        // Nettoyer si c'est la dernière requête
+        if (locks.get(token) === lockPromise) {
+          locks.delete(token);
+        }
+      }
     },
     
     /**

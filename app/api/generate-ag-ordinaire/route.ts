@@ -2,10 +2,13 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
+import { withRateLimit } from "@/lib/ratelimit-upstash";
 
 import { generatePVAGOrdinaire, type AGOrdinaireData } from "@/lib/generatePVAGOrdinaire";
 
-export async function POST(request: Request) {
+// Rate limiting strict : 20 req/min (génération documents - OWASP)
+export const POST = withRateLimit(
+  async (request: Request) => {
   try {
     console.log('🚀 API generate-ag-ordinaire appelée');
 
@@ -378,4 +381,6 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-}
+  },
+  { limiter: "strict" } // 20 req/min pour génération documents (mutation sensible)
+);

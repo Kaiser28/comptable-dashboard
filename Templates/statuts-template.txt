@@ -1,0 +1,101 @@
+STATUTS
+Société par Actions Simplifiée
+
+Les soussignés :
+{{associe_civilite}} {{associe_prenom}} {{associe_nom}}
+Né(e) le {{associe_date_naissance}} à {{associe_lieu_naissance}}
+Demeurant {{associe_adresse_complete}}
+
+Ont établi ainsi qu'il suit les statuts d'une société par actions simplifiée qu'ils déclarent constituer entre eux.
+
+TITRE I : FORME - DÉNOMINATION - SIÈGE - OBJET - DURÉE
+
+Article 1 - FORME
+Il est formé une {{forme_juridique_complete}} régie par les dispositions législatives et réglementaires en vigueur, et par les présents statuts.
+
+Article 2 - DÉNOMINATION
+La société a pour dénomination sociale : {{denomination}}
+Dans tous les actes, la dénomination doit être précédée ou suivie de {{forme_juridique_complete}} ou {{forme_juridique_sigle}} et du montant du capital.
+
+Article 3 - SIÈGE SOCIAL
+Le siège social est fixé à : {{adresse_siege_complete}}
+Il pourra être transféré par décision du président, sous réserve de ratification par l'assemblée générale.
+
+Article 4 - OBJET
+La société a pour objet :
+{{objet_social}}
+Et toutes opérations se rattachant directement ou indirectement à cet objet.
+
+Article 5 - DURÉE
+La durée de la société est fixée à {{duree_societe}} années à compter de son immatriculation au RCS.
+
+TITRE II : APPORTS - CAPITAL SOCIAL
+
+Article 6 - APPORTS
+Les associés font apport à la société de {{capital_social_formate}} euros en numéraire.
+
+Article 7 - CAPITAL SOCIAL
+Le capital social est fixé à {{capital_social_formate}} euros.
+Il est divisé en {{nombre_actions}} actions de {{valeur_nominale_formate}} euros chacune, libérées à hauteur de {{montant_libere_formate}} euros.
+
+Article 8 - MODIFICATION DU CAPITAL
+Le capital social peut être augmenté, réduit ou amorti dans les conditions légales.
+
+Article 9 - FORME DES ACTIONS
+Les actions sont nominatives et donnent lieu à une inscription en compte.
+
+Article 10 - TRANSMISSION DES ACTIONS
+La cession des actions est libre entre associés. Elle est soumise à agrément pour les tiers.
+
+TITRE III : DIRECTION
+
+Article 11 - PRÉSIDENCE
+La société est représentée par un président.
+Le premier président est : {{associe_civilite}} {{associe_prenom}} {{associe_nom}}
+Le président est nommé pour une durée illimitée.
+
+Article 12 - POUVOIRS DU PRÉSIDENT
+Le président est investi des pouvoirs les plus étendus pour agir au nom de la société dans la limite de l'objet social.
+
+Article 13 - RÉMUNÉRATION
+L'assemblée générale peut allouer au président une rémunération.
+
+TITRE IV : DÉCISIONS COLLECTIVES
+
+Article 14 - ASSEMBLÉES GÉNÉRALES
+Les associés sont réunis en assemblée au moins une fois par an pour l'approbation des comptes.
+
+Article 15 - CONVOCATION
+Les associés sont convoqués par le président par tous moyens 7 jours avant l'assemblée.
+
+Article 16 - QUORUM ET MAJORITÉ
+Chaque action donne droit à une voix. Les décisions sont prises à la majorité des voix exprimées.
+
+TITRE V : EXERCICE SOCIAL - COMPTES
+
+Article 17 - EXERCICE SOCIAL
+L'exercice social commence le 1er janvier et se termine le 31 décembre.
+Le premier exercice se terminera le {{premier_exercice_fin}}.
+
+Article 18 - COMPTES ANNUELS
+Le président établit les comptes annuels qui sont soumis à l'approbation de l'assemblée.
+
+Article 19 - AFFECTATION DU RÉSULTAT
+Le bénéfice est réparti entre les associés proportionnellement au nombre d'actions.
+
+TITRE VI : DISSOLUTION - LIQUIDATION
+
+Article 20 - DISSOLUTION
+La société prend fin par l'arrivée du terme, par décision de l'assemblée, ou pour toute cause légale.
+
+Article 21 - LIQUIDATION
+En cas de dissolution, un ou plusieurs liquidateurs sont désignés par l'assemblée.
+
+
+Fait à {{adresse_siege_complete}}
+Le {{date_signature}}
+
+Signature :
+
+
+{{associe_prenom}} {{associe_nom}}

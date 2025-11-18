@@ -1,8 +1,8 @@
-import { NextResponse, NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
-import { withRateLimit, RATE_LIMITS } from "@/lib/withRateLimit";
+import { withRateLimit } from "@/lib/ratelimit-upstash";
 import { associeCreateSchema } from "@/lib/validators/api";
 import { sanitizeObject } from "@/lib/sanitize";
 import { logAudit } from "@/lib/audit";
@@ -152,29 +152,23 @@ export async function GET(
 /**
  * POST /api/clients/[id]/associes
  * Crée un nouvel associé pour un client
+ * 
+ * Rate limiting strict : 20 req/min (mutations sensibles selon OWASP)
  */
-export async function POST(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const clientId = params.id;
+export const POST = withRateLimit(
+  async (
+    request: Request,
+    { params }: { params: { id: string } }
+  ) => {
+    try {
+      const clientId = params.id;
 
-    if (!clientId) {
-      return NextResponse.json(
-        { error: "ID client manquant" },
-        { status: 400 }
-      );
-    }
-
-    // ============================================
-    // SÉCURITÉ : Rate Limiting
-    // ============================================
-    const nextReq = new NextRequest(request);
-    const rateLimitResponse = await withRateLimit(nextReq, RATE_LIMITS.ASSOCIE_OPERATIONS);
-    if (rateLimitResponse) {
-      return rateLimitResponse;
-    }
+      if (!clientId) {
+        return NextResponse.json(
+          { error: "ID client manquant" },
+          { status: 400 }
+        );
+      }
 
     // ============================================
     // SÉCURITÉ : Validation + Sanitization
@@ -379,7 +373,7 @@ export async function POST(
         prenom: associeCree.prenom,
         client_id: clientId,
       },
-      req: nextReq,
+      req: request,
     });
     
     return NextResponse.json(associeCree, { status: 201 });
@@ -392,4 +386,6 @@ export async function POST(
       { status: 500 }
     );
   }
-}
+  },
+  { limiter: "strict" } // 20 req/min pour création d'associés (mutation sensible)
+);
