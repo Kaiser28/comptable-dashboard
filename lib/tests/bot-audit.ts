@@ -855,10 +855,16 @@ class LexiGenAuditBot {
       }
       
       // Préparer les headers avec le token d'authentification
-      const requestHeaders = {
+      // Ajouter X-Bot-Token pour bypass rate limiting
+      const botToken = process.env.BOT_SECRET_TOKEN;
+      const requestHeaders: Record<string, string> = {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${sessionToken}`
       };
+      
+      if (botToken) {
+        requestHeaders['X-Bot-Token'] = botToken;
+      }
       
       // Log avant l'appel
       console.log(`🔐 Appel API ${type}:`, {

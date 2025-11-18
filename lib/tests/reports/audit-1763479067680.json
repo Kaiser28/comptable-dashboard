@@ -1,0 +1,848 @@
+{
+  "timestamp": "2025-11-18T15:17:47.680Z",
+  "duration": 22291,
+  "totalTests": 98,
+  "passed": 96,
+  "failed": 2,
+  "warnings": 0,
+  "results": [
+    {
+      "test": "Setup: Environnement",
+      "status": "success",
+      "message": "Cabinet ID: 8c7a1f1d-2df9-4736-a9fe-e547fb808990, Expert ID: ff101d6e-5aff-4cd2-b9f7-8bba86291ed4",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:26.763Z"
+    },
+    {
+      "test": "Création client: SAS Complet",
+      "status": "success",
+      "message": "ID: a926b761-e4b5-4d1d-94f8-119bea27cfd0",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:26.853Z"
+    },
+    {
+      "test": "Création associés: TEST SAS Complet",
+      "status": "success",
+      "message": "2 associé(s) créé(s)",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:27.005Z"
+    },
+    {
+      "test": "Création client: SAS Capital Minimum",
+      "status": "success",
+      "message": "ID: 54cdc45d-c2e3-4160-8a0d-69ed39c89cd0",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:28.096Z"
+    },
+    {
+      "test": "Création associés: TEST SAS Capital Min",
+      "status": "success",
+      "message": "2 associé(s) créé(s)",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:28.259Z"
+    },
+    {
+      "test": "Création client: SASU Complet",
+      "status": "success",
+      "message": "ID: 507122d2-b56c-4175-bd69-bb35aed780a1",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:29.337Z"
+    },
+    {
+      "test": "Création associés: TEST SASU Complet",
+      "status": "success",
+      "message": "1 associé(s) créé(s)",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:29.419Z"
+    },
+    {
+      "test": "Création client: SAS Sans Président",
+      "status": "success",
+      "message": "ID: a63c6f5c-e5e8-455b-bba3-873c530c7deb",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:30.511Z"
+    },
+    {
+      "test": "Création associés: TEST SAS Sans Président",
+      "status": "success",
+      "message": "2 associé(s) créé(s)",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:30.641Z"
+    },
+    {
+      "test": "Création client: SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: 8e68b23c-bf7b-476b-867e-dc6d29e14d4b",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:31.702Z"
+    },
+    {
+      "test": "Création associés: TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "2 associé(s) créé(s)",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:31.846Z"
+    },
+    {
+      "test": "Création client: SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: 951bf198-8813-4b62-8a28-bf904f89e523",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:32.901Z"
+    },
+    {
+      "test": "Création associés: TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "1 associé(s) créé(s)",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:32.960Z"
+    },
+    {
+      "test": "Acte augmentation (numeraire) - TEST SAS Complet",
+      "status": "success",
+      "message": "ID: b8caf07b-f1dd-4daa-bed5-4bc17424f2e7",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:34.026Z"
+    },
+    {
+      "test": "Acte augmentation (nature) - TEST SAS Complet",
+      "status": "success",
+      "message": "ID: 7c4a349a-36a5-4b8f-9ce4-59836c7ccfd8",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:34.086Z"
+    },
+    {
+      "test": "Acte augmentation (reserves) - TEST SAS Complet",
+      "status": "success",
+      "message": "ID: 2b3e99b7-262c-49c7-a8ce-1f1e516d9dc9",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:34.138Z"
+    },
+    {
+      "test": "Acte réduction (rachat_annulation) - TEST SAS Complet",
+      "status": "success",
+      "message": "ID: 19edf932-8396-4981-8d57-6b4cb86f9441",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:34.189Z"
+    },
+    {
+      "test": "Acte réduction (reduction_valeur_nominale) - TEST SAS Complet",
+      "status": "success",
+      "message": "ID: ff7385b3-a5c6-4a7f-a338-a0a781d5bd72",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:34.244Z"
+    },
+    {
+      "test": "Acte réduction (coup_accordeon) - TEST SAS Complet",
+      "status": "success",
+      "message": "ID: 29512769-33c0-4216-b96e-89cb15e07e04",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:34.301Z"
+    },
+    {
+      "test": "Acte AG Ordinaire - TEST SAS Complet",
+      "status": "success",
+      "message": "ID: 74c12e96-8d92-47b8-be5a-b18110945cee",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:34.351Z"
+    },
+    {
+      "test": "Acte augmentation (numeraire) - TEST SAS Capital Min",
+      "status": "success",
+      "message": "ID: e539985a-54ab-49f3-9831-fe182d7ca473",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:34.401Z"
+    },
+    {
+      "test": "Acte augmentation (nature) - TEST SAS Capital Min",
+      "status": "success",
+      "message": "ID: 9c3703b6-51ca-407c-93a0-ca0929e93216",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:34.456Z"
+    },
+    {
+      "test": "Acte augmentation (reserves) - TEST SAS Capital Min",
+      "status": "success",
+      "message": "ID: 5db9202e-519f-4a4c-a0de-5905accac0d3",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:34.520Z"
+    },
+    {
+      "test": "Acte réduction (rachat_annulation) - TEST SAS Capital Min",
+      "status": "success",
+      "message": "ID: 39d119ac-ae58-487c-bfee-3a61d73e47a2",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:34.582Z"
+    },
+    {
+      "test": "Acte réduction (reduction_valeur_nominale) - TEST SAS Capital Min",
+      "status": "success",
+      "message": "ID: 58c42205-9d8d-45ee-87e1-12a0deb40401",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:34.641Z"
+    },
+    {
+      "test": "Acte réduction (coup_accordeon) - TEST SAS Capital Min",
+      "status": "success",
+      "message": "ID: 19afb4f2-169c-4936-838c-fc6549a7e4fc",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:34.701Z"
+    },
+    {
+      "test": "Acte AG Ordinaire - TEST SAS Capital Min",
+      "status": "success",
+      "message": "ID: 35706f79-cb9d-4917-aae4-2f42846aebf2",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:34.756Z"
+    },
+    {
+      "test": "Acte augmentation (numeraire) - TEST SASU Complet",
+      "status": "success",
+      "message": "ID: 4b72e9e7-7bea-46d9-b9db-d8ce0ca1d24b",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:34.819Z"
+    },
+    {
+      "test": "Acte augmentation (nature) - TEST SASU Complet",
+      "status": "success",
+      "message": "ID: 4931e593-a388-46fb-b91f-32cc14d00197",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:34.880Z"
+    },
+    {
+      "test": "Acte augmentation (reserves) - TEST SASU Complet",
+      "status": "success",
+      "message": "ID: 9a2aba94-27f4-473b-8a41-7632b8bac5bc",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:34.932Z"
+    },
+    {
+      "test": "Acte réduction (rachat_annulation) - TEST SASU Complet",
+      "status": "success",
+      "message": "ID: cc9aa2c8-ffcb-45f1-b426-a82d00e079d1",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:34.989Z"
+    },
+    {
+      "test": "Acte réduction (reduction_valeur_nominale) - TEST SASU Complet",
+      "status": "success",
+      "message": "ID: 868a0797-293d-4491-b0f9-04b803f5b582",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:35.040Z"
+    },
+    {
+      "test": "Acte réduction (coup_accordeon) - TEST SASU Complet",
+      "status": "success",
+      "message": "ID: 85b493ce-e1a6-430e-8ad2-33410833fb76",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:35.090Z"
+    },
+    {
+      "test": "Acte AG Ordinaire - TEST SASU Complet",
+      "status": "success",
+      "message": "ID: 7cc242b0-1901-476e-a097-61c848a256fb",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:35.145Z"
+    },
+    {
+      "test": "Acte augmentation (numeraire) - TEST SAS Sans Président",
+      "status": "success",
+      "message": "ID: e48ed984-cb73-47d1-8ef2-aa8d3e0b49af",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:35.197Z"
+    },
+    {
+      "test": "Acte augmentation (nature) - TEST SAS Sans Président",
+      "status": "success",
+      "message": "ID: 2a322277-5386-4e78-ab8c-8587d73b73f2",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:35.257Z"
+    },
+    {
+      "test": "Acte augmentation (reserves) - TEST SAS Sans Président",
+      "status": "success",
+      "message": "ID: 2980e8c0-587b-4def-9ec1-c5694671e442",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:35.311Z"
+    },
+    {
+      "test": "Acte réduction (rachat_annulation) - TEST SAS Sans Président",
+      "status": "success",
+      "message": "ID: c0d06356-589f-4e6f-97f6-1c5e5a7273c0",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:35.378Z"
+    },
+    {
+      "test": "Acte réduction (reduction_valeur_nominale) - TEST SAS Sans Président",
+      "status": "success",
+      "message": "ID: c0d57657-3346-4da1-89ec-75d0b7342965",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:35.434Z"
+    },
+    {
+      "test": "Acte réduction (coup_accordeon) - TEST SAS Sans Président",
+      "status": "success",
+      "message": "ID: cb4ca091-7a6d-454f-910d-0fe04127dcb3",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:35.486Z"
+    },
+    {
+      "test": "Acte AG Ordinaire - TEST SAS Sans Président",
+      "status": "success",
+      "message": "ID: 3a491973-5d0d-4068-8a6d-7094a95b57e5",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:35.552Z"
+    },
+    {
+      "test": "Acte augmentation (numeraire) - TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: f3e91c93-32d9-49c4-8e8a-54d671349607",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:35.611Z"
+    },
+    {
+      "test": "Acte augmentation (nature) - TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: 4990751d-60d7-46d5-81e5-fe59a81b8ab4",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:35.668Z"
+    },
+    {
+      "test": "Acte augmentation (reserves) - TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: 1e38fe3a-93b0-4d9e-be9c-0b712f349eef",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:35.722Z"
+    },
+    {
+      "test": "Acte réduction (rachat_annulation) - TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: 4979ae3d-1994-4a21-8dda-27c21dbc83e6",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:35.774Z"
+    },
+    {
+      "test": "Acte réduction (reduction_valeur_nominale) - TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: 8310c73a-4ad7-4f6f-b2ce-b894165d6af6",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:35.830Z"
+    },
+    {
+      "test": "Acte réduction (coup_accordeon) - TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: 41ec2858-0024-46df-b387-c71e12cd9707",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:35.882Z"
+    },
+    {
+      "test": "Acte AG Ordinaire - TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: d3faade9-a906-4df3-a294-732d5de216bd",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:35.936Z"
+    },
+    {
+      "test": "Acte augmentation (numeraire) - TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: 3ddb461d-ec99-4160-9adc-1a42bc5317db",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:35.992Z"
+    },
+    {
+      "test": "Acte augmentation (nature) - TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: 802835db-fedc-43af-8a98-f264f6a7d364",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:36.048Z"
+    },
+    {
+      "test": "Acte augmentation (reserves) - TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: 28f9327e-fbe5-4ed7-a562-55d8afb5b2a9",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:36.102Z"
+    },
+    {
+      "test": "Acte réduction (rachat_annulation) - TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: 3e0bd497-e9f1-482c-b8cf-d69119bd2e49",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:36.161Z"
+    },
+    {
+      "test": "Acte réduction (reduction_valeur_nominale) - TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: 9e4ea0f4-2a2c-4fa6-a76f-e887b3380cb0",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:36.214Z"
+    },
+    {
+      "test": "Acte réduction (coup_accordeon) - TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: 5fcdba11-3457-49a0-a5af-b41a2ebddeee",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:36.266Z"
+    },
+    {
+      "test": "Acte AG Ordinaire - TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: 5afc595a-cb86-46cc-87c2-3d0e91ee895c",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:17:36.316Z"
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "success",
+      "message": "Document généré (13.84 KB)",
+      "details": {
+        "acte_id": "b8caf07b-f1dd-4daa-bed5-4bc17424f2e7",
+        "size": 14174
+      },
+      "duration": 501
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "success",
+      "message": "Document généré (13.87 KB)",
+      "details": {
+        "acte_id": "7c4a349a-36a5-4b8f-9ce4-59836c7ccfd8",
+        "size": 14198
+      },
+      "duration": 249
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "success",
+      "message": "Document généré (13.76 KB)",
+      "details": {
+        "acte_id": "2b3e99b7-262c-49c7-a8ce-1f1e516d9dc9",
+        "size": 14092
+      },
+      "duration": 250
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "success",
+      "message": "Document généré (14.61 KB)",
+      "details": {
+        "acte_id": "19edf932-8396-4981-8d57-6b4cb86f9441",
+        "size": 14964
+      },
+      "duration": 324
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "success",
+      "message": "Document généré (14.72 KB)",
+      "details": {
+        "acte_id": "ff7385b3-a5c6-4a7f-a338-a0a781d5bd72",
+        "size": 15069
+      },
+      "duration": 238
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "success",
+      "message": "Document généré (14.98 KB)",
+      "details": {
+        "acte_id": "29512769-33c0-4216-b96e-89cb15e07e04",
+        "size": 15343
+      },
+      "duration": 242
+    },
+    {
+      "test": "Génération doc : ag_ordinaire",
+      "status": "success",
+      "message": "Document généré (14.08 KB)",
+      "details": {
+        "acte_id": "74c12e96-8d92-47b8-be5a-b18110945cee",
+        "size": 14423
+      },
+      "duration": 590
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "success",
+      "message": "Document généré (13.80 KB)",
+      "details": {
+        "acte_id": "e539985a-54ab-49f3-9831-fe182d7ca473",
+        "size": 14131
+      },
+      "duration": 244
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "success",
+      "message": "Document généré (13.85 KB)",
+      "details": {
+        "acte_id": "9c3703b6-51ca-407c-93a0-ca0929e93216",
+        "size": 14184
+      },
+      "duration": 287
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "success",
+      "message": "Document généré (13.77 KB)",
+      "details": {
+        "acte_id": "5db9202e-519f-4a4c-a0de-5905accac0d3",
+        "size": 14099
+      },
+      "duration": 278
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "success",
+      "message": "Document généré (14.75 KB)",
+      "details": {
+        "acte_id": "39d119ac-ae58-487c-bfee-3a61d73e47a2",
+        "size": 15099
+      },
+      "duration": 272
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "success",
+      "message": "Document généré (14.66 KB)",
+      "details": {
+        "acte_id": "58c42205-9d8d-45ee-87e1-12a0deb40401",
+        "size": 15010
+      },
+      "duration": 252
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "success",
+      "message": "Document généré (14.97 KB)",
+      "details": {
+        "acte_id": "19afb4f2-169c-4936-838c-fc6549a7e4fc",
+        "size": 15330
+      },
+      "duration": 270
+    },
+    {
+      "test": "Génération doc : ag_ordinaire",
+      "status": "error",
+      "message": "Échec : 400: {\"success\":false,\"error\":\"Total des votes (1) différent du nombre d'actions (2). Modifiez l'acte pour corriger.\"}",
+      "details": {
+        "acte_id": "35706f79-cb9d-4917-aae4-2f42846aebf2"
+      },
+      "duration": 185
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "success",
+      "message": "Document généré (13.88 KB)",
+      "details": {
+        "acte_id": "4b72e9e7-7bea-46d9-b9db-d8ce0ca1d24b",
+        "size": 14212
+      },
+      "duration": 257
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "success",
+      "message": "Document généré (13.84 KB)",
+      "details": {
+        "acte_id": "4931e593-a388-46fb-b91f-32cc14d00197",
+        "size": 14175
+      },
+      "duration": 304
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "success",
+      "message": "Document généré (13.82 KB)",
+      "details": {
+        "acte_id": "9a2aba94-27f4-473b-8a41-7632b8bac5bc",
+        "size": 14150
+      },
+      "duration": 261
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "success",
+      "message": "Document généré (14.78 KB)",
+      "details": {
+        "acte_id": "cc9aa2c8-ffcb-45f1-b426-a82d00e079d1",
+        "size": 15134
+      },
+      "duration": 267
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "success",
+      "message": "Document généré (14.61 KB)",
+      "details": {
+        "acte_id": "868a0797-293d-4491-b0f9-04b803f5b582",
+        "size": 14959
+      },
+      "duration": 248
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "success",
+      "message": "Document généré (14.87 KB)",
+      "details": {
+        "acte_id": "85b493ce-e1a6-430e-8ad2-33410833fb76",
+        "size": 15226
+      },
+      "duration": 237
+    },
+    {
+      "test": "Génération doc : ag_ordinaire",
+      "status": "success",
+      "message": "Document généré (14.00 KB)",
+      "details": {
+        "acte_id": "7cc242b0-1901-476e-a097-61c848a256fb",
+        "size": 14341
+      },
+      "duration": 272
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "success",
+      "message": "Document généré (13.79 KB)",
+      "details": {
+        "acte_id": "e48ed984-cb73-47d1-8ef2-aa8d3e0b49af",
+        "size": 14120
+      },
+      "duration": 247
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "success",
+      "message": "Document généré (13.79 KB)",
+      "details": {
+        "acte_id": "2a322277-5386-4e78-ab8c-8587d73b73f2",
+        "size": 14124
+      },
+      "duration": 232
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "success",
+      "message": "Document généré (13.86 KB)",
+      "details": {
+        "acte_id": "2980e8c0-587b-4def-9ec1-c5694671e442",
+        "size": 14190
+      },
+      "duration": 230
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "success",
+      "message": "Document généré (14.72 KB)",
+      "details": {
+        "acte_id": "c0d06356-589f-4e6f-97f6-1c5e5a7273c0",
+        "size": 15071
+      },
+      "duration": 248
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "success",
+      "message": "Document généré (14.67 KB)",
+      "details": {
+        "acte_id": "c0d57657-3346-4da1-89ec-75d0b7342965",
+        "size": 15023
+      },
+      "duration": 250
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "success",
+      "message": "Document généré (14.90 KB)",
+      "details": {
+        "acte_id": "cb4ca091-7a6d-454f-910d-0fe04127dcb3",
+        "size": 15261
+      },
+      "duration": 226
+    },
+    {
+      "test": "Génération doc : ag_ordinaire",
+      "status": "error",
+      "message": "Échec : 400: {\"success\":false,\"error\":\"Président manquant : Allez dans la fiche client et remplissez \\\"Président (nom/prénom)\\\".\"}",
+      "details": {
+        "acte_id": "3a491973-5d0d-4068-8a6d-7094a95b57e5"
+      },
+      "duration": 169
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "success",
+      "message": "Document généré (13.88 KB)",
+      "details": {
+        "acte_id": "f3e91c93-32d9-49c4-8e8a-54d671349607",
+        "size": 14208
+      },
+      "duration": 249
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "success",
+      "message": "Document généré (13.89 KB)",
+      "details": {
+        "acte_id": "4990751d-60d7-46d5-81e5-fe59a81b8ab4",
+        "size": 14221
+      },
+      "duration": 241
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "success",
+      "message": "Document généré (13.89 KB)",
+      "details": {
+        "acte_id": "1e38fe3a-93b0-4d9e-be9c-0b712f349eef",
+        "size": 14226
+      },
+      "duration": 257
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "success",
+      "message": "Document généré (14.68 KB)",
+      "details": {
+        "acte_id": "4979ae3d-1994-4a21-8dda-27c21dbc83e6",
+        "size": 15036
+      },
+      "duration": 269
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "success",
+      "message": "Document généré (14.69 KB)",
+      "details": {
+        "acte_id": "8310c73a-4ad7-4f6f-b2ce-b894165d6af6",
+        "size": 15042
+      },
+      "duration": 248
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "success",
+      "message": "Document généré (15.03 KB)",
+      "details": {
+        "acte_id": "41ec2858-0024-46df-b387-c71e12cd9707",
+        "size": 15391
+      },
+      "duration": 259
+    },
+    {
+      "test": "Génération doc : ag_ordinaire",
+      "status": "success",
+      "message": "Document généré (14.10 KB)",
+      "details": {
+        "acte_id": "d3faade9-a906-4df3-a294-732d5de216bd",
+        "size": 14435
+      },
+      "duration": 336
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "success",
+      "message": "Document généré (13.78 KB)",
+      "details": {
+        "acte_id": "3ddb461d-ec99-4160-9adc-1a42bc5317db",
+        "size": 14111
+      },
+      "duration": 256
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "success",
+      "message": "Document généré (13.87 KB)",
+      "details": {
+        "acte_id": "802835db-fedc-43af-8a98-f264f6a7d364",
+        "size": 14205
+      },
+      "duration": 253
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "success",
+      "message": "Document généré (13.81 KB)",
+      "details": {
+        "acte_id": "28f9327e-fbe5-4ed7-a562-55d8afb5b2a9",
+        "size": 14144
+      },
+      "duration": 249
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "success",
+      "message": "Document généré (14.66 KB)",
+      "details": {
+        "acte_id": "3e0bd497-e9f1-482c-b8cf-d69119bd2e49",
+        "size": 15008
+      },
+      "duration": 238
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "success",
+      "message": "Document généré (14.70 KB)",
+      "details": {
+        "acte_id": "9e4ea0f4-2a2c-4fa6-a76f-e887b3380cb0",
+        "size": 15050
+      },
+      "duration": 272
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "success",
+      "message": "Document généré (14.98 KB)",
+      "details": {
+        "acte_id": "5fcdba11-3457-49a0-a5af-b41a2ebddeee",
+        "size": 15340
+      },
+      "duration": 269
+    },
+    {
+      "test": "Génération doc : ag_ordinaire",
+      "status": "success",
+      "message": "Document généré (14.02 KB)",
+      "details": {
+        "acte_id": "5afc595a-cb86-46cc-87c2-3d0e91ee895c",
+        "size": 14356
+      },
+      "duration": 317
+    },
+    {
+      "test": "Validation : Capital final ≥ 1€",
+      "status": "success",
+      "message": "Validation bloque correctement",
+      "duration": 0
+    }
+  ],
+  "errorsByType": {
+    "Génération doc ": [
+      {
+        "test": "Génération doc : ag_ordinaire",
+        "status": "error",
+        "message": "Échec : 400: {\"success\":false,\"error\":\"Total des votes (1) différent du nombre d'actions (2). Modifiez l'acte pour corriger.\"}",
+        "details": {
+          "acte_id": "35706f79-cb9d-4917-aae4-2f42846aebf2"
+        },
+        "duration": 185
+      },
+      {
+        "test": "Génération doc : ag_ordinaire",
+        "status": "error",
+        "message": "Échec : 400: {\"success\":false,\"error\":\"Président manquant : Allez dans la fiche client et remplissez \\\"Président (nom/prénom)\\\".\"}",
+        "details": {
+          "acte_id": "3a491973-5d0d-4068-8a6d-7094a95b57e5"
+        },
+        "duration": 169
+      }
+    ]
+  },
+  "summary": {
+    "total": 98,
+    "passed": 96,
+    "failed": 2,
+    "warnings": 0,
+    "percentage": "98"
+  }
+}

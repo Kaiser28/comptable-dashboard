@@ -1,0 +1,787 @@
+{
+  "timestamp": "2025-11-18T15:00:00.964Z",
+  "duration": 12094,
+  "totalTests": 98,
+  "passed": 56,
+  "failed": 0,
+  "warnings": 42,
+  "results": [
+    {
+      "test": "Setup: Environnement",
+      "status": "success",
+      "message": "Cabinet ID: 8c7a1f1d-2df9-4736-a9fe-e547fb808990, Expert ID: 25a1397c-5778-4496-903d-4375c72707d6",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:50.834Z"
+    },
+    {
+      "test": "Création client: SAS Complet",
+      "status": "success",
+      "message": "ID: 26fce3a6-2825-4988-84d2-28cb9be2e7c7",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:50.924Z"
+    },
+    {
+      "test": "Création associés: TEST SAS Complet",
+      "status": "success",
+      "message": "2 associé(s) créé(s)",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:51.137Z"
+    },
+    {
+      "test": "Création client: SAS Capital Minimum",
+      "status": "success",
+      "message": "ID: 64383c1b-9b11-488e-ac9d-34bbaeee007f",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:52.261Z"
+    },
+    {
+      "test": "Création associés: TEST SAS Capital Min",
+      "status": "success",
+      "message": "2 associé(s) créé(s)",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:52.393Z"
+    },
+    {
+      "test": "Création client: SASU Complet",
+      "status": "success",
+      "message": "ID: 455a6208-4714-4ce4-9ddb-e1201271efa1",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:53.475Z"
+    },
+    {
+      "test": "Création associés: TEST SASU Complet",
+      "status": "success",
+      "message": "1 associé(s) créé(s)",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:53.537Z"
+    },
+    {
+      "test": "Création client: SAS Sans Président",
+      "status": "success",
+      "message": "ID: 58b4bdaf-283c-41e7-adbd-8ff175c7222d",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:54.667Z"
+    },
+    {
+      "test": "Création associés: TEST SAS Sans Président",
+      "status": "success",
+      "message": "2 associé(s) créé(s)",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:54.836Z"
+    },
+    {
+      "test": "Création client: SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: 8810418d-6786-4811-9f6b-b2f908eb58ab",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:55.955Z"
+    },
+    {
+      "test": "Création associés: TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "2 associé(s) créé(s)",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:56.132Z"
+    },
+    {
+      "test": "Création client: SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: badef211-8017-45ea-b9ff-2548c2654efb",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:57.196Z"
+    },
+    {
+      "test": "Création associés: TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "1 associé(s) créé(s)",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:57.251Z"
+    },
+    {
+      "test": "Acte augmentation (numeraire) - TEST SAS Complet",
+      "status": "success",
+      "message": "ID: b55acc98-78ef-4768-917f-84aa3df6b101",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:58.331Z"
+    },
+    {
+      "test": "Acte augmentation (nature) - TEST SAS Complet",
+      "status": "success",
+      "message": "ID: 70d327c5-2b68-4854-801c-fa472f3fc996",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:58.383Z"
+    },
+    {
+      "test": "Acte augmentation (reserves) - TEST SAS Complet",
+      "status": "success",
+      "message": "ID: 2477058a-4886-47d0-a2bb-499f52ab07bf",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:58.434Z"
+    },
+    {
+      "test": "Acte réduction (rachat_annulation) - TEST SAS Complet",
+      "status": "success",
+      "message": "ID: d1a5fac6-f9ab-4907-a7b2-1365a7c6b70b",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:58.492Z"
+    },
+    {
+      "test": "Acte réduction (reduction_valeur_nominale) - TEST SAS Complet",
+      "status": "success",
+      "message": "ID: 8b26e334-4272-4679-b255-ce3b7c3e82b3",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:58.542Z"
+    },
+    {
+      "test": "Acte réduction (coup_accordeon) - TEST SAS Complet",
+      "status": "success",
+      "message": "ID: 7cca8895-cfd5-4d0d-93a0-1e2d0aa90845",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:58.601Z"
+    },
+    {
+      "test": "Acte AG Ordinaire - TEST SAS Complet",
+      "status": "success",
+      "message": "ID: cb9ca060-b55e-4d2f-82df-91e5a53d8f77",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:58.650Z"
+    },
+    {
+      "test": "Acte augmentation (numeraire) - TEST SAS Capital Min",
+      "status": "success",
+      "message": "ID: 0d0ecdf8-f533-4a55-a412-707973260d51",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:58.698Z"
+    },
+    {
+      "test": "Acte augmentation (nature) - TEST SAS Capital Min",
+      "status": "success",
+      "message": "ID: 93890e76-f143-48c3-94db-71ad2895fe08",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:58.746Z"
+    },
+    {
+      "test": "Acte augmentation (reserves) - TEST SAS Capital Min",
+      "status": "success",
+      "message": "ID: 82c6aa5a-b073-4e5a-9945-264feb4fb117",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:58.797Z"
+    },
+    {
+      "test": "Acte réduction (rachat_annulation) - TEST SAS Capital Min",
+      "status": "success",
+      "message": "ID: ab01069a-23a0-4cac-94e3-2b3ecd9d3399",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:58.848Z"
+    },
+    {
+      "test": "Acte réduction (reduction_valeur_nominale) - TEST SAS Capital Min",
+      "status": "success",
+      "message": "ID: 6a76d9a4-b3b6-46c2-80ae-e5ee240e1a6f",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:58.901Z"
+    },
+    {
+      "test": "Acte réduction (coup_accordeon) - TEST SAS Capital Min",
+      "status": "success",
+      "message": "ID: 47f33a00-3616-4f61-bd52-c7b8010db809",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:59.277Z"
+    },
+    {
+      "test": "Acte AG Ordinaire - TEST SAS Capital Min",
+      "status": "success",
+      "message": "ID: 983fdac4-84a5-4750-9803-26f6933b218b",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:59.330Z"
+    },
+    {
+      "test": "Acte augmentation (numeraire) - TEST SASU Complet",
+      "status": "success",
+      "message": "ID: 45605fd5-f58f-45ee-b796-f989a0aba35f",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:59.383Z"
+    },
+    {
+      "test": "Acte augmentation (nature) - TEST SASU Complet",
+      "status": "success",
+      "message": "ID: 2a0ac15b-a8b4-4c9f-a6f4-70cc09602049",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:59.438Z"
+    },
+    {
+      "test": "Acte augmentation (reserves) - TEST SASU Complet",
+      "status": "success",
+      "message": "ID: 4254782b-4513-46a5-b98c-5b9cd5c664f7",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:59.497Z"
+    },
+    {
+      "test": "Acte réduction (rachat_annulation) - TEST SASU Complet",
+      "status": "success",
+      "message": "ID: 5da7eb32-de58-4ece-b450-41574c9c78c0",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:59.548Z"
+    },
+    {
+      "test": "Acte réduction (reduction_valeur_nominale) - TEST SASU Complet",
+      "status": "success",
+      "message": "ID: 7915beb0-4888-44bc-9848-6d1d09242f65",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:59.598Z"
+    },
+    {
+      "test": "Acte réduction (coup_accordeon) - TEST SASU Complet",
+      "status": "success",
+      "message": "ID: 9e68aa23-83ad-4c4b-8fd6-0c9431f2ab11",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:59.649Z"
+    },
+    {
+      "test": "Acte AG Ordinaire - TEST SASU Complet",
+      "status": "success",
+      "message": "ID: 24796e62-8114-494d-904a-30ef125a14a5",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:59.703Z"
+    },
+    {
+      "test": "Acte augmentation (numeraire) - TEST SAS Sans Président",
+      "status": "success",
+      "message": "ID: 34630ab7-5602-443d-9242-b069ce890437",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:59.761Z"
+    },
+    {
+      "test": "Acte augmentation (nature) - TEST SAS Sans Président",
+      "status": "success",
+      "message": "ID: 16af1e28-659d-4e8d-85c0-1f8440f60287",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:59.809Z"
+    },
+    {
+      "test": "Acte augmentation (reserves) - TEST SAS Sans Président",
+      "status": "success",
+      "message": "ID: c0864bf2-1d6e-4e11-8629-546fbebea511",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:59.860Z"
+    },
+    {
+      "test": "Acte réduction (rachat_annulation) - TEST SAS Sans Président",
+      "status": "success",
+      "message": "ID: e530d6a3-ddeb-4e33-be7e-b5e26ed4c463",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:59.930Z"
+    },
+    {
+      "test": "Acte réduction (reduction_valeur_nominale) - TEST SAS Sans Président",
+      "status": "success",
+      "message": "ID: 33692175-fcae-44b6-8d75-662d869b61d0",
+      "duration": 0,
+      "timestamp": "2025-11-18T14:59:59.983Z"
+    },
+    {
+      "test": "Acte réduction (coup_accordeon) - TEST SAS Sans Président",
+      "status": "success",
+      "message": "ID: 88a6b015-7156-4549-ad90-2433268f2089",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:00:00.082Z"
+    },
+    {
+      "test": "Acte AG Ordinaire - TEST SAS Sans Président",
+      "status": "success",
+      "message": "ID: 1ed86223-4eca-4b71-a9aa-95b14717bb96",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:00:00.136Z"
+    },
+    {
+      "test": "Acte augmentation (numeraire) - TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: ab45733d-5aeb-46ce-a061-305ac55c3e56",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:00:00.191Z"
+    },
+    {
+      "test": "Acte augmentation (nature) - TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: 38ff22dd-ba5a-479a-b523-e8aae7542176",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:00:00.243Z"
+    },
+    {
+      "test": "Acte augmentation (reserves) - TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: 4ee16175-b4e6-427a-9efb-813e2577d65d",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:00:00.304Z"
+    },
+    {
+      "test": "Acte réduction (rachat_annulation) - TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: 892daf5e-4b27-4766-b027-bba564f959fd",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:00:00.355Z"
+    },
+    {
+      "test": "Acte réduction (reduction_valeur_nominale) - TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: dbc7d92c-ffa6-4b15-93bf-393e0e3b2f9e",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:00:00.410Z"
+    },
+    {
+      "test": "Acte réduction (coup_accordeon) - TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: 4fccac64-11fe-4a6c-941a-d531b2efe2ae",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:00:00.465Z"
+    },
+    {
+      "test": "Acte AG Ordinaire - TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: acf07da6-db60-4ceb-8e2e-37d25431deda",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:00:00.513Z"
+    },
+    {
+      "test": "Acte augmentation (numeraire) - TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: 89fcc999-c626-4430-a8ee-2fc2ce7d01bd",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:00:00.563Z"
+    },
+    {
+      "test": "Acte augmentation (nature) - TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: 42051fe3-b4d7-4f14-8a81-2b5bb7c98fc7",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:00:00.611Z"
+    },
+    {
+      "test": "Acte augmentation (reserves) - TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: 6dfa6ddb-a439-42b7-88c9-f7677743b564",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:00:00.660Z"
+    },
+    {
+      "test": "Acte réduction (rachat_annulation) - TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: 959c4495-4505-4a85-af2d-4683caa10c90",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:00:00.717Z"
+    },
+    {
+      "test": "Acte réduction (reduction_valeur_nominale) - TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: 37ee52d1-b3ca-445a-a190-841dfabb7541",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:00:00.773Z"
+    },
+    {
+      "test": "Acte réduction (coup_accordeon) - TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: b4603bab-1d51-4993-a418-ec75178b4012",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:00:00.829Z"
+    },
+    {
+      "test": "Acte AG Ordinaire - TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: e960bcdd-fcd6-461a-8bf9-413cf8259100",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:00:00.879Z"
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "b55acc98-78ef-4768-917f-84aa3df6b101"
+      },
+      "duration": 8
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "70d327c5-2b68-4854-801c-fa472f3fc996"
+      },
+      "duration": 2
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "2477058a-4886-47d0-a2bb-499f52ab07bf"
+      },
+      "duration": 1
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "d1a5fac6-f9ab-4907-a7b2-1365a7c6b70b"
+      },
+      "duration": 2
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "8b26e334-4272-4679-b255-ce3b7c3e82b3"
+      },
+      "duration": 1
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "7cca8895-cfd5-4d0d-93a0-1e2d0aa90845"
+      },
+      "duration": 1
+    },
+    {
+      "test": "Génération doc : ag_ordinaire",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "cb9ca060-b55e-4d2f-82df-91e5a53d8f77"
+      },
+      "duration": 2
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "0d0ecdf8-f533-4a55-a412-707973260d51"
+      },
+      "duration": 2
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "93890e76-f143-48c3-94db-71ad2895fe08"
+      },
+      "duration": 1
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "82c6aa5a-b073-4e5a-9945-264feb4fb117"
+      },
+      "duration": 2
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "ab01069a-23a0-4cac-94e3-2b3ecd9d3399"
+      },
+      "duration": 1
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "6a76d9a4-b3b6-46c2-80ae-e5ee240e1a6f"
+      },
+      "duration": 2
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "47f33a00-3616-4f61-bd52-c7b8010db809"
+      },
+      "duration": 1
+    },
+    {
+      "test": "Génération doc : ag_ordinaire",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "983fdac4-84a5-4750-9803-26f6933b218b"
+      },
+      "duration": 1
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "45605fd5-f58f-45ee-b796-f989a0aba35f"
+      },
+      "duration": 1
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "2a0ac15b-a8b4-4c9f-a6f4-70cc09602049"
+      },
+      "duration": 1
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "4254782b-4513-46a5-b98c-5b9cd5c664f7"
+      },
+      "duration": 1
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "5da7eb32-de58-4ece-b450-41574c9c78c0"
+      },
+      "duration": 1
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "7915beb0-4888-44bc-9848-6d1d09242f65"
+      },
+      "duration": 1
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "9e68aa23-83ad-4c4b-8fd6-0c9431f2ab11"
+      },
+      "duration": 1
+    },
+    {
+      "test": "Génération doc : ag_ordinaire",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "24796e62-8114-494d-904a-30ef125a14a5"
+      },
+      "duration": 1
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "34630ab7-5602-443d-9242-b069ce890437"
+      },
+      "duration": 1
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "16af1e28-659d-4e8d-85c0-1f8440f60287"
+      },
+      "duration": 1
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "c0864bf2-1d6e-4e11-8629-546fbebea511"
+      },
+      "duration": 1
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "e530d6a3-ddeb-4e33-be7e-b5e26ed4c463"
+      },
+      "duration": 1
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "33692175-fcae-44b6-8d75-662d869b61d0"
+      },
+      "duration": 1
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "88a6b015-7156-4549-ad90-2433268f2089"
+      },
+      "duration": 1
+    },
+    {
+      "test": "Génération doc : ag_ordinaire",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "1ed86223-4eca-4b71-a9aa-95b14717bb96"
+      },
+      "duration": 1
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "ab45733d-5aeb-46ce-a061-305ac55c3e56"
+      },
+      "duration": 1
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "38ff22dd-ba5a-479a-b523-e8aae7542176"
+      },
+      "duration": 1
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "4ee16175-b4e6-427a-9efb-813e2577d65d"
+      },
+      "duration": 1
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "892daf5e-4b27-4766-b027-bba564f959fd"
+      },
+      "duration": 1
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "dbc7d92c-ffa6-4b15-93bf-393e0e3b2f9e"
+      },
+      "duration": 1
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "4fccac64-11fe-4a6c-941a-d531b2efe2ae"
+      },
+      "duration": 1
+    },
+    {
+      "test": "Génération doc : ag_ordinaire",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "acf07da6-db60-4ceb-8e2e-37d25431deda"
+      },
+      "duration": 2
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "89fcc999-c626-4430-a8ee-2fc2ce7d01bd"
+      },
+      "duration": 1
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "42051fe3-b4d7-4f14-8a81-2b5bb7c98fc7"
+      },
+      "duration": 1
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "6dfa6ddb-a439-42b7-88c9-f7677743b564"
+      },
+      "duration": 2
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "959c4495-4505-4a85-af2d-4683caa10c90"
+      },
+      "duration": 1
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "37ee52d1-b3ca-445a-a190-841dfabb7541"
+      },
+      "duration": 1
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "b4603bab-1d51-4993-a418-ec75178b4012"
+      },
+      "duration": 1
+    },
+    {
+      "test": "Génération doc : ag_ordinaire",
+      "status": "warning",
+      "message": "Serveur Next.js non démarré (lancez \"npm run dev\" pour tester)",
+      "details": {
+        "acte_id": "e960bcdd-fcd6-461a-8bf9-413cf8259100"
+      },
+      "duration": 1
+    },
+    {
+      "test": "Validation : Capital final ≥ 1€",
+      "status": "success",
+      "message": "Validation bloque correctement",
+      "duration": 0
+    }
+  ],
+  "errorsByType": {},
+  "summary": {
+    "total": 98,
+    "passed": 56,
+    "failed": 0,
+    "warnings": 42,
+    "percentage": "57"
+  }
+}

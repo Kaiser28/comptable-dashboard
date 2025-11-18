@@ -1,7 +1,37 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
+import { withRateLimit, RATE_LIMITS } from "@/lib/withRateLimit";
+import { associeCreateSchema } from "@/lib/validators/api";
+import { sanitizeObject } from "@/lib/sanitize";
+import { logAudit } from "@/lib/audit";
+
+/**
+ * Type pour l'insertion d'un associé dans Supabase
+ * Exclut les champs générés automatiquement (id, created_at, updated_at)
+ */
+interface AssocieInsert {
+  client_id: string;
+  civilite: string | null;
+  nom: string;
+  prenom: string;
+  date_naissance: string | null;
+  lieu_naissance: string | null;
+  Nationalite: string | null;
+  adresse: string | null;
+  email: string | null;
+  telephone: string | null;
+  profession: string | null;
+  numero_cni: string | null;
+  situation_matrimoniale: string | null;
+  president: boolean;
+  directeur_general: boolean;
+  nombre_actions: number;
+  montant_apport: number;
+  pourcentage_capital: number;
+  type_apport: string;
+}
 
 /**
  * GET /api/clients/[id]/associes
@@ -137,6 +167,18 @@ export async function POST(
       );
     }
 
+    // ============================================
+    // SÉCURITÉ : Rate Limiting
+    // ============================================
+    const nextReq = new NextRequest(request);
+    const rateLimitResponse = await withRateLimit(nextReq, RATE_LIMITS.ASSOCIE_OPERATIONS);
+    if (rateLimitResponse) {
+      return rateLimitResponse;
+    }
+
+    // ============================================
+    // SÉCURITÉ : Validation + Sanitization
+    // ============================================
     const body = await request.json().catch((): null => null);
     if (!body) {
       return NextResponse.json(
@@ -145,6 +187,24 @@ export async function POST(
       );
     }
 
+    // Validation Zod avec type guard
+    const validation = associeCreateSchema.safeParse(body);
+    if (!validation.success) {
+      return NextResponse.json(
+        {
+          error: "Données invalides",
+          details: validation.error.flatten(),
+        },
+        { status: 400 }
+      );
+    }
+
+    // Sanitization (TypeScript sait que validation.data existe ici)
+    const validatedData = sanitizeObject(validation.data);
+
+    // ============================================
+    // LOGIQUE MÉTIER EXISTANTE (inchangée)
+    // ============================================
     // Authentification
     const authHeader = request.headers.get("authorization");
     const token = authHeader?.replace("Bearer ", "");
@@ -219,7 +279,7 @@ export async function POST(
     }
 
     // Validation : vérifier le nombre d'actions disponibles
-    const nombreActionsDemande = body.nombre_actions;
+    const nombreActionsDemande = validatedData.nombre_actions;
     if (!nombreActionsDemande || nombreActionsDemande <= 0) {
       return NextResponse.json(
         { error: "Le nombre d'actions doit être supérieur à 0" },
@@ -269,25 +329,25 @@ export async function POST(
         ? (nombreActionsDemande / client.nb_actions) * 100
         : 0;
 
-    // Préparer les données de l'associé
-    const associeData = {
+    // Préparer les données de l'associé (validatedData est déjà sanitizé)
+    const associeData: AssocieInsert = {
       client_id: clientId,
-      civilite: body.civilite || null,
-      nom: body.nom || null,
-      prenom: body.prenom || null,
-      date_naissance: body.date_naissance || null,
-      lieu_naissance: body.lieu_naissance || null,
-      Nationalite: body.Nationalite || body.nationalite || null,
-      adresse: body.adresse || null,
-      email: body.email || null,
-      telephone: body.telephone || null,
-      profession: body.profession || null,
-      numero_cni: body.numero_cni || null,
-      situation_matrimoniale: body.situation_matrimoniale || null,
-      president: body.president === true,
-      directeur_general: body.directeur_general === true,
+      civilite: validatedData.civilite || null,
+      nom: validatedData.nom,
+      prenom: validatedData.prenom,
+      date_naissance: validatedData.date_naissance || null,
+      lieu_naissance: validatedData.lieu_naissance || null,
+      Nationalite: validatedData.Nationalite || null,
+      adresse: validatedData.adresse || null,
+      email: validatedData.email || null,
+      telephone: validatedData.telephone || null,
+      profession: validatedData.profession || null,
+      numero_cni: null, // Non inclus dans le schéma pour l'instant
+      situation_matrimoniale: null, // Non inclus dans le schéma pour l'instant
+      president: validatedData.president === true,
+      directeur_general: false, // Non inclus dans le schéma pour l'instant
       nombre_actions: nombreActionsDemande,
-      type_apport: body.type_apport || "numeraire",
+      type_apport: validatedData.type_apport || "numeraire",
       montant_apport: montantApport,
       pourcentage_capital: pourcentageCapital,
     };
@@ -308,6 +368,20 @@ export async function POST(
     }
 
     // Le trigger SQL gère automatiquement la synchronisation du président vers clients
+    
+    // Log d'audit
+    await logAudit({
+      action: 'associe_created',
+      resourceType: 'associe',
+      resourceId: associeCree.id,
+      metadata: {
+        nom: associeCree.nom,
+        prenom: associeCree.prenom,
+        client_id: clientId,
+      },
+      req: nextReq,
+    });
+    
     return NextResponse.json(associeCree, { status: 201 });
   } catch (error) {
     console.error('❌ ERREUR CRÉATION ASSOCIÉ:', error);
@@ -319,4 +393,3 @@ export async function POST(
     );
   }
 }
-

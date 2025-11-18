@@ -1,0 +1,1136 @@
+{
+  "timestamp": "2025-11-18T15:08:33.535Z",
+  "duration": 13177,
+  "totalTests": 98,
+  "passed": 60,
+  "failed": 38,
+  "warnings": 0,
+  "results": [
+    {
+      "test": "Setup: Environnement",
+      "status": "success",
+      "message": "Cabinet ID: 8c7a1f1d-2df9-4736-a9fe-e547fb808990, Expert ID: 3f3c6809-11d3-460b-85aa-b602fa0fb1b8",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:21.175Z"
+    },
+    {
+      "test": "Création client: SAS Complet",
+      "status": "success",
+      "message": "ID: f7319e40-8a62-47d0-8a81-0c55dab9bd14",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:21.226Z"
+    },
+    {
+      "test": "Création associés: TEST SAS Complet",
+      "status": "success",
+      "message": "2 associé(s) créé(s)",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:21.353Z"
+    },
+    {
+      "test": "Création client: SAS Capital Minimum",
+      "status": "success",
+      "message": "ID: 7de6db24-501a-47fe-a368-3164c9ed3b01",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:22.411Z"
+    },
+    {
+      "test": "Création associés: TEST SAS Capital Min",
+      "status": "success",
+      "message": "2 associé(s) créé(s)",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:22.522Z"
+    },
+    {
+      "test": "Création client: SASU Complet",
+      "status": "success",
+      "message": "ID: 69a084c8-b0e1-4930-b1b9-9c2b1fbc7a30",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:23.582Z"
+    },
+    {
+      "test": "Création associés: TEST SASU Complet",
+      "status": "success",
+      "message": "1 associé(s) créé(s)",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:23.647Z"
+    },
+    {
+      "test": "Création client: SAS Sans Président",
+      "status": "success",
+      "message": "ID: 091e4c92-c9c4-46f6-b524-d26172c61633",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:24.715Z"
+    },
+    {
+      "test": "Création associés: TEST SAS Sans Président",
+      "status": "success",
+      "message": "2 associé(s) créé(s)",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:24.836Z"
+    },
+    {
+      "test": "Création client: SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: 1d20b576-00ec-4ffa-9cfc-3c4bf945e49c",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:25.894Z"
+    },
+    {
+      "test": "Création associés: TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "2 associé(s) créé(s)",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:26.020Z"
+    },
+    {
+      "test": "Création client: SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: 240c3bc6-eb18-4fa7-8473-47e01195ceea",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:27.086Z"
+    },
+    {
+      "test": "Création associés: TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "1 associé(s) créé(s)",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:27.153Z"
+    },
+    {
+      "test": "Acte augmentation (numeraire) - TEST SAS Complet",
+      "status": "success",
+      "message": "ID: 7b0a9a2d-1cd8-44d9-b1dd-eaf063ee3478",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:28.217Z"
+    },
+    {
+      "test": "Acte augmentation (nature) - TEST SAS Complet",
+      "status": "success",
+      "message": "ID: c667946b-75eb-4583-a7d4-f0c72474fffd",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:28.273Z"
+    },
+    {
+      "test": "Acte augmentation (reserves) - TEST SAS Complet",
+      "status": "success",
+      "message": "ID: 64d84981-4b7f-4b68-9eb2-3ae53d87ff91",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:28.328Z"
+    },
+    {
+      "test": "Acte réduction (rachat_annulation) - TEST SAS Complet",
+      "status": "success",
+      "message": "ID: 27ba2708-23f4-4ef8-8d71-934577fc2dfc",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:28.386Z"
+    },
+    {
+      "test": "Acte réduction (reduction_valeur_nominale) - TEST SAS Complet",
+      "status": "success",
+      "message": "ID: 89530f0c-7102-444d-9cfd-317ce5e40ae0",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:28.453Z"
+    },
+    {
+      "test": "Acte réduction (coup_accordeon) - TEST SAS Complet",
+      "status": "success",
+      "message": "ID: a6560167-85c5-4c37-8a69-71a9339bd84d",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:28.543Z"
+    },
+    {
+      "test": "Acte AG Ordinaire - TEST SAS Complet",
+      "status": "success",
+      "message": "ID: daabd000-916d-47a1-a090-c7913af2c25d",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:28.606Z"
+    },
+    {
+      "test": "Acte augmentation (numeraire) - TEST SAS Capital Min",
+      "status": "success",
+      "message": "ID: 074e857e-a047-4e1e-8067-417420aa196b",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:28.697Z"
+    },
+    {
+      "test": "Acte augmentation (nature) - TEST SAS Capital Min",
+      "status": "success",
+      "message": "ID: 2b25db7f-2c81-4922-885c-3e9a070080f5",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:28.755Z"
+    },
+    {
+      "test": "Acte augmentation (reserves) - TEST SAS Capital Min",
+      "status": "success",
+      "message": "ID: 71108de8-0813-476f-84d0-1ac01bf9c277",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:28.822Z"
+    },
+    {
+      "test": "Acte réduction (rachat_annulation) - TEST SAS Capital Min",
+      "status": "success",
+      "message": "ID: 1b6d3b97-a294-4616-bb1d-9caea4803ed2",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:28.884Z"
+    },
+    {
+      "test": "Acte réduction (reduction_valeur_nominale) - TEST SAS Capital Min",
+      "status": "success",
+      "message": "ID: 08ae5381-e740-4780-8ccc-8f4e8becc279",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:28.955Z"
+    },
+    {
+      "test": "Acte réduction (coup_accordeon) - TEST SAS Capital Min",
+      "status": "success",
+      "message": "ID: e5dc26cd-6750-484f-9510-d5e6a42a51d0",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:29.017Z"
+    },
+    {
+      "test": "Acte AG Ordinaire - TEST SAS Capital Min",
+      "status": "success",
+      "message": "ID: f16b63f1-a8cd-4a29-b6c9-11be685e20c5",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:29.069Z"
+    },
+    {
+      "test": "Acte augmentation (numeraire) - TEST SASU Complet",
+      "status": "success",
+      "message": "ID: 59d545bd-274c-48da-ad29-06a4d39fbab6",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:29.135Z"
+    },
+    {
+      "test": "Acte augmentation (nature) - TEST SASU Complet",
+      "status": "success",
+      "message": "ID: ce6a575a-df38-4699-9258-8a41db8e9b3a",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:29.191Z"
+    },
+    {
+      "test": "Acte augmentation (reserves) - TEST SASU Complet",
+      "status": "success",
+      "message": "ID: fc49bd21-961a-4837-9715-d2b7b7b96497",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:29.255Z"
+    },
+    {
+      "test": "Acte réduction (rachat_annulation) - TEST SASU Complet",
+      "status": "success",
+      "message": "ID: 8dc4ca59-c9cf-450c-8bef-fccf01ec564a",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:29.325Z"
+    },
+    {
+      "test": "Acte réduction (reduction_valeur_nominale) - TEST SASU Complet",
+      "status": "success",
+      "message": "ID: ee9eb01b-5cea-4dad-b617-4b08f1389398",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:29.394Z"
+    },
+    {
+      "test": "Acte réduction (coup_accordeon) - TEST SASU Complet",
+      "status": "success",
+      "message": "ID: e9e9ad39-9517-4bf1-8288-f8fae8d64fca",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:29.465Z"
+    },
+    {
+      "test": "Acte AG Ordinaire - TEST SASU Complet",
+      "status": "success",
+      "message": "ID: 31a7d70a-27d3-4a98-85c4-299ed75a822b",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:29.530Z"
+    },
+    {
+      "test": "Acte augmentation (numeraire) - TEST SAS Sans Président",
+      "status": "success",
+      "message": "ID: 1bd6250e-4ca1-4dc7-9649-76e9aa57be5a",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:29.608Z"
+    },
+    {
+      "test": "Acte augmentation (nature) - TEST SAS Sans Président",
+      "status": "success",
+      "message": "ID: 1b4028dd-9942-401b-b788-64ca8047162b",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:29.664Z"
+    },
+    {
+      "test": "Acte augmentation (reserves) - TEST SAS Sans Président",
+      "status": "success",
+      "message": "ID: bc08c837-28d1-4eee-8b07-47b122bc7435",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:29.736Z"
+    },
+    {
+      "test": "Acte réduction (rachat_annulation) - TEST SAS Sans Président",
+      "status": "success",
+      "message": "ID: b87bebf6-ef8b-463d-a227-bef3aa5f0f8b",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:29.813Z"
+    },
+    {
+      "test": "Acte réduction (reduction_valeur_nominale) - TEST SAS Sans Président",
+      "status": "success",
+      "message": "ID: f483576f-6404-45f7-a6f9-810fc6226e68",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:29.865Z"
+    },
+    {
+      "test": "Acte réduction (coup_accordeon) - TEST SAS Sans Président",
+      "status": "success",
+      "message": "ID: 46763d05-da46-4afe-a7b6-aa49ec40741b",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:29.921Z"
+    },
+    {
+      "test": "Acte AG Ordinaire - TEST SAS Sans Président",
+      "status": "success",
+      "message": "ID: 9ca94e17-0369-457f-ae2a-3a8b33af1406",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:29.976Z"
+    },
+    {
+      "test": "Acte augmentation (numeraire) - TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: 9bd51219-9d31-428e-92e7-ddddea5cc7c4",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:30.032Z"
+    },
+    {
+      "test": "Acte augmentation (nature) - TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: 8818549e-2983-475f-883f-8c524f1e076d",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:30.086Z"
+    },
+    {
+      "test": "Acte augmentation (reserves) - TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: bd653c6d-8327-40f4-89d7-6eb661c1f861",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:30.140Z"
+    },
+    {
+      "test": "Acte réduction (rachat_annulation) - TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: 0053ae1a-ae4c-4a69-83e2-692b2cdcad40",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:30.222Z"
+    },
+    {
+      "test": "Acte réduction (reduction_valeur_nominale) - TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: 3785511e-9d2d-4781-99e8-b56cc5ff8105",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:30.285Z"
+    },
+    {
+      "test": "Acte réduction (coup_accordeon) - TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: 9a69f476-ea5d-41ec-8eeb-5a8af1fbf6da",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:30.343Z"
+    },
+    {
+      "test": "Acte AG Ordinaire - TEST SAS Capital Énorme",
+      "status": "success",
+      "message": "ID: baee4072-4027-4d21-842d-15f3b51c11a1",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:30.414Z"
+    },
+    {
+      "test": "Acte augmentation (numeraire) - TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: c7af0a38-cd77-4d14-8792-e2b54b355c63",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:30.482Z"
+    },
+    {
+      "test": "Acte augmentation (nature) - TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: 24904870-0ef8-4ef8-825b-3e96c075c4a9",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:30.551Z"
+    },
+    {
+      "test": "Acte augmentation (reserves) - TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: f25adbc4-1fa2-4d0f-95bb-9afc7c60468d",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:30.609Z"
+    },
+    {
+      "test": "Acte réduction (rachat_annulation) - TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: 3c2d2cae-6a1d-4076-a8ee-153f08fda71b",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:30.666Z"
+    },
+    {
+      "test": "Acte réduction (reduction_valeur_nominale) - TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: dfd56cf5-2353-45e3-b643-e99443b3fd06",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:30.728Z"
+    },
+    {
+      "test": "Acte réduction (coup_accordeon) - TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: e4d78701-5c3f-4930-99ed-952a85c1e7ab",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:30.789Z"
+    },
+    {
+      "test": "Acte AG Ordinaire - TEST SASU Capital Décimal",
+      "status": "success",
+      "message": "ID: 403c5eed-8001-4d86-ac3f-338904520ecc",
+      "duration": 0,
+      "timestamp": "2025-11-18T15:08:30.851Z"
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+      "details": {
+        "acte_id": "7b0a9a2d-1cd8-44d9-b1dd-eaf063ee3478"
+      },
+      "duration": 238
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+      "details": {
+        "acte_id": "c667946b-75eb-4583-a7d4-f0c72474fffd"
+      },
+      "duration": 20
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+      "details": {
+        "acte_id": "64d84981-4b7f-4b68-9eb2-3ae53d87ff91"
+      },
+      "duration": 17
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+      "details": {
+        "acte_id": "27ba2708-23f4-4ef8-8d71-934577fc2dfc"
+      },
+      "duration": 123
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+      "details": {
+        "acte_id": "89530f0c-7102-444d-9cfd-317ce5e40ae0"
+      },
+      "duration": 18
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+      "details": {
+        "acte_id": "a6560167-85c5-4c37-8a69-71a9339bd84d"
+      },
+      "duration": 11
+    },
+    {
+      "test": "Génération doc : ag_ordinaire",
+      "status": "success",
+      "message": "Document généré (14.07 KB)",
+      "details": {
+        "acte_id": "daabd000-916d-47a1-a090-c7913af2c25d",
+        "size": 14407
+      },
+      "duration": 513
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+      "details": {
+        "acte_id": "074e857e-a047-4e1e-8067-417420aa196b"
+      },
+      "duration": 36
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+      "details": {
+        "acte_id": "2b25db7f-2c81-4922-885c-3e9a070080f5"
+      },
+      "duration": 20
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+      "details": {
+        "acte_id": "71108de8-0813-476f-84d0-1ac01bf9c277"
+      },
+      "duration": 19
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+      "details": {
+        "acte_id": "1b6d3b97-a294-4616-bb1d-9caea4803ed2"
+      },
+      "duration": 20
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+      "details": {
+        "acte_id": "08ae5381-e740-4780-8ccc-8f4e8becc279"
+      },
+      "duration": 12
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+      "details": {
+        "acte_id": "e5dc26cd-6750-484f-9510-d5e6a42a51d0"
+      },
+      "duration": 12
+    },
+    {
+      "test": "Génération doc : ag_ordinaire",
+      "status": "error",
+      "message": "Échec : 400: {\"success\":false,\"error\":\"Total des votes (1) différent du nombre d'actions (2). Modifiez l'acte pour corriger.\"}",
+      "details": {
+        "acte_id": "f16b63f1-a8cd-4a29-b6c9-11be685e20c5"
+      },
+      "duration": 177
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+      "details": {
+        "acte_id": "59d545bd-274c-48da-ad29-06a4d39fbab6"
+      },
+      "duration": 16
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+      "details": {
+        "acte_id": "ce6a575a-df38-4699-9258-8a41db8e9b3a"
+      },
+      "duration": 16
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+      "details": {
+        "acte_id": "fc49bd21-961a-4837-9715-d2b7b7b96497"
+      },
+      "duration": 16
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+      "details": {
+        "acte_id": "8dc4ca59-c9cf-450c-8bef-fccf01ec564a"
+      },
+      "duration": 12
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+      "details": {
+        "acte_id": "ee9eb01b-5cea-4dad-b617-4b08f1389398"
+      },
+      "duration": 15
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+      "details": {
+        "acte_id": "e9e9ad39-9517-4bf1-8288-f8fae8d64fca"
+      },
+      "duration": 16
+    },
+    {
+      "test": "Génération doc : ag_ordinaire",
+      "status": "success",
+      "message": "Document généré (14.02 KB)",
+      "details": {
+        "acte_id": "31a7d70a-27d3-4a98-85c4-299ed75a822b",
+        "size": 14356
+      },
+      "duration": 284
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+      "details": {
+        "acte_id": "1bd6250e-4ca1-4dc7-9649-76e9aa57be5a"
+      },
+      "duration": 24
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+      "details": {
+        "acte_id": "1b4028dd-9942-401b-b788-64ca8047162b"
+      },
+      "duration": 18
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+      "details": {
+        "acte_id": "bc08c837-28d1-4eee-8b07-47b122bc7435"
+      },
+      "duration": 16
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+      "details": {
+        "acte_id": "b87bebf6-ef8b-463d-a227-bef3aa5f0f8b"
+      },
+      "duration": 19
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+      "details": {
+        "acte_id": "f483576f-6404-45f7-a6f9-810fc6226e68"
+      },
+      "duration": 17
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+      "details": {
+        "acte_id": "46763d05-da46-4afe-a7b6-aa49ec40741b"
+      },
+      "duration": 19
+    },
+    {
+      "test": "Génération doc : ag_ordinaire",
+      "status": "error",
+      "message": "Échec : 400: {\"success\":false,\"error\":\"Président manquant : Allez dans la fiche client et remplissez \\\"Président (nom/prénom)\\\".\"}",
+      "details": {
+        "acte_id": "9ca94e17-0369-457f-ae2a-3a8b33af1406"
+      },
+      "duration": 172
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+      "details": {
+        "acte_id": "9bd51219-9d31-428e-92e7-ddddea5cc7c4"
+      },
+      "duration": 23
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+      "details": {
+        "acte_id": "8818549e-2983-475f-883f-8c524f1e076d"
+      },
+      "duration": 19
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+      "details": {
+        "acte_id": "bd653c6d-8327-40f4-89d7-6eb661c1f861"
+      },
+      "duration": 18
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+      "details": {
+        "acte_id": "0053ae1a-ae4c-4a69-83e2-692b2cdcad40"
+      },
+      "duration": 14
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+      "details": {
+        "acte_id": "3785511e-9d2d-4781-99e8-b56cc5ff8105"
+      },
+      "duration": 16
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+      "details": {
+        "acte_id": "9a69f476-ea5d-41ec-8eeb-5a8af1fbf6da"
+      },
+      "duration": 13
+    },
+    {
+      "test": "Génération doc : ag_ordinaire",
+      "status": "success",
+      "message": "Document généré (14.10 KB)",
+      "details": {
+        "acte_id": "baee4072-4027-4d21-842d-15f3b51c11a1",
+        "size": 14442
+      },
+      "duration": 283
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+      "details": {
+        "acte_id": "c7af0a38-cd77-4d14-8792-e2b54b355c63"
+      },
+      "duration": 22
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+      "details": {
+        "acte_id": "24904870-0ef8-4ef8-825b-3e96c075c4a9"
+      },
+      "duration": 18
+    },
+    {
+      "test": "Génération doc : augmentation_capital",
+      "status": "error",
+      "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+      "details": {
+        "acte_id": "f25adbc4-1fa2-4d0f-95bb-9afc7c60468d"
+      },
+      "duration": 18
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+      "details": {
+        "acte_id": "3c2d2cae-6a1d-4076-a8ee-153f08fda71b"
+      },
+      "duration": 15
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+      "details": {
+        "acte_id": "dfd56cf5-2353-45e3-b643-e99443b3fd06"
+      },
+      "duration": 14
+    },
+    {
+      "test": "Génération doc : reduction_capital",
+      "status": "error",
+      "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+      "details": {
+        "acte_id": "e4d78701-5c3f-4930-99ed-952a85c1e7ab"
+      },
+      "duration": 17
+    },
+    {
+      "test": "Génération doc : ag_ordinaire",
+      "status": "success",
+      "message": "Document généré (14.05 KB)",
+      "details": {
+        "acte_id": "403c5eed-8001-4d86-ac3f-338904520ecc",
+        "size": 14383
+      },
+      "duration": 284
+    },
+    {
+      "test": "Validation : Capital final ≥ 1€",
+      "status": "success",
+      "message": "Validation bloque correctement",
+      "duration": 0
+    }
+  ],
+  "errorsByType": {
+    "Génération doc ": [
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+        "details": {
+          "acte_id": "7b0a9a2d-1cd8-44d9-b1dd-eaf063ee3478"
+        },
+        "duration": 238
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+        "details": {
+          "acte_id": "c667946b-75eb-4583-a7d4-f0c72474fffd"
+        },
+        "duration": 20
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+        "details": {
+          "acte_id": "64d84981-4b7f-4b68-9eb2-3ae53d87ff91"
+        },
+        "duration": 17
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+        "details": {
+          "acte_id": "27ba2708-23f4-4ef8-8d71-934577fc2dfc"
+        },
+        "duration": 123
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+        "details": {
+          "acte_id": "89530f0c-7102-444d-9cfd-317ce5e40ae0"
+        },
+        "duration": 18
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+        "details": {
+          "acte_id": "a6560167-85c5-4c37-8a69-71a9339bd84d"
+        },
+        "duration": 11
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+        "details": {
+          "acte_id": "074e857e-a047-4e1e-8067-417420aa196b"
+        },
+        "duration": 36
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+        "details": {
+          "acte_id": "2b25db7f-2c81-4922-885c-3e9a070080f5"
+        },
+        "duration": 20
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+        "details": {
+          "acte_id": "71108de8-0813-476f-84d0-1ac01bf9c277"
+        },
+        "duration": 19
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+        "details": {
+          "acte_id": "1b6d3b97-a294-4616-bb1d-9caea4803ed2"
+        },
+        "duration": 20
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+        "details": {
+          "acte_id": "08ae5381-e740-4780-8ccc-8f4e8becc279"
+        },
+        "duration": 12
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+        "details": {
+          "acte_id": "e5dc26cd-6750-484f-9510-d5e6a42a51d0"
+        },
+        "duration": 12
+      },
+      {
+        "test": "Génération doc : ag_ordinaire",
+        "status": "error",
+        "message": "Échec : 400: {\"success\":false,\"error\":\"Total des votes (1) différent du nombre d'actions (2). Modifiez l'acte pour corriger.\"}",
+        "details": {
+          "acte_id": "f16b63f1-a8cd-4a29-b6c9-11be685e20c5"
+        },
+        "duration": 177
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+        "details": {
+          "acte_id": "59d545bd-274c-48da-ad29-06a4d39fbab6"
+        },
+        "duration": 16
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+        "details": {
+          "acte_id": "ce6a575a-df38-4699-9258-8a41db8e9b3a"
+        },
+        "duration": 16
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+        "details": {
+          "acte_id": "fc49bd21-961a-4837-9715-d2b7b7b96497"
+        },
+        "duration": 16
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+        "details": {
+          "acte_id": "8dc4ca59-c9cf-450c-8bef-fccf01ec564a"
+        },
+        "duration": 12
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+        "details": {
+          "acte_id": "ee9eb01b-5cea-4dad-b617-4b08f1389398"
+        },
+        "duration": 15
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+        "details": {
+          "acte_id": "e9e9ad39-9517-4bf1-8288-f8fae8d64fca"
+        },
+        "duration": 16
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+        "details": {
+          "acte_id": "1bd6250e-4ca1-4dc7-9649-76e9aa57be5a"
+        },
+        "duration": 24
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+        "details": {
+          "acte_id": "1b4028dd-9942-401b-b788-64ca8047162b"
+        },
+        "duration": 18
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+        "details": {
+          "acte_id": "bc08c837-28d1-4eee-8b07-47b122bc7435"
+        },
+        "duration": 16
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+        "details": {
+          "acte_id": "b87bebf6-ef8b-463d-a227-bef3aa5f0f8b"
+        },
+        "duration": 19
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+        "details": {
+          "acte_id": "f483576f-6404-45f7-a6f9-810fc6226e68"
+        },
+        "duration": 17
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+        "details": {
+          "acte_id": "46763d05-da46-4afe-a7b6-aa49ec40741b"
+        },
+        "duration": 19
+      },
+      {
+        "test": "Génération doc : ag_ordinaire",
+        "status": "error",
+        "message": "Échec : 400: {\"success\":false,\"error\":\"Président manquant : Allez dans la fiche client et remplissez \\\"Président (nom/prénom)\\\".\"}",
+        "details": {
+          "acte_id": "9ca94e17-0369-457f-ae2a-3a8b33af1406"
+        },
+        "duration": 172
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+        "details": {
+          "acte_id": "9bd51219-9d31-428e-92e7-ddddea5cc7c4"
+        },
+        "duration": 23
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+        "details": {
+          "acte_id": "8818549e-2983-475f-883f-8c524f1e076d"
+        },
+        "duration": 19
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+        "details": {
+          "acte_id": "bd653c6d-8327-40f4-89d7-6eb661c1f861"
+        },
+        "duration": 18
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+        "details": {
+          "acte_id": "0053ae1a-ae4c-4a69-83e2-692b2cdcad40"
+        },
+        "duration": 14
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+        "details": {
+          "acte_id": "3785511e-9d2d-4781-99e8-b56cc5ff8105"
+        },
+        "duration": 16
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+        "details": {
+          "acte_id": "9a69f476-ea5d-41ec-8eeb-5a8af1fbf6da"
+        },
+        "duration": 13
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+        "details": {
+          "acte_id": "c7af0a38-cd77-4d14-8792-e2b54b355c63"
+        },
+        "duration": 22
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+        "details": {
+          "acte_id": "24904870-0ef8-4ef8-825b-3e96c075c4a9"
+        },
+        "duration": 18
+      },
+      {
+        "test": "Génération doc : augmentation_capital",
+        "status": "error",
+        "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+        "details": {
+          "acte_id": "f25adbc4-1fa2-4d0f-95bb-9afc7c60468d"
+        },
+        "duration": 18
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+        "details": {
+          "acte_id": "3c2d2cae-6a1d-4076-a8ee-153f08fda71b"
+        },
+        "duration": 15
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+        "details": {
+          "acte_id": "dfd56cf5-2353-45e3-b643-e99443b3fd06"
+        },
+        "duration": 14
+      },
+      {
+        "test": "Génération doc : reduction_capital",
+        "status": "error",
+        "message": "Échec : 500: {\"error\":\"Cannot read private member #state from an object whose class did not declare it\"}",
+        "details": {
+          "acte_id": "e4d78701-5c3f-4930-99ed-952a85c1e7ab"
+        },
+        "duration": 17
+      }
+    ]
+  },
+  "summary": {
+    "total": 98,
+    "passed": 60,
+    "failed": 38,
+    "warnings": 0,
+    "percentage": "61"
+  }
+}

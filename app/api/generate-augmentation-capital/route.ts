@@ -2,14 +2,47 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
+import { withRateLimit, RATE_LIMITS } from "@/lib/withRateLimit";
+import { generateDocumentSchema } from "@/lib/validators/api";
+import { sanitizeObject } from "@/lib/sanitize";
+import { logAudit } from "@/lib/audit";
 
 import type { ActeJuridiqueData, ClientData, CabinetData } from "@/lib/types/database";
 import { generateAugmentationCapital } from "@/lib/generateAugmentationCapital";
 
 export async function POST(request: Request) {
   try {
+    // ============================================
+    // SÉCURITÉ : Rate Limiting
+    // ============================================
+    const rateLimitResponse = await withRateLimit(request, RATE_LIMITS.DOCUMENT_GENERATION);
+    if (rateLimitResponse) {
+      return rateLimitResponse;
+    }
+
+    // ============================================
+    // SÉCURITÉ : Validation + Sanitization
+    // ============================================
     const body = await request.json().catch((): null => null);
-    const acteId = body?.acte_id as string | undefined;
+    if (!body) {
+      return NextResponse.json({ error: "Corps de la requête invalide" }, { status: 400 });
+    }
+
+    // Validation Zod avec type guard
+    const validation = generateDocumentSchema.safeParse(body);
+    if (!validation.success) {
+      return NextResponse.json(
+        {
+          error: "Données invalides",
+          details: validation.error.flatten(),
+        },
+        { status: 400 }
+      );
+    }
+
+    // Sanitization (TypeScript sait que validation.data existe ici)
+    const validatedData = sanitizeObject(validation.data);
+    const acteId = validatedData.acteId || validatedData.acte_id;
 
     if (!acteId) {
       return NextResponse.json({ error: "Paramètre acte_id manquant." }, { status: 400 });
@@ -157,11 +190,25 @@ export async function POST(request: Request) {
       ? new Date(acte.date_acte).toISOString().split("T")[0]
       : new Date().toISOString().split("T")[0];
 
+    const fileName = `PV_Augmentation_Capital_${nomEntrepriseSafe}_${dateActe}.docx`;
+
+    // TODO: Réactiver logAudit() quand nécessaire
+    // await logAudit({
+    //   action: 'document_generated',
+    //   resourceType: 'acte',
+    //   resourceId: acteId,
+    //   metadata: {
+    //     type: 'augmentation_capital',
+    //     file_name: fileName,
+    //   },
+    //   req: request,
+    // });
+
     return new Response(new Uint8Array(documentBuffer), {
       headers: {
         "Content-Type":
           "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "Content-Disposition": `attachment; filename="PV_Augmentation_Capital_${nomEntrepriseSafe}_${dateActe}.docx"`,
+        "Content-Disposition": `attachment; filename="${fileName}"`,
       },
     });
   } catch (error) {
