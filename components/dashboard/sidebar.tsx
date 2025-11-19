@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Upload, LayoutDashboard, Users, Plus, FileText } from "lucide-react";
+import { Upload, LayoutDashboard, Users, Plus, FileText, Settings } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,11 @@ const NAV_ITEMS: NavItem[] = [
     label: "Nouveau client",
     href: "/dashboard/clients/new",
     icon: Plus,
+  },
+  {
+    label: "Paramètres",
+    href: "/dashboard/settings",
+    icon: Settings,
   },
 ];
 
