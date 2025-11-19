@@ -2,9 +2,6 @@
 
 import type { ReactNode } from "react";
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
-// TODO: Réactiver après avoir corrigé les RLS policies
-// import { supabaseClient } from "@/lib/supabase";
-// import { initExpertComptable, getCabinetIdByUserId } from "@/lib/initExpert";
 
 type DashboardLayoutProps = {
   children: ReactNode;
