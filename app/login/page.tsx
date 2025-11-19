@@ -19,20 +19,33 @@ export default function LoginPage() {
     setErrorMessage(null);
 
     try {
-      const { data, error } = await supabaseClient.auth.signInWithPassword({
-        email,
-        password,
+      // Appel de la route API protégée avec rate limiting
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
       });
 
-      if (error || !data.user) {
-        const fallbackMessage =
-          error?.message || "Impossible de se connecter. Veuillez réessayer.";
-        setErrorMessage(fallbackMessage);
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Gestion spécifique du rate limiting (429)
+        if (response.status === 429) {
+          setErrorMessage(data.error || "Trop de tentatives. Réessayez dans 15 minutes.");
+        } else {
+          setErrorMessage(data.error || "Impossible de se connecter. Veuillez réessayer.");
+        }
         return;
       }
 
-      console.log("Connexion réussie, user:", data.user);
-      router.push("/dashboard");
+      if (data.success) {
+        // Connexion réussie, rediriger vers le dashboard
+        router.push("/dashboard");
+      } else {
+        setErrorMessage("Impossible de se connecter. Veuillez réessayer.");
+      }
     } catch (error) {
       const message =
         error instanceof Error
