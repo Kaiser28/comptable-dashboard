@@ -23,6 +23,8 @@ import {
 } from "@/components/ui/table";
 import { supabaseClient } from "@/lib/supabase";
 import type { Client } from "@/types/database";
+import DashboardStats from "./components/DashboardStats";
+import WorkflowClients from "./components/WorkflowClients";
 
 type ClientWithFormattedDates = Client & { formattedCreatedAt: string };
 
@@ -242,6 +244,14 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         ) : null}
+
+        {/* Widgets de statistiques */}
+        <DashboardStats />
+
+        {/* Workflow Clients */}
+        <div className="mt-8">
+          <WorkflowClients />
+        </div>
 
         <section className="flex-1">{content}</section>
       </div>
