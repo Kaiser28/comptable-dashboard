@@ -13,11 +13,6 @@ const LOGIN_RATE_LIMIT = {
 };
 
 /**
- * Instance Redis Upstash pour stocker le compteur d'échecs
- */
-const redis = Redis.fromEnv();
-
-/**
  * Extrait l'IP depuis les headers de la requête
  */
 function getClientIP(request: Request): string {
@@ -40,6 +35,9 @@ function getClientIP(request: Request): string {
  */
 export async function POST(request: Request) {
   try {
+    // Instance Redis Upstash pour stocker le compteur d'échecs (initialisée au runtime uniquement)
+    const redis = Redis.fromEnv();
+    
     const ip = getClientIP(request);
     const key = `login-fails:${ip}`;
 
