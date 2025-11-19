@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Settings, Upload, X } from "lucide-react";
+import { Settings, Upload, X, Users } from "lucide-react";
+import Link from "next/link";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -311,14 +312,22 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center gap-3">
-        <Settings className="h-8 w-8" />
-        <div>
-          <h1 className="text-3xl font-semibold">Paramètres du cabinet</h1>
-          <p className="text-sm text-muted-foreground">
-            Gérez les informations et le logo de votre cabinet
-          </p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Settings className="h-8 w-8" />
+          <div>
+            <h1 className="text-3xl font-semibold">Paramètres du cabinet</h1>
+            <p className="text-sm text-muted-foreground">
+              Gérez les informations et le logo de votre cabinet
+            </p>
+          </div>
         </div>
+        <Button variant="outline" asChild>
+          <Link href="/dashboard/settings/equipe">
+            <Users className="h-4 w-4 mr-2" />
+            Gérer l'équipe
+          </Link>
+        </Button>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
