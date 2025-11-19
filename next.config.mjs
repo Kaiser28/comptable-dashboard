@@ -5,6 +5,16 @@ const nextConfig = {
   },
   
   /**
+   * Configuration API
+   * Limite la taille des body requests (pour upload fichiers)
+   */
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb',
+    },
+  },
+  
+  /**
    * Headers de sécurité HTTP
    * Protège contre XSS, clickjacking, MIME sniffing, etc.
    */

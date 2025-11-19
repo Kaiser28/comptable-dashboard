@@ -330,7 +330,7 @@ export const POST = withRateLimit(
         ? new Date(acte.date_ag).toISOString().split('T')[0]
         : new Date().toISOString().split('T')[0];
 
-      return new Response(new Uint8Array(docBuffer), {
+      return new NextResponse(new Uint8Array(docBuffer), {
         headers: {
           'Content-Type':
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document',

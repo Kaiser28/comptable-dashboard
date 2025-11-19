@@ -198,7 +198,7 @@ export const POST = withRateLimit(
     //   req: request,
     // });
 
-    return new Response(new Uint8Array(documentBuffer), {
+    return new NextResponse(new Uint8Array(documentBuffer), {
       headers: {
         "Content-Type":
           "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
