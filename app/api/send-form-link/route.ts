@@ -244,7 +244,7 @@ export const POST = withRateLimit(
 
       // Envoyer l'email via Resend
       const result = await resend.emails.send({
-        from: "LexiGen <contact@sferia.fr>",
+        from: "LexiGen <contact@lexigen.fr>",
         to: client.email,
         subject: "Complétez votre dossier de création d'entreprise",
         html: emailHtml,
