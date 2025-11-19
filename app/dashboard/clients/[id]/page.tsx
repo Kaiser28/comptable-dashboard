@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { Copy, Check, FileText, Users } from "lucide-react";
+import { Copy, Check, FileText, Users, Trash2, Upload, File } from "lucide-react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -39,6 +39,7 @@ import AssociesList from "@/components/associes/AssociesList";
 import { supabaseClient } from "@/lib/supabase";
 import type { Client } from "@/types/database";
 import { validateStatutsData, ValidationResult } from "@/lib/validateStatuts";
+import { toast } from "sonner";
 
 type ClientState = {
   data: Client | null;
@@ -64,6 +65,19 @@ export default function ClientDetailPage() {
   const [isGeneratingCourrierReprise, setIsGeneratingCourrierReprise] = useState(false);
   const [isGeneratingLettreMission, setIsGeneratingLettreMission] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  
+  // États pour les pièces jointes
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [piecesJointes, setPiecesJointes] = useState<Array<{
+    id: string;
+    nom_fichier: string;
+    taille_fichier: number;
+    url_fichier: string;
+    created_at: string;
+  }>>([]);
+  const [isLoadingPiecesJointes, setIsLoadingPiecesJointes] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -106,6 +120,35 @@ export default function ClientDetailPage() {
     return () => {
       isMounted = false;
     };
+  }, [params]);
+
+  // Charger les pièces jointes
+  useEffect(() => {
+    const clientId = params?.id;
+    if (!clientId || typeof clientId !== "string") return;
+
+    const fetchPiecesJointes = async () => {
+      try {
+        setIsLoadingPiecesJointes(true);
+        const { data, error } = await supabaseClient
+          .from("pieces_jointes")
+          .select("id, nom_fichier, taille_fichier, url_fichier, created_at")
+          .eq("client_id", clientId)
+          .order("created_at", { ascending: false });
+
+        if (error) {
+          throw error;
+        }
+
+        setPiecesJointes(data || []);
+      } catch (error) {
+        console.error("Erreur lors de la récupération des pièces jointes", error);
+      } finally {
+        setIsLoadingPiecesJointes(false);
+      }
+    };
+
+    void fetchPiecesJointes();
   }, [params]);
 
   const formattedDates = useMemo(() => {
@@ -447,6 +490,136 @@ export default function ClientDetailPage() {
     }
   }
 
+  // Fonction pour formater la taille du fichier
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + " " + sizes[i];
+  };
+
+  // Fonction pour gérer l'upload
+  async function handleUpload() {
+    const clientId = params?.id;
+    if (!clientId || typeof clientId !== "string" || !selectedFile) {
+      toast.error("Veuillez sélectionner un fichier");
+      return;
+    }
+
+    try {
+      setIsUploading(true);
+
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+
+      const response = await fetch(`/api/clients/${clientId}/pieces-jointes`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Erreur inconnue" }));
+        let errorMessage = "Erreur lors de l'upload";
+
+        if (response.status === 400) {
+          errorMessage = errorData.error || "Type de fichier invalide";
+        } else if (response.status === 413) {
+          errorMessage = "Le fichier est trop volumineux (maximum 10 Mo)";
+        } else if (response.status === 429) {
+          errorMessage = "Trop de requêtes. Veuillez patienter quelques instants";
+        } else {
+          errorMessage = errorData.error || "Erreur lors de l'upload du fichier";
+        }
+
+        toast.error(errorMessage);
+        return;
+      }
+
+      const result = await response.json();
+      
+      if (result.success) {
+        toast.success("Fichier uploadé avec succès");
+        setSelectedFile(null);
+        
+        // Réinitialiser l'input file
+        const fileInput = document.getElementById("file-input") as HTMLInputElement;
+        if (fileInput) {
+          fileInput.value = "";
+        }
+
+        // Recharger la liste des pièces jointes
+        const { data, error } = await supabaseClient
+          .from("pieces_jointes")
+          .select("id, nom_fichier, taille_fichier, url_fichier, created_at")
+          .eq("client_id", clientId)
+          .order("created_at", { ascending: false });
+
+        if (!error && data) {
+          setPiecesJointes(data);
+        }
+      }
+    } catch (error) {
+      console.error("Erreur lors de l'upload:", error);
+      toast.error("Une erreur est survenue lors de l'upload");
+    } finally {
+      setIsUploading(false);
+    }
+  }
+
+  // Fonction pour supprimer une pièce jointe
+  async function handleDeletePieceJointe(pieceId: string, urlFichier: string) {
+    const clientId = params?.id;
+    if (!clientId || typeof clientId !== "string") return;
+
+    try {
+      // Extraire le chemin du fichier depuis l'URL publique Supabase Storage
+      // Format URL: https://[project].supabase.co/storage/v1/object/public/pieces-jointes/clients/[clientId]/[filename]
+      const urlParts = urlFichier.split("/pieces-jointes/");
+      const storagePath = urlParts.length > 1 ? urlParts[1] : null;
+
+      if (!storagePath) {
+        throw new Error("Impossible d'extraire le chemin du fichier depuis l'URL");
+      }
+
+      // Supprimer le fichier du storage
+      const { error: storageError } = await supabaseClient.storage
+        .from("pieces-jointes")
+        .remove([storagePath]);
+
+      if (storageError) {
+        console.error("Erreur suppression storage:", storageError);
+        // Continuer quand même pour supprimer l'enregistrement DB
+      }
+
+      // Supprimer l'enregistrement de la base de données
+      const { error: deleteError } = await supabaseClient
+        .from("pieces_jointes")
+        .delete()
+        .eq("id", pieceId);
+
+      if (deleteError) {
+        throw deleteError;
+      }
+
+      toast.success("Pièce jointe supprimée avec succès");
+
+      // Recharger la liste
+      const { data, error } = await supabaseClient
+        .from("pieces_jointes")
+        .select("id, nom_fichier, taille_fichier, url_fichier, created_at")
+        .eq("client_id", clientId)
+        .order("created_at", { ascending: false });
+
+      if (!error && data) {
+        setPiecesJointes(data);
+      }
+    } catch (error) {
+      console.error("Erreur lors de la suppression:", error);
+      toast.error("Erreur lors de la suppression de la pièce jointe");
+    }
+  }
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -624,6 +797,176 @@ export default function ClientDetailPage() {
                 <Button variant="outline" className="w-full">
                   Envoyer le lien formulaire
                 </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Pièces jointes</CardTitle>
+            <CardDescription>
+              Téléversez et gérez les documents associés à ce client
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="file-input">Sélectionner un fichier</Label>
+              <div
+                className={`border-2 border-dashed rounded-md p-6 transition-colors ${
+                  isDragging
+                    ? "border-primary bg-primary/5"
+                    : "border-muted-foreground/25 hover:border-muted-foreground/50"
+                }`}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setIsDragging(true);
+                }}
+                onDragLeave={() => {
+                  setIsDragging(false);
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setIsDragging(false);
+                  const file = e.dataTransfer.files?.[0];
+                  if (file) {
+                    // Vérifier le type de fichier
+                    const validTypes = [".pdf", ".jpg", ".jpeg", ".png"];
+                    const fileExtension = "." + file.name.split(".").pop()?.toLowerCase();
+                    if (validTypes.includes(fileExtension)) {
+                      setSelectedFile(file);
+                    } else {
+                      toast.error("Format de fichier non accepté. Formats acceptés : PDF, JPG, JPEG, PNG");
+                    }
+                  }
+                }}
+              >
+                <div className="flex flex-col items-center justify-center gap-2 text-center">
+                  <Upload className="h-8 w-8 text-muted-foreground" />
+                  <div className="text-sm">
+                    <span className="font-medium text-foreground">
+                      Glissez-déposez un fichier ici
+                    </span>
+                    <span className="text-muted-foreground"> ou </span>
+                    <label
+                      htmlFor="file-input"
+                      className="font-medium text-primary cursor-pointer hover:underline"
+                    >
+                      parcourez
+                    </label>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Formats acceptés : PDF, JPG, JPEG, PNG (max 10 Mo)
+                  </p>
+                </div>
+                <Input
+                  id="file-input"
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0] || null;
+                    setSelectedFile(file);
+                  }}
+                  className="hidden"
+                />
+              </div>
+              {selectedFile && (
+                <div className="flex items-center justify-between p-2 bg-muted rounded-md">
+                  <div className="flex items-center gap-2">
+                    <File className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">{selectedFile.name}</span>
+                    <span className="text-xs text-muted-foreground">
+                      ({formatFileSize(selectedFile.size)})
+                    </span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedFile(null);
+                      const fileInput = document.getElementById("file-input") as HTMLInputElement;
+                      if (fileInput) {
+                        fileInput.value = "";
+                      }
+                    }}
+                  >
+                    ✕
+                  </Button>
+                </div>
+              )}
+              <Button
+                onClick={handleUpload}
+                disabled={!selectedFile || isUploading}
+                className="w-full"
+                size="default"
+              >
+                {isUploading ? (
+                  <>
+                    <span className="animate-spin mr-2">⏳</span>
+                    Upload en cours...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-4 w-4 mr-2" />
+                    Uploader
+                  </>
+                )}
+              </Button>
+            </div>
+
+            {isLoadingPiecesJointes ? (
+              <div className="text-sm text-muted-foreground py-4">
+                Chargement des pièces jointes...
+              </div>
+            ) : piecesJointes.length === 0 ? (
+              <div className="text-sm text-muted-foreground py-4 text-center border border-dashed rounded-md">
+                Aucune pièce jointe pour le moment
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Label>Fichiers uploadés</Label>
+                <div className="border rounded-md divide-y">
+                  {piecesJointes.map((piece) => (
+                    <div
+                      key={piece.id}
+                      className="flex items-center justify-between p-3 hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <File className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{piece.nom_fichier}</p>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <span>{formatFileSize(piece.taille_fichier)}</span>
+                            <span>•</span>
+                            <span>
+                              {new Date(piece.created_at).toLocaleDateString("fr-FR", {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            if (confirm("Êtes-vous sûr de vouloir supprimer ce fichier ?")) {
+                              handleDeletePieceJointe(piece.id, piece.url_fichier);
+                            }
+                          }}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </CardContent>
