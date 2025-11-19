@@ -323,28 +323,30 @@ export default function DashboardStats() {
   const documentsVariation = calculateVariation(stats.documentsGenerated, stats.documentsGeneratedPrevious);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* Stats Cards */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {/* Card 1 - Total Clients */}
-        <Card>
+        <Card className="border border-slate-200 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-blue-300 hover:scale-105 animate-slide-up">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Clients</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-slate-600 uppercase tracking-wide">Total Clients</CardTitle>
+            <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-blue-800 text-white">
+              <Users className="h-6 w-6" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{stats.totalClients}</div>
-            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+            <div className="text-3xl font-bold text-slate-900 tabular-nums">{stats.totalClients}</div>
+            <div className="flex items-center gap-1 text-xs mt-1">
               {totalVariation.trend === 'up' && (
                 <>
                   <ArrowUp className="h-3 w-3 text-green-600" />
-                  <span className="text-green-600">{totalVariation.percentage}%</span>
+                  <span className="text-green-600 font-medium">{totalVariation.percentage}%</span>
                 </>
               )}
               {totalVariation.trend === 'down' && (
                 <>
                   <ArrowDown className="h-3 w-3 text-red-600" />
-                  <span className="text-red-600">{totalVariation.percentage}%</span>
+                  <span className="text-red-600 font-medium">{totalVariation.percentage}%</span>
                 </>
               )}
               {totalVariation.trend === 'stable' && (
@@ -356,88 +358,94 @@ export default function DashboardStats() {
         </Card>
 
         {/* Card 2 - Clients Actifs */}
-        <Card>
+        <Card className="border border-slate-200 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-blue-300 hover:scale-105 animate-slide-up" style={{ animationDelay: '0.1s' }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Clients Actifs</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-slate-600 uppercase tracking-wide">Clients Actifs</CardTitle>
+            <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-800 text-white">
+              <CheckCircle className="h-6 w-6" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{stats.activeClients}</div>
-            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+            <div className="text-3xl font-bold text-slate-900 tabular-nums">{stats.activeClients}</div>
+            <div className="flex items-center gap-1 text-xs mt-1">
               {activeVariation.trend === 'up' && (
                 <>
                   <ArrowUp className="h-3 w-3 text-green-600" />
-                  <span className="text-green-600">{activeVariation.percentage}%</span>
+                  <span className="text-green-600 font-medium">{activeVariation.percentage}%</span>
                 </>
               )}
               {activeVariation.trend === 'down' && (
                 <>
                   <ArrowDown className="h-3 w-3 text-red-600" />
-                  <span className="text-red-600">{activeVariation.percentage}%</span>
+                  <span className="text-red-600 font-medium">{activeVariation.percentage}%</span>
                 </>
               )}
               {activeVariation.trend === 'stable' && (
-                <span>Stable</span>
+                <span className="text-slate-500">Stable</span>
               )}
-              <span>vs 30j</span>
+              <span className="text-slate-500">vs 30j</span>
             </div>
           </CardContent>
         </Card>
 
         {/* Card 3 - En Attente */}
-        <Card>
+        <Card className="border border-slate-200 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-blue-300 hover:scale-105 animate-slide-up" style={{ animationDelay: '0.2s' }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">En Attente</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-slate-600 uppercase tracking-wide">En Attente</CardTitle>
+            <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-amber-600 to-amber-800 text-white">
+              <Clock className="h-6 w-6" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{stats.pendingClients}</div>
-            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+            <div className="text-3xl font-bold text-slate-900 tabular-nums">{stats.pendingClients}</div>
+            <div className="flex items-center gap-1 text-xs mt-1">
               {pendingVariation.trend === 'up' && (
                 <>
                   <ArrowUp className="h-3 w-3 text-green-600" />
-                  <span className="text-green-600">{pendingVariation.percentage}%</span>
+                  <span className="text-green-600 font-medium">{pendingVariation.percentage}%</span>
                 </>
               )}
               {pendingVariation.trend === 'down' && (
                 <>
                   <ArrowDown className="h-3 w-3 text-red-600" />
-                  <span className="text-red-600">{pendingVariation.percentage}%</span>
+                  <span className="text-red-600 font-medium">{pendingVariation.percentage}%</span>
                 </>
               )}
               {pendingVariation.trend === 'stable' && (
-                <span>Stable</span>
+                <span className="text-slate-500">Stable</span>
               )}
-              <span>vs 30j</span>
+              <span className="text-slate-500">vs 30j</span>
             </div>
           </CardContent>
         </Card>
 
         {/* Card 4 - Documents Générés */}
-        <Card>
+        <Card className="border border-slate-200 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-blue-300 hover:scale-105 animate-slide-up" style={{ animationDelay: '0.3s' }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Documents Générés</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-slate-600 uppercase tracking-wide">Documents Générés</CardTitle>
+            <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-blue-800 text-white">
+              <FileText className="h-6 w-6" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{stats.documentsGenerated}</div>
-            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+            <div className="text-3xl font-bold text-slate-900 tabular-nums">{stats.documentsGenerated}</div>
+            <div className="flex items-center gap-1 text-xs mt-1">
               {documentsVariation.trend === 'up' && (
                 <>
                   <ArrowUp className="h-3 w-3 text-green-600" />
-                  <span className="text-green-600">{documentsVariation.percentage}%</span>
+                  <span className="text-green-600 font-medium">{documentsVariation.percentage}%</span>
                 </>
               )}
               {documentsVariation.trend === 'down' && (
                 <>
                   <ArrowDown className="h-3 w-3 text-red-600" />
-                  <span className="text-red-600">{documentsVariation.percentage}%</span>
+                  <span className="text-red-600 font-medium">{documentsVariation.percentage}%</span>
                 </>
               )}
               {documentsVariation.trend === 'stable' && (
-                <span>Stable</span>
+                <span className="text-slate-500">Stable</span>
               )}
-              <span>vs 30j</span>
+              <span className="text-slate-500">vs 30j</span>
             </div>
           </CardContent>
         </Card>

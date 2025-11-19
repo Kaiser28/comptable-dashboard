@@ -49,6 +49,13 @@ const config: Config = {
   				'3': 'hsl(var(--chart-3))',
   				'4': 'hsl(var(--chart-4))',
   				'5': 'hsl(var(--chart-5))'
+  			},
+  			// Brand colors LexiGen
+  			brand: {
+  				primary: '#1e40af', // blue-800
+  				secondary: '#d97706', // amber-600
+  				success: '#059669', // emerald-600
+  				danger: '#dc2626', // red-600
   			}
   		},
   		borderRadius: {

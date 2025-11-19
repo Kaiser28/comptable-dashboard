@@ -61,11 +61,17 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
       <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl">
         <header className="mb-6 text-center">
-          <h1 className="text-2xl font-semibold text-gray-900">
+          <div className="mb-4 flex items-center justify-center gap-3">
+            <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-gradient-to-br from-blue-800 to-blue-600 text-white font-bold text-xl">
+              L
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900">LexiGen</h1>
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900">
             Connexion expert-comptable
-          </h1>
+          </h2>
           <p className="mt-2 text-sm text-gray-500">
-            Accédez à votre espace SaaS Statuts Juridiques.
+            Accédez à votre espace de génération juridique automatisée.
           </p>
         </header>
 

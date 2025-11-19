@@ -24,7 +24,7 @@ const NAV_ITEMS: NavItem[] = [
   },
   {
     label: "Clients",
-    href: "/dashboard",
+    href: "/dashboard/clients",
     icon: Users,
   },
   {
@@ -84,32 +84,53 @@ export function DashboardSidebar() {
   };
 
   return (
-    <aside className="flex h-full w-64 flex-col bg-slate-50 px-6 py-8">
-      <div className="mb-8 flex items-center gap-3">
-        <span className="text-3xl">⚖️</span>
+    <aside className="flex h-full w-64 flex-col bg-white border-r border-slate-200 px-6 py-8 hidden lg:flex">
+      <div className="flex items-center gap-3 px-4 py-6 border-b border-slate-200">
+        <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-blue-800 to-blue-600 text-white font-bold text-xl">
+          L
+        </div>
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-            SaaS Statuts
-          </p>
-          <p className="text-xs text-slate-400">Génération juridique simplifiée</p>
+          <h1 className="text-xl font-bold text-slate-900">LexiGen</h1>
+          <p className="text-xs text-slate-500">Juridique automatisé</p>
         </div>
       </div>
 
-      <nav className="flex-1 space-y-2">
+      <nav className="flex-1 space-y-2 mt-4">
         {NAV_ITEMS.map((item) => {
           // Gérer l'état actif : exact match ou commence par le href pour les sous-routes
           const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname?.startsWith(item.href));
           const IconComponent = item.icon;
 
+          // Style spécial pour le lien Clients
+          if (item.href === "/dashboard/clients") {
+            const isClientsActive = pathname === "/dashboard/clients" || pathname?.startsWith("/dashboard/clients/");
+            return (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={`group flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+                  isClientsActive
+                    ? "bg-gradient-to-r from-blue-50 to-blue-100 border-l-4 border-blue-600 text-blue-900 font-semibold"
+                    : "text-slate-600 hover:bg-slate-50 hover:translate-x-1"
+                }`}
+              >
+                <IconComponent className={`h-5 w-5 transition-colors ${isClientsActive ? "text-blue-600" : "text-slate-500 group-hover:text-blue-600"}`} />
+                {item.label}
+              </Link>
+            );
+          }
+
           return (
             <Link
               key={item.label}
               href={item.href}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition hover:bg-slate-100 ${
-                isActive ? "bg-slate-200 text-slate-900" : "text-slate-600"
+              className={`group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
+                isActive 
+                  ? "bg-gradient-to-r from-blue-50 to-blue-100 border-l-4 border-blue-600 text-blue-900 font-semibold" 
+                  : "text-slate-600 hover:bg-slate-50 hover:translate-x-1"
               }`}
             >
-              <IconComponent className="h-5 w-5" />
+              <IconComponent className={`h-5 w-5 transition-colors ${isActive ? "text-blue-600" : "text-slate-500 group-hover:text-blue-600"}`} />
               {item.label}
             </Link>
           );

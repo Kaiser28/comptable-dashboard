@@ -72,13 +72,41 @@ export default function Home() {
         <div className="absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,white,transparent)]" />
         <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-4xl text-center">
-            <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl">
-              Générez vos statuts SAS/SASU en{' '}
-              <span className="text-blue-200">5 minutes</span> au lieu de 2 heures
-            </h1>
+            {/* Logo LexiGen centré */}
+            <div className="mb-8 flex items-center justify-center gap-3">
+              <div className="flex items-center justify-center w-16 h-16 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 text-white font-bold text-3xl">
+                L
+              </div>
+              <h1 className="text-4xl font-bold text-white">LexiGen</h1>
+            </div>
+            
+            <h2 className="text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl">
+              Générez vos documents juridiques en{' '}
+              <span className="text-blue-200">3 clics</span>
+            </h2>
             <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-blue-100 sm:text-xl">
-              Automatisez la création de documents juridiques pour vos clients. Simple, rapide, conforme.
+              La plateforme SaaS qui fait gagner 10h/semaine aux experts-comptables
             </p>
+            
+            {/* Bullet points */}
+            <div className="mx-auto mt-8 max-w-2xl grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
+              <div className="flex items-start gap-3 text-blue-100">
+                <span className="text-2xl">⚡</span>
+                <p className="text-sm sm:text-base">Statuts SAS/SASU générés en 2 minutes</p>
+              </div>
+              <div className="flex items-start gap-3 text-blue-100">
+                <span className="text-2xl">📋</span>
+                <p className="text-sm sm:text-base">PV, AG, cessions automatisées</p>
+              </div>
+              <div className="flex items-start gap-3 text-blue-100">
+                <span className="text-2xl">✅</span>
+                <p className="text-sm sm:text-base">Conformité juridique garantie</p>
+              </div>
+              <div className="flex items-start gap-3 text-blue-100">
+                <span className="text-2xl">🔒</span>
+                <p className="text-sm sm:text-base">Sécurisé et certifié</p>
+              </div>
+            </div>
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Button 
                 onClick={() => router.push('/signup')}

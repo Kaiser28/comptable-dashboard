@@ -187,11 +187,17 @@ export default function SignupPage() {
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-semibold">
+          <div className="mb-4 flex items-center justify-center gap-3">
+            <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-gradient-to-br from-blue-800 to-blue-600 text-white font-bold text-xl">
+              L
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900">LexiGen</h1>
+          </div>
+          <CardTitle className="text-xl font-semibold">
             Créer un compte cabinet
           </CardTitle>
           <CardDescription>
-            Rejoignez SaaS Statuts Juridiques en quelques secondes
+            Rejoignez LexiGen en quelques secondes
           </CardDescription>
         </CardHeader>
         <CardContent>
