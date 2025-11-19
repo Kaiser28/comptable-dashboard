@@ -7,11 +7,12 @@ import {
   Clock,
   CheckCircle,
   FileText,
-  Send,
-  ChevronDown,
-  ChevronUp,
+  Download,
+  MessageSquare,
   Eye,
   AlertTriangle,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -24,312 +25,444 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Skeleton } from "@/components/ui/skeleton";
 import { supabaseClient } from "@/lib/supabase";
+
+type ActeStatut = 'brouillon' | 'validé' | 'signé';
+type ActeType =
+  | 'statuts'
+  | 'pv_constitution'
+  | 'ag_ordinaire'
+  | 'cession_actions'
+  | 'augmentation_capital'
+  | 'reduction_capital'
+  | 'lettre_mission'
+  | 'courrier_article_163'
+  | string;
+
+type ActeJuridiqueWithClient = {
+  id: string;
+  client_id: string;
+  cabinet_id: string;
+  type: ActeType;
+  statut: ActeStatut;
+  priorite?: 'urgent' | 'normal' | null;
+  date_acte?: string | null;
+  date_derniere_action?: string | null;
+  notes_internes?: string | null;
+  document_genere_url?: string | null;
+  actions_requises?: string | null;
+  created_at: string;
+  updated_at: string;
+  // Données client jointes
+  client?: {
+    id: string;
+    nom_entreprise: string;
+    forme_juridique?: string | null;
+  } | null;
+};
+
+type ClientWithActes = {
+  id: string;
+  nom_entreprise: string;
+  forme_juridique?: string | null;
+  actes: ActeJuridiqueWithClient[];
+  nbTotal: number;
+  nbSignes: number;
+  pourcentageCompletion: number;
+};
 
 // Fonction de formatage de date relative (fallback si date-fns n'est pas installé)
 // Pour utiliser date-fns : npm install date-fns
 const formatRelativeTime = (date: Date): string => {
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMinutes = Math.floor(diffMs / (1000 * 60));
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-  const diffDays = Math.floor(diffHours / 24);
+  try {
+    // Essayer d'utiliser date-fns si disponible
+    const { formatDistanceToNow } = require("date-fns");
+    const { fr } = require("date-fns/locale/fr");
+    return formatDistanceToNow(date, { addSuffix: true, locale: fr });
+  } catch {
+    // Fallback si date-fns n'est pas installé
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffHours / 24);
 
-  if (diffMinutes < 1) return "il y a moins d'1 minute";
-  if (diffMinutes < 60) return `il y a ${diffMinutes} minute${diffMinutes > 1 ? 's' : ''}`;
-  if (diffHours < 24) return `il y a ${diffHours} heure${diffHours > 1 ? 's' : ''}`;
-  if (diffDays === 1) return "il y a 1 jour";
-  return `il y a ${diffDays} jours`;
-};
-
-type WorkflowStatus =
-  | 'formulaire_envoye'
-  | 'formulaire_recu'
-  | 'infos_validees'
-  | 'documents_generes'
-  | 'dossier_termine'
-  | 'bloque';
-
-type WorkflowClient = {
-  id: string;
-  nom_entreprise: string;
-  workflow_status?: WorkflowStatus | null;
-  priorite?: 'urgent' | 'normal' | null;
-  derniere_action_date?: string | null;
-  created_at: string;
-  updated_at: string;
-  statut?: string | null;
-  email?: string | null;
-};
-
-type WorkflowData = {
-  urgent: WorkflowClient[];
-  enCours: WorkflowClient[];
-  termines: WorkflowClient[];
-};
-
-const formatStatutBadge = (workflowStatus: WorkflowStatus | null | undefined): {
-  emoji: string;
-  label: string;
-  color: string;
-} => {
-  if (!workflowStatus) {
-    return { emoji: '⚪', label: 'Non défini', color: 'gray' };
+    if (diffHours < 24) return `il y a ${diffHours}h`;
+    if (diffDays === 1) return "il y a 1 jour";
+    return `il y a ${diffDays} jours`;
   }
-
-  const statusMap: Record<WorkflowStatus, { emoji: string; label: string; color: string }> = {
-    formulaire_envoye: { emoji: '🟠', label: 'En attente client', color: 'orange' },
-    formulaire_recu: { emoji: '🟡', label: 'À valider', color: 'yellow' },
-    infos_validees: { emoji: '🔵', label: 'Prêt génération', color: 'blue' },
-    documents_generes: { emoji: '🟢', label: 'En signature', color: 'green' },
-    dossier_termine: { emoji: '✅', label: 'Archivé', color: 'green' },
-    bloque: { emoji: '🔴', label: 'Bloqué', color: 'red' },
-  };
-
-  return statusMap[workflowStatus] || { emoji: '⚪', label: 'Inconnu', color: 'gray' };
 };
 
-const getProchaineAction = (workflowStatus: WorkflowStatus | null | undefined): string => {
-  if (!workflowStatus) return 'Définir le statut';
-
-  const actionsMap: Record<WorkflowStatus, string> = {
-    formulaire_envoye: 'Relancer le client',
-    formulaire_recu: 'Valider les informations',
-    infos_validees: 'Générer les documents',
-    documents_generes: 'Finaliser le dossier',
-    dossier_termine: 'Dossier terminé',
-    bloque: 'Résoudre le blocage',
+const getActeLabel = (type: ActeType): string => {
+  const labels: Record<string, string> = {
+    statuts: '📄 Statuts',
+    ag_ordinaire: '📋 AG Ordinaire',
+    pv_constitution: '📋 PV Constitution',
+    cession_actions: '🔄 Cession d\'actions',
+    augmentation_capital: '📈 Augmentation capital',
+    reduction_capital: '📉 Réduction capital',
+    lettre_mission: '📧 Lettre mission',
+    courrier_article_163: '📧 Lettre reprise',
   };
 
-  return actionsMap[workflowStatus] || 'Action à définir';
+  return labels[type] || type.charAt(0).toUpperCase() + type.slice(1).replace(/_/g, ' ');
+};
+
+const getStatutEmoji = (statut: ActeStatut): string => {
+  const emojis: Record<ActeStatut, string> = {
+    brouillon: '📝',
+    validé: '✅',
+    signé: '✍️',
+  };
+  return emojis[statut] || '⚪';
+};
+
+const getStatutLabel = (statut: ActeStatut): string => {
+  const labels: Record<ActeStatut, string> = {
+    brouillon: 'Brouillon',
+    validé: 'Validé',
+    signé: 'Signé',
+  };
+  return labels[statut] || statut;
 };
 
 export default function WorkflowClients() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [cabinetId, setCabinetId] = useState<string | null>(null);
-  const [workflowData, setWorkflowData] = useState<WorkflowData>({
-    urgent: [],
-    enCours: [],
-    termines: [],
-  });
-  const [isTerminesOpen, setIsTerminesOpen] = useState(false);
+  const [documentsUrgents, setDocumentsUrgents] = useState<ActeJuridiqueWithClient[]>([]);
+  const [clientsAvecActes, setClientsAvecActes] = useState<ClientWithActes[]>([]);
+  const [isAllClientsExpanded, setIsAllClientsExpanded] = useState(false);
+  const [notesDialogOpen, setNotesDialogOpen] = useState(false);
+  const [selectedActeForNotes, setSelectedActeForNotes] = useState<ActeJuridiqueWithClient | null>(null);
+  const [notesText, setNotesText] = useState('');
+
+  const refreshData = async () => {
+    if (!cabinetId) return;
+    await Promise.all([
+      fetchDocumentsUrgents(cabinetId),
+      fetchClientsAvecActes(cabinetId),
+    ]);
+  };
 
   useEffect(() => {
-    const fetchWorkflowClients = async () => {
-      try {
-        setIsLoading(true);
-
-        // Récupérer l'utilisateur actuel
-        const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
-        if (userError || !user) {
-          return;
-        }
-
-        // Récupérer le cabinet_id
-        const { data: expertComptable, error: expertError } = await supabaseClient
-          .from("experts_comptables")
-          .select("cabinet_id")
-          .eq("user_id", user.id)
-          .single();
-
-        if (expertError || !expertComptable?.cabinet_id) {
-          return;
-        }
-
-        const id = expertComptable.cabinet_id;
-        setCabinetId(id);
-
-        // Calculer les dates
-        const now = new Date();
-        const fiveDaysAgo = new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000);
-
-        // Requêtes en parallèle
-        // Note: Les champs workflow_status, priorite, derniere_action_date doivent exister en base
-        // Pour l'instant, on utilise des fallbacks avec les champs existants (statut, created_at, updated_at)
-        
-        // URGENT : priorite = 'urgent' OU (statut = 'en attente' ET created_at < 5 jours)
-        const fiveDaysAgoISO = fiveDaysAgo.toISOString();
-        const urgentResult = await supabaseClient
-          .from("clients")
-          .select("*")
-          .eq("cabinet_id", id)
-          .or(`priorite.eq.urgent,and(statut.ilike.%en attente%,created_at.lt.${fiveDaysAgoISO})`)
-          .order("created_at", { ascending: true })
-          .limit(5);
-
-        // EN COURS : statut contient "formulaire rempli" ou "statuts générés"
-        // Filtrer côté client pour exclure ceux qui contiennent "en attente"
-        const enCoursResult = await supabaseClient
-          .from("clients")
-          .select("*")
-          .eq("cabinet_id", id)
-          .or(`statut.ilike.%formulaire rempli%,statut.ilike.%statuts générés%`)
-          .order("updated_at", { ascending: false })
-          .limit(20); // Récupérer plus pour filtrer côté client
-
-        // TERMINÉS : statut contient "statuts générés" (considéré comme terminé)
-        const terminesResult = await supabaseClient
-          .from("clients")
-          .select("*")
-          .eq("cabinet_id", id)
-          .ilike("statut", "%statuts générés%")
-          .order("updated_at", { ascending: false })
-          .limit(5);
-
-        // Filtrer les résultats "en cours" pour exclure ceux avec "en attente"
-        const enCoursFiltered = (enCoursResult.data || []).filter(
-          (client) => !client.statut?.toLowerCase().includes('en attente')
-        ).slice(0, 10) as WorkflowClient[];
-
-        setWorkflowData({
-          urgent: (urgentResult.data || []) as WorkflowClient[],
-          enCours: enCoursFiltered,
-          termines: (terminesResult.data || []) as WorkflowClient[],
-        });
-      } catch (error) {
-        console.error("Erreur lors du chargement du workflow:", error);
-        toast.error("Erreur lors du chargement du workflow");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    void fetchWorkflowClients();
-
+    void fetchData();
+    
     // Refresh toutes les 30 secondes
     const interval = setInterval(() => {
-      void fetchWorkflowClients();
+      void fetchData();
     }, 30000);
 
     return () => clearInterval(interval);
   }, []);
 
-  const updateWorkflowStatus = async (clientId: string, newStatus: WorkflowStatus) => {
+  // Pré-remplir les notes dans le Dialog quand l'acte sélectionné change
+  useEffect(() => {
+    if (selectedActeForNotes?.notes_internes) {
+      setNotesText(selectedActeForNotes.notes_internes);
+    } else {
+      setNotesText('');
+    }
+  }, [selectedActeForNotes]);
+
+  const fetchData = async () => {
+    try {
+      setIsLoading(true);
+
+      // Récupérer l'utilisateur actuel
+      const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+      if (userError || !user) {
+        return;
+      }
+
+      // Récupérer le cabinet_id
+      const { data: expertComptable, error: expertError } = await supabaseClient
+        .from("experts_comptables")
+        .select("cabinet_id")
+        .eq("user_id", user.id)
+        .single();
+
+      if (expertError || !expertComptable?.cabinet_id) {
+        return;
+      }
+
+      const id = expertComptable.cabinet_id;
+      setCabinetId(id);
+
+      // Récupérer les documents urgents et les clients avec actes en parallèle
+      await Promise.all([
+        fetchDocumentsUrgents(id),
+        fetchClientsAvecActes(id),
+      ]);
+    } catch (error) {
+      console.error("Erreur lors du chargement:", error);
+      toast.error("Erreur lors du chargement des données");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchDocumentsUrgents = async (cabinetId: string) => {
+    try {
+      const fiveDaysAgo = new Date();
+      fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
+      const fiveDaysAgoISO = fiveDaysAgo.toISOString();
+
+      // Requête avec JOIN sur clients
+      // Note: Si priorite ou date_derniere_action n'existent pas, utiliser des fallbacks
+      const { data, error } = await supabaseClient
+        .from("actes_juridiques")
+        .select(`
+          *,
+          client:clients!actes_juridiques_client_id_fkey (
+            id,
+            nom_entreprise,
+            forme_juridique
+          )
+        `)
+        .eq("cabinet_id", cabinetId)
+        .or(`priorite.eq.urgent,and(statut.eq.brouillon,updated_at.lt.${fiveDaysAgoISO})`)
+        .order("updated_at", { ascending: true })
+        .limit(10);
+
+      if (error) {
+        console.error("Erreur récupération documents urgents:", error);
+        return;
+      }
+
+      setDocumentsUrgents((data || []) as ActeJuridiqueWithClient[]);
+    } catch (error) {
+      console.error("Erreur fetchDocumentsUrgents:", error);
+    }
+  };
+
+  const fetchClientsAvecActes = async (cabinetId: string) => {
+    try {
+      // Récupérer tous les actes avec leurs clients
+      const { data: actes, error: actesError } = await supabaseClient
+        .from("actes_juridiques")
+        .select(`
+          *,
+          client:clients!actes_juridiques_client_id_fkey (
+            id,
+            nom_entreprise,
+            forme_juridique
+          )
+        `)
+        .eq("cabinet_id", cabinetId)
+        .order("updated_at", { ascending: false });
+
+      if (actesError) {
+        console.error("Erreur récupération actes:", actesError);
+        return;
+      }
+
+      // Grouper par client
+      const clientsMap = new Map<string, ClientWithActes>();
+
+      (actes || []).forEach((acte: any) => {
+        const clientId = acte.client_id;
+        const client = acte.client;
+
+        if (!client) return;
+
+        if (!clientsMap.has(clientId)) {
+          clientsMap.set(clientId, {
+            id: clientId,
+            nom_entreprise: client.nom_entreprise || 'Client inconnu',
+            forme_juridique: client.forme_juridique,
+            actes: [],
+            nbTotal: 0,
+            nbSignes: 0,
+            pourcentageCompletion: 0,
+          });
+        }
+
+        const clientData = clientsMap.get(clientId)!;
+        clientData.actes.push(acte as ActeJuridiqueWithClient);
+        clientData.nbTotal++;
+        if (acte.statut === 'signé') {
+          clientData.nbSignes++;
+        }
+      });
+
+      // Calculer le pourcentage de complétion pour chaque client
+      const clientsArray = Array.from(clientsMap.values()).map((client) => ({
+        ...client,
+        pourcentageCompletion: client.nbTotal > 0
+          ? Math.round((client.nbSignes / client.nbTotal) * 100)
+          : 0,
+      }));
+
+      // Trier par pourcentage de complétion ASC (moins avancés en premier)
+      clientsArray.sort((a, b) => a.pourcentageCompletion - b.pourcentageCompletion);
+
+      setClientsAvecActes(clientsArray);
+    } catch (error) {
+      console.error("Erreur fetchClientsAvecActes:", error);
+    }
+  };
+
+  const handleValider = async (acteId: string) => {
     if (!cabinetId) return;
 
     try {
       const { error } = await supabaseClient
-        .from("clients")
-        .update({
-          workflow_status: newStatus,
-          derniere_action_date: new Date().toISOString(),
+        .from('actes_juridiques')
+        .update({ 
+          statut: 'validé',
+          date_derniere_action: new Date().toISOString(),
+          actions_requises: 'Faire signer par le client'
         })
-        .eq("id", clientId);
-
-      if (error) {
-        throw error;
-      }
-
-      toast.success("Statut mis à jour");
-
-      // Recharger les données (même logique que fetchWorkflowClients)
-      const fiveDaysAgoISO = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString();
+        .eq('id', acteId);
       
-      const urgentResult = await supabaseClient
-        .from("clients")
-        .select("*")
-        .eq("cabinet_id", cabinetId)
-        .or(`priorite.eq.urgent,and(statut.ilike.%en attente%,created_at.lt.${fiveDaysAgoISO})`)
-        .order("created_at", { ascending: true })
-        .limit(5);
-
-      const enCoursResult = await supabaseClient
-        .from("clients")
-        .select("*")
-        .eq("cabinet_id", cabinetId)
-        .or(`statut.ilike.%formulaire rempli%,statut.ilike.%statuts générés%`)
-        .order("updated_at", { ascending: false })
-        .limit(20);
-
-      const terminesResult = await supabaseClient
-        .from("clients")
-        .select("*")
-        .eq("cabinet_id", cabinetId)
-        .ilike("statut", "%statuts générés%")
-        .order("updated_at", { ascending: false })
-        .limit(5);
-
-      // Filtrer les résultats "en cours" pour exclure ceux avec "en attente"
-      const enCoursFiltered = (enCoursResult.data || []).filter(
-        (client) => !client.statut?.toLowerCase().includes('en attente')
-      ).slice(0, 10) as WorkflowClient[];
-
-      setWorkflowData({
-        urgent: (urgentResult.data || []) as WorkflowClient[],
-        enCours: enCoursFiltered,
-        termines: (terminesResult.data || []) as WorkflowClient[],
-      });
+      if (error) throw error;
+      
+      toast.success('Document validé');
+      await refreshData();
     } catch (error) {
-      console.error("Erreur mise à jour statut:", error);
-      toast.error("Erreur lors de la mise à jour du statut");
+      toast.error('Erreur lors de la validation');
+      console.error(error);
     }
   };
 
-  const handleQuickAction = async (
-    client: WorkflowClient,
-    action: 'relancer' | 'marquer_recu' | 'valider' | 'generer' | 'marquer_termine' | 'bloquer'
-  ) => {
-    switch (action) {
-      case 'relancer':
-        toast.success(`Rappel envoyé à ${client.nom_entreprise}`);
-        break;
-      case 'marquer_recu':
-        await updateWorkflowStatus(client.id, 'formulaire_recu');
-        break;
-      case 'valider':
-        await updateWorkflowStatus(client.id, 'infos_validees');
-        break;
-      case 'generer':
-        router.push(`/dashboard/clients/${client.id}`);
-        break;
-      case 'marquer_termine':
-        await updateWorkflowStatus(client.id, 'dossier_termine');
-        break;
-      case 'bloquer':
-        await updateWorkflowStatus(client.id, 'bloque');
-        break;
+  const handleMarquerSigne = async (acteId: string) => {
+    if (!cabinetId) return;
+
+    try {
+      const { error } = await supabaseClient
+        .from('actes_juridiques')
+        .update({ 
+          statut: 'signé',
+          date_derniere_action: new Date().toISOString(),
+          actions_requises: 'Document finalisé'
+        })
+        .eq('id', acteId);
+      
+      if (error) throw error;
+      
+      toast.success('Document marqué comme signé');
+      await refreshData();
+    } catch (error) {
+      toast.error('Erreur lors de la mise à jour');
+      console.error(error);
     }
   };
 
-  const renderClientCard = (client: WorkflowClient, section: 'urgent' | 'enCours' | 'termines') => {
-    // Mapper le statut existant vers workflow_status si nécessaire
-    let workflowStatus = client.workflow_status;
-    if (!workflowStatus && client.statut) {
-      const statutLower = client.statut.toLowerCase();
-      if (statutLower.includes('en attente')) workflowStatus = 'formulaire_envoye';
-      else if (statutLower.includes('formulaire rempli')) workflowStatus = 'formulaire_recu';
-      else if (statutLower.includes('statuts générés')) workflowStatus = 'documents_generes';
+  const handleRenvoiBrouillon = async (acteId: string) => {
+    if (!cabinetId) return;
+
+    try {
+      const { error } = await supabaseClient
+        .from('actes_juridiques')
+        .update({ 
+          statut: 'brouillon',
+          date_derniere_action: new Date().toISOString(),
+          actions_requises: 'Valider le document'
+        })
+        .eq('id', acteId);
+      
+      if (error) throw error;
+      
+      toast.success('Document renvoyé en brouillon');
+      await refreshData();
+    } catch (error) {
+      toast.error('Erreur lors de la mise à jour');
+      console.error(error);
+    }
+  };
+
+  const handleNotes = (acte: ActeJuridiqueWithClient) => {
+    setSelectedActeForNotes(acte);
+    setNotesText(acte.notes_internes || '');
+    setNotesDialogOpen(true);
+  };
+
+  const handleSaveNotes = async () => {
+    if (!cabinetId || !selectedActeForNotes) return;
+
+    try {
+      const { error } = await supabaseClient
+        .from('actes_juridiques')
+        .update({ notes_internes: notesText })
+        .eq('id', selectedActeForNotes.id);
+      
+      if (error) throw error;
+      
+      toast.success('Notes enregistrées');
+      setNotesDialogOpen(false);
+      setSelectedActeForNotes(null);
+      setNotesText('');
+      await refreshData();
+    } catch (error) {
+      toast.error('Erreur lors de l\'enregistrement');
+      console.error(error);
+    }
+  };
+
+  const handleDownloadDocument = async (acte: ActeJuridiqueWithClient) => {
+    if (!acte.document_genere_url) {
+      toast.error("Document non disponible");
+      return;
     }
 
-    const statusInfo = formatStatutBadge(workflowStatus || null);
-    const derniereAction = client.derniere_action_date || client.updated_at || client.created_at;
+    // Télécharger le document
+    window.open(acte.document_genere_url, '_blank');
+  };
+
+  const renderDocumentCard = (acte: ActeJuridiqueWithClient, isUrgent: boolean = false) => {
+    const statutEmoji = getStatutEmoji(acte.statut);
+    const statutLabel = getStatutLabel(acte.statut);
+    const acteLabel = getActeLabel(acte.type);
+    const clientName = acte.client?.nom_entreprise || 'Client inconnu';
+    const formeJuridique = acte.client?.forme_juridique || '';
+    const derniereAction = acte.date_derniere_action || acte.updated_at || acte.created_at;
     const timeAgo = formatRelativeTime(new Date(derniereAction));
 
-    const isUrgent = section === 'urgent' || client.priorite === 'urgent';
+    const getProchaineAction = (statut: ActeStatut): string => {
+      const actions: Record<ActeStatut, string> = {
+        brouillon: 'Valider le document',
+        validé: 'Faire signer le document',
+        signé: 'Document terminé',
+      };
+      return actions[statut] || 'Action à définir';
+    };
 
     return (
       <Card
-        key={client.id}
+        key={acte.id}
         className={`transition-all hover:shadow-md ${
           isUrgent
             ? 'border-red-500 bg-red-50/50'
-            : section === 'termines'
-            ? 'border-green-500 bg-green-50/50'
-            : 'border-orange-500 bg-orange-50/50'
+            : acte.statut === 'brouillon'
+            ? 'border-orange-400'
+            : acte.statut === 'validé'
+            ? 'border-blue-400'
+            : 'border-green-500 bg-green-50/50'
         }`}
       >
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
-                <CardTitle className="text-lg">{client.nom_entreprise}</CardTitle>
+                <CardTitle className="text-lg">
+                  {acteLabel} - {clientName} {formeJuridique ? `(${formeJuridique})` : ''}
+                </CardTitle>
                 {isUrgent && (
                   <Badge variant="destructive" className="bg-red-600">
                     URGENT
@@ -339,20 +472,14 @@ export default function WorkflowClients() {
               <div className="flex items-center gap-2">
                 <Badge
                   className={
-                    statusInfo.color === 'orange'
+                    acte.statut === 'brouillon'
                       ? 'bg-orange-100 text-orange-700 hover:bg-orange-100'
-                      : statusInfo.color === 'yellow'
-                      ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-100'
-                      : statusInfo.color === 'blue'
+                      : acte.statut === 'validé'
                       ? 'bg-blue-100 text-blue-700 hover:bg-blue-100'
-                      : statusInfo.color === 'green'
-                      ? 'bg-green-100 text-green-700 hover:bg-green-100'
-                      : statusInfo.color === 'red'
-                      ? 'bg-red-100 text-red-700 hover:bg-red-100'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-100'
+                      : 'bg-green-100 text-green-700 hover:bg-green-100'
                   }
                 >
-                  {statusInfo.emoji} {statusInfo.label}
+                  {statutEmoji} {statutLabel}
                 </Badge>
               </div>
             </div>
@@ -360,109 +487,263 @@ export default function WorkflowClients() {
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="text-sm text-muted-foreground space-y-1">
-            <p>Dernière action : {timeAgo}</p>
-            <p>Prochaine action : {getProchaineAction(workflowStatus || null)}</p>
+            <p>{statutLabel === 'Brouillon' ? `${statutLabel} depuis ${timeAgo}` : `Dernière action : ${timeAgo}`}</p>
+            <p>Prochaine action : {getProchaineAction(acte.statut)}</p>
           </div>
 
-          <div className="flex flex-wrap gap-2 pt-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => router.push(`/dashboard/clients/${client.id}`)}
-            >
-              <Eye className="h-3 w-3 mr-1" />
-              Voir détail
-            </Button>
+          {acte.notes_internes && (
+            <div className="mt-2 p-2 bg-blue-50 border-l-2 border-blue-400 rounded text-sm">
+              <div className="flex items-start gap-2">
+                <MessageSquare className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-medium text-blue-900 text-xs">Notes internes :</p>
+                  <p className="text-blue-800 whitespace-pre-wrap">{acte.notes_internes}</p>
+                </div>
+              </div>
+            </div>
+          )}
 
-            {workflowStatus === 'formulaire_envoye' && (
+          <div className="flex gap-2 mt-2">
+            {acte.statut === 'brouillon' && (
               <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleQuickAction(client, 'relancer')}
+                <Button 
+                  size="sm" 
+                  onClick={() => handleValider(acte.id)}
+                  className="bg-blue-500 hover:bg-blue-600"
                 >
-                  <Send className="h-3 w-3 mr-1" />
-                  Relancer
+                  Valider
                 </Button>
-                <Button
+                
+                <Button 
+                  size="sm" 
                   variant="outline"
-                  size="sm"
-                  onClick={() => handleQuickAction(client, 'marquer_recu')}
+                  onClick={() => handleNotes(acte)}
                 >
-                  Marquer reçu
+                  <MessageSquare className="h-4 w-4 mr-1" />
+                  Notes
                 </Button>
-                <Button
-                  variant="outline"
+                
+                {acte.document_genere_url && (
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => window.open(acte.document_genere_url || '', '_blank')}
+                  >
+                    <Download className="h-4 w-4 mr-1" />
+                    Télécharger
+                  </Button>
+                )}
+              </>
+            )}
+
+            {acte.statut === 'validé' && (
+              <>
+                <Button 
                   size="sm"
-                  onClick={() => handleQuickAction(client, 'bloquer')}
+                  onClick={() => handleMarquerSigne(acte.id)}
+                  className="bg-green-500 hover:bg-green-600"
                 >
-                  <AlertTriangle className="h-3 w-3 mr-1" />
-                  Bloquer
+                  <CheckCircle className="h-4 w-4 mr-1" />
+                  Marquer signé
+                </Button>
+                
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={() => handleRenvoiBrouillon(acte.id)}
+                >
+                  Renvoyer en brouillon
+                </Button>
+                
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={() => handleNotes(acte)}
+                >
+                  <MessageSquare className="h-4 w-4 mr-1" />
+                  Notes
                 </Button>
               </>
             )}
 
-            {workflowStatus === 'formulaire_recu' && (
+            {acte.statut === 'signé' && (
               <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleQuickAction(client, 'valider')}
-                >
-                  Valider infos
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => router.push(`/dashboard/clients/${client.id}`)}
-                >
-                  <FileText className="h-3 w-3 mr-1" />
-                  Voir formulaire
-                </Button>
-              </>
-            )}
-
-            {workflowStatus === 'infos_validees' && (
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleQuickAction(client, 'generer')}
-                >
-                  <FileText className="h-3 w-3 mr-1" />
-                  Générer documents
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => updateWorkflowStatus(client.id, 'documents_generes')}
-                >
-                  Marquer généré
-                </Button>
-              </>
-            )}
-
-            {workflowStatus === 'documents_generes' && (
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleQuickAction(client, 'marquer_termine')}
-                >
-                  <CheckCircle className="h-3 w-3 mr-1" />
-                  Marquer terminé
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => router.push(`/dashboard/clients/${client.id}`)}
-                >
-                  <FileText className="h-3 w-3 mr-1" />
-                  Télécharger docs
-                </Button>
+                <Badge className="bg-green-500 text-white hover:bg-green-500">
+                  ✅ Document signé
+                </Badge>
+                
+                {acte.document_genere_url && (
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => window.open(acte.document_genere_url || '', '_blank')}
+                  >
+                    <Download className="h-4 w-4 mr-1" />
+                    Télécharger
+                  </Button>
+                )}
               </>
             )}
           </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  const renderClientCard = (client: ClientWithActes) => {
+    const actesToShow = isAllClientsExpanded ? client.actes : client.actes.slice(0, 5);
+
+    return (
+      <Card key={client.id} className="transition-all hover:shadow-md">
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <CardTitle className="text-lg">{client.nom_entreprise}</CardTitle>
+                <Badge variant="outline">
+                  {client.nbSignes}/{client.nbTotal} fait
+                </Badge>
+              </div>
+              <div className="mt-2">
+                <div className="flex items-center justify-between text-sm mb-1">
+                  <span className="text-muted-foreground">Progression</span>
+                  <span className="font-medium">{client.pourcentageCompletion}%</span>
+                </div>
+                <Progress value={client.pourcentageCompletion} className="h-2" />
+              </div>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {actesToShow.map((acte) => {
+            const statutEmoji = getStatutEmoji(acte.statut);
+            const statutLabel = getStatutLabel(acte.statut);
+            const acteLabel = getActeLabel(acte.type);
+            const derniereAction = acte.date_derniere_action || acte.updated_at || acte.created_at;
+            const timeAgo = formatRelativeTime(new Date(derniereAction));
+
+            return (
+              <div
+                key={acte.id}
+                className="p-2 rounded-md bg-muted/50 space-y-2"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span>{statutEmoji}</span>
+                    <span className="text-sm font-medium">{acteLabel}</span>
+                    <span className="text-xs text-muted-foreground">- {statutLabel}</span>
+                    {acte.statut === 'brouillon' && (
+                      <span className="text-xs text-muted-foreground">({timeAgo})</span>
+                    )}
+                  </div>
+                </div>
+
+                {acte.notes_internes && (
+                  <div className="mt-2 p-2 bg-blue-50 border-l-2 border-blue-400 rounded text-sm">
+                    <div className="flex items-start gap-2">
+                      <MessageSquare className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="font-medium text-blue-900 text-xs">Notes internes :</p>
+                        <p className="text-blue-800 whitespace-pre-wrap">{acte.notes_internes}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex gap-2 flex-wrap">
+                  {acte.statut === 'brouillon' && (
+                    <>
+                      <Button 
+                        size="sm" 
+                        onClick={() => handleValider(acte.id)}
+                        className="bg-blue-500 hover:bg-blue-600 text-white"
+                      >
+                        Valider
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleNotes(acte)}
+                      >
+                        <MessageSquare className="h-4 w-4 mr-1" />
+                        Notes
+                      </Button>
+                      {acte.document_genere_url && (
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => window.open(acte.document_genere_url || '', '_blank')}
+                        >
+                          <Download className="h-4 w-4 mr-1" />
+                          Télécharger
+                        </Button>
+                      )}
+                    </>
+                  )}
+
+                  {acte.statut === 'validé' && (
+                    <>
+                      <Button 
+                        size="sm"
+                        onClick={() => handleMarquerSigne(acte.id)}
+                        className="bg-green-500 hover:bg-green-600 text-white"
+                      >
+                        <CheckCircle className="h-4 w-4 mr-1" />
+                        Marquer signé
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleRenvoiBrouillon(acte.id)}
+                      >
+                        Renvoyer en brouillon
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleNotes(acte)}
+                      >
+                        <MessageSquare className="h-4 w-4 mr-1" />
+                        Notes
+                      </Button>
+                    </>
+                  )}
+
+                  {acte.statut === 'signé' && (
+                    <>
+                      <Badge className="bg-green-500 text-white hover:bg-green-500">
+                        ✅ Document signé
+                      </Badge>
+                      {acte.document_genere_url && (
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => window.open(acte.document_genere_url || '', '_blank')}
+                        >
+                          <Download className="h-4 w-4 mr-1" />
+                          Télécharger
+                        </Button>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+          {client.actes.length > 5 && !isAllClientsExpanded && (
+            <p className="text-xs text-muted-foreground text-center pt-2">
+              +{client.actes.length - 5} autres actes
+            </p>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full mt-2"
+            onClick={() => router.push(`/dashboard/clients/${client.id}`)}
+          >
+            <Eye className="h-3 w-3 mr-1" />
+            Voir détails client
+          </Button>
         </CardContent>
       </Card>
     );
@@ -487,89 +768,116 @@ export default function WorkflowClients() {
     );
   }
 
+  const topClients = clientsAvecActes.slice(0, 5);
+  const allClients = isAllClientsExpanded ? clientsAvecActes : topClients;
+
   return (
     <div className="space-y-6">
-      {/* Section URGENT */}
+      {/* Section DOCUMENTS URGENTS */}
       <Card className="border-red-200">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <AlertCircle className="h-5 w-5 text-red-600" />
-            URGENT ({workflowData.urgent.length})
+            DOCUMENTS URGENTS ({documentsUrgents.length})
           </CardTitle>
-          <CardDescription>Actions nécessitant une attention immédiate</CardDescription>
+          <CardDescription>Documents nécessitant une attention immédiate</CardDescription>
         </CardHeader>
         <CardContent>
-          {workflowData.urgent.length === 0 ? (
+          {documentsUrgents.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <CheckCircle className="h-12 w-12 mx-auto mb-2 text-green-600" />
-              <p className="font-medium">✅ Aucune action urgente</p>
+              <p className="font-medium">✅ Aucun document urgent !</p>
             </div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {workflowData.urgent.map((client) => renderClientCard(client, 'urgent'))}
+              {documentsUrgents.map((acte) => renderDocumentCard(acte, true))}
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Section EN COURS */}
-      <Card className="border-orange-200">
+      {/* Section VUE PAR CLIENT */}
+      <Card className="border-blue-200">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5 text-orange-600" />
-            EN COURS ({workflowData.enCours.length})
-          </CardTitle>
-          <CardDescription>Dossiers en cours de traitement</CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5 text-blue-600" />
+                VUE PAR CLIENT ({clientsAvecActes.length})
+              </CardTitle>
+              <CardDescription>Suivi des actes par client avec progression</CardDescription>
+            </div>
+            {clientsAvecActes.length > 5 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsAllClientsExpanded(!isAllClientsExpanded)}
+              >
+                {isAllClientsExpanded ? (
+                  <>
+                    <ChevronUp className="h-4 w-4 mr-1" />
+                    Réduire
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="h-4 w-4 mr-1" />
+                    Voir tous les clients
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
-          {workflowData.enCours.length === 0 ? (
+          {clientsAvecActes.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              <CheckCircle className="h-12 w-12 mx-auto mb-2 text-green-600" />
-              <p className="font-medium">🎉 Tout est à jour !</p>
+              <p>Créez votre premier client</p>
             </div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {workflowData.enCours.map((client) => renderClientCard(client, 'enCours'))}
+              {allClients.map((client) => renderClientCard(client))}
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Section TERMINÉS (Collapsible) */}
-      <Collapsible open={isTerminesOpen} onOpenChange={setIsTerminesOpen}>
-        <Card className="border-green-200">
-          <CollapsibleTrigger className="w-full">
-            <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
-                  TERMINÉS RÉCEMMENT ({workflowData.termines.length})
-                </div>
-                {isTerminesOpen ? (
-                  <ChevronUp className="h-5 w-5" />
-                ) : (
-                  <ChevronDown className="h-5 w-5" />
-                )}
-              </CardTitle>
-              <CardDescription>Dossiers finalisés récemment</CardDescription>
-            </CardHeader>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <CardContent>
-              {workflowData.termines.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <p>Aucun dossier terminé récemment</p>
-                </div>
-              ) : (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {workflowData.termines.map((client) => renderClientCard(client, 'termines'))}
-                </div>
+      {/* Dialog Notes */}
+      <Dialog open={notesDialogOpen} onOpenChange={setNotesDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Notes internes</DialogTitle>
+            <DialogDescription>
+              {selectedActeForNotes && (
+                <>
+                  {getActeLabel(selectedActeForNotes.type)} - {selectedActeForNotes.client?.nom_entreprise || 'Client inconnu'}
+                </>
               )}
-            </CardContent>
-          </CollapsibleContent>
-        </Card>
-      </Collapsible>
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={notesText}
+            onChange={(e) => setNotesText(e.target.value)}
+            placeholder="Ajoutez vos notes internes..."
+            rows={6}
+            className="min-h-[100px]"
+          />
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setNotesDialogOpen(false);
+                setSelectedActeForNotes(null);
+                setNotesText('');
+              }}
+            >
+              Annuler
+            </Button>
+            <Button onClick={handleSaveNotes}>
+              Enregistrer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
-
