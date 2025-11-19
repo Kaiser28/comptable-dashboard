@@ -5,12 +5,12 @@ const nextConfig = {
   },
   
   /**
-   * Configuration API
-   * Limite la taille des body requests (pour upload fichiers)
+   * Configuration Server Actions
+   * Limite la taille des body requests pour les Server Actions (upload fichiers)
    */
-  api: {
-    bodyParser: {
-      sizeLimit: '10mb',
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '10mb',
     },
   },
   

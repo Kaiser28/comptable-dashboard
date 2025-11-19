@@ -13,8 +13,21 @@ import { withRateLimit } from "@/lib/ratelimit-upstash";
 export const POST = withRateLimit(
   async (request: Request) => {
     try {
-      const body = await request.json().catch(() => null);
-      const { email, nom, prenom } = body as { email?: string; nom?: string; prenom?: string } || {};
+      let body: { email?: string; nom?: string; prenom?: string } | null;
+      try {
+        body = await request.json();
+      } catch {
+        body = null;
+      }
+
+      if (!body) {
+        return NextResponse.json(
+          { error: "Corps de la requête invalide" },
+          { status: 400 }
+        );
+      }
+
+      const { email, nom, prenom } = body;
 
       if (!email || !nom) {
         return NextResponse.json(

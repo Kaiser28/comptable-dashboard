@@ -8,11 +8,14 @@ import {
   Plus,
   Eye,
   Edit,
+  Pencil,
   Trash2,
-  ArrowUpDown,
   ChevronLeft,
   ChevronRight,
   Users,
+  Mail,
+  Building2,
+  Calendar,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -25,15 +28,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,6 +47,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabaseClient } from "@/lib/supabase";
 import type { Client } from "@/types/database";
@@ -311,12 +320,25 @@ export default function ClientsPage() {
           </Select>
         </div>
 
-        {/* Tableau */}
+        {/* Grille de cartes */}
         {isLoading ? (
-          <div className="space-y-4">
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <Card key={i}>
+                <CardHeader>
+                  <Skeleton className="h-6 w-3/4" />
+                  <Skeleton className="h-4 w-1/2 mt-2" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-4 w-full mb-2" />
+                  <Skeleton className="h-4 w-full mb-2" />
+                  <Skeleton className="h-4 w-2/3" />
+                </CardContent>
+                <CardFooter>
+                  <Skeleton className="h-9 w-full" />
+                </CardFooter>
+              </Card>
+            ))}
           </div>
         ) : filteredAndSortedClients.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -350,114 +372,144 @@ export default function ClientsPage() {
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto rounded-md border bg-card shadow-sm">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-slate-100">
-                    <TableHead className="font-semibold text-slate-700 py-4 px-6">
-                      <button
-                        onClick={() => handleSort('nom_entreprise')}
-                        className="flex items-center gap-2 hover:text-slate-900 transition-colors"
-                      >
-                        Nom
-                        <ArrowUpDown className="h-4 w-4" />
-                      </button>
-                    </TableHead>
-                    <TableHead className="font-semibold text-slate-700 py-4 px-6">SIRET</TableHead>
-                    <TableHead className="font-semibold text-slate-700 py-4 px-6">
-                      <button
-                        onClick={() => handleSort('statut')}
-                        className="flex items-center gap-2 hover:text-slate-900 transition-colors"
-                      >
-                        Statut workflow
-                        <ArrowUpDown className="h-4 w-4" />
-                      </button>
-                    </TableHead>
-                    <TableHead className="font-semibold text-slate-700 py-4 px-6">Email</TableHead>
-                    <TableHead className="font-semibold text-slate-700 py-4 px-6">Progress documents</TableHead>
-                    <TableHead className="font-semibold text-slate-700 py-4 px-6">
-                      <button
-                        onClick={() => handleSort('created_at')}
-                        className="flex items-center gap-2 hover:text-slate-900 transition-colors"
-                      >
-                        Date création
-                        <ArrowUpDown className="h-4 w-4" />
-                      </button>
-                    </TableHead>
-                    <TableHead className="text-right font-semibold text-slate-700 py-4 px-6">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paginatedClients.map((client) => (
-                    <TableRow 
-                      key={client.id}
-                      className="hover:bg-blue-50 transition-colors border-b border-slate-200"
-                    >
-                      <TableCell className="font-medium py-4 px-6">
-                        {client.nom_entreprise}
+            <TooltipProvider>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {paginatedClients.map((client) => (
+                  <Card 
+                    key={client.id}
+                    className="hover:shadow-lg transition-shadow duration-200 border border-slate-200"
+                  >
+                    <CardHeader>
+                      <div className="flex justify-between items-start gap-2">
+                        <div className="flex-1 min-w-0">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <CardTitle 
+                                className="text-lg font-bold text-slate-900 truncate cursor-help" 
+                                title={client.nom_entreprise}
+                              >
+                                {client.nom_entreprise}
+                              </CardTitle>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{client.nom_entreprise}</p>
+                            </TooltipContent>
+                          </Tooltip>
                         {client.forme_juridique && (
-                          <span className="ml-2 text-sm text-muted-foreground">
-                            ({client.forme_juridique})
-                          </span>
+                          <CardDescription className="mt-1 truncate" title={client.forme_juridique}>
+                            {client.forme_juridique}
+                          </CardDescription>
                         )}
-                      </TableCell>
-                      <TableCell className="py-4 px-6">{client.siret || "—"}</TableCell>
-                      <TableCell className="py-4 px-6">
-                        {client.statut ? (
-                          client.statut.toLowerCase() === "statuts générés" ? (
-                            <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 px-3 py-1 text-xs font-semibold shadow-sm">
-                              {client.statut}
-                            </Badge>
-                          ) : (
-                            <Badge variant={statusBadgeVariant(client.statut)} className="px-3 py-1 text-xs font-semibold shadow-sm">
-                              {client.statut}
-                            </Badge>
-                          )
-                        ) : (
-                          "—"
-                        )}
-                      </TableCell>
-                      <TableCell className="py-4 px-6">{client.email || "—"}</TableCell>
-                      <TableCell className="py-4 px-6">
-                        <Badge variant="outline" className="px-3 py-1 text-xs font-semibold shadow-sm">{client.progressText} fait</Badge>
-                      </TableCell>
-                      <TableCell className="py-4 px-6">{client.formattedCreatedAt}</TableCell>
-                      <TableCell className="py-4 px-6">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => router.push(`/dashboard/clients/${client.id}`)}
-                            className="h-9 w-9 p-0 hover:bg-blue-100 hover:text-blue-700 transition-colors"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => router.push(`/dashboard/clients/${client.id}/edit`)}
-                            className="h-9 w-9 p-0 hover:bg-slate-100 hover:text-slate-700 transition-colors"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              setClientToDelete(client);
-                              setDeleteDialogOpen(true);
-                            }}
-                            className="h-9 w-9 p-0 text-destructive hover:text-destructive hover:bg-red-50 transition-colors"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                      </div>
+                      {client.statut && (
+                        <Badge 
+                          variant={
+                            client.statut.toLowerCase() === "statuts générés" 
+                              ? "outline" 
+                              : statusBadgeVariant(client.statut)
+                          }
+                          className={`px-3 py-1 text-xs font-semibold shadow-sm flex-shrink-0 ${
+                            client.statut.toLowerCase() === "statuts générés"
+                              ? "bg-emerald-100 text-emerald-700 border-emerald-300"
+                              : ""
+                          }`}
+                        >
+                          {client.statut}
+                        </Badge>
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {client.siret && (
+                      <div className="flex items-center gap-2 text-sm w-full min-w-0">
+                        <Building2 className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                        <span className="text-gray-600 flex-shrink-0">SIRET:</span>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="font-mono text-gray-900 truncate cursor-help flex-1 min-w-0" title={client.siret}>
+                              {client.siret}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{client.siret}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2 text-sm w-full min-w-0">
+                      <Mail className={`w-4 h-4 flex-shrink-0 ${client.email ? 'text-gray-500' : 'text-amber-600'}`} />
+                      {client.email ? (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="text-gray-700 truncate cursor-help flex-1 min-w-0" title={client.email}>
+                              {client.email}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-xs break-all">{client.email}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        <span className="text-amber-600">Non renseigné</span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <Calendar className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                      <span className="text-gray-600">
+                        Créé le {new Date(client.created_at).toLocaleDateString('fr-FR', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
+                      </span>
+                    </div>
+                    {client.nbActesTotal > 0 && (
+                      <div className="pt-2 border-t border-slate-200">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-gray-600">Documents:</span>
+                          <Badge variant="outline" className="px-3 py-1 text-xs font-semibold shadow-sm">
+                            {client.progressText} fait
+                          </Badge>
                         </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                      </div>
+                    )}
+                  </CardContent>
+                  <CardFooter className="flex gap-2 justify-end bg-gray-50 pt-4">
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() => router.push(`/dashboard/clients/${client.id}`)}
+                      className="h-9 hover:bg-blue-700 transition-colors bg-blue-600"
+                    >
+                      <Eye className="h-4 w-4 mr-1" />
+                      Voir détails
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => router.push(`/dashboard/clients/${client.id}/edit`)}
+                      className="h-9 hover:bg-slate-100 hover:text-slate-700 transition-colors"
+                    >
+                      <Pencil className="h-4 w-4 mr-1" />
+                      Modifier
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setClientToDelete(client);
+                        setDeleteDialogOpen(true);
+                      }}
+                      className="h-9 w-9 p-0 text-destructive hover:text-destructive hover:bg-red-50 transition-colors"
+                      title="Supprimer"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            </TooltipProvider>
 
             {/* Pagination */}
             {totalPages > 1 && (

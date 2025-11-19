@@ -14,6 +14,7 @@ import {
   ChevronDown,
   ChevronUp,
   ArrowRight,
+  Plus,
 } from "lucide-react";
 import { toast } from "sonner";
 

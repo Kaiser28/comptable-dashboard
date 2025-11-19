@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { Copy, Check, FileText, Users, Trash2, Upload, File } from "lucide-react";
+import { Copy, Check, FileText, Users, Trash2, Upload, File, Mail } from "lucide-react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -65,6 +65,7 @@ export default function ClientDetailPage() {
   const [isGeneratingCourrierReprise, setIsGeneratingCourrierReprise] = useState(false);
   const [isGeneratingLettreMission, setIsGeneratingLettreMission] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   
   // États pour les pièces jointes
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -122,6 +123,12 @@ export default function ClientDetailPage() {
     };
   }, [params]);
 
+  // Reset l'état isSending quand on change de client
+  // TEMPORAIREMENT DÉSACTIVÉ - Cause erreur "Cannot access 'client' before initialization"
+  // useEffect(() => {
+  //   setIsSending(false);
+  // }, [clientState.data?.id]);
+
   // Charger les pièces jointes
   useEffect(() => {
     const clientId = params?.id;
@@ -130,6 +137,8 @@ export default function ClientDetailPage() {
     const fetchPiecesJointes = async () => {
       try {
         setIsLoadingPiecesJointes(true);
+        console.log('🔍 Fetching pieces_jointes for client:', clientId);
+        
         const { data, error } = await supabaseClient
           .from("pieces_jointes")
           .select("id, nom_fichier, taille_fichier, url_fichier, created_at")
@@ -137,12 +146,21 @@ export default function ClientDetailPage() {
           .order("created_at", { ascending: false });
 
         if (error) {
+          console.error("❌ Erreur Supabase pieces_jointes:", {
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code
+          });
           throw error;
         }
 
+        console.log('✅ pieces_jointes récupérées:', data?.length || 0, 'fichiers');
         setPiecesJointes(data || []);
       } catch (error) {
-        console.error("Erreur lors de la récupération des pièces jointes", error);
+        console.error("❌ Erreur lors de la récupération des pièces jointes", error);
+        // Ne pas bloquer l'interface en cas d'erreur, juste logger
+        setPiecesJointes([]);
       } finally {
         setIsLoadingPiecesJointes(false);
       }
@@ -490,6 +508,65 @@ export default function ClientDetailPage() {
     }
   }
 
+  /**
+   * Envoie le lien du formulaire par email au client
+   * Appelle l'API /api/send-form-link avec le clientId
+   */
+  async function handleSendFormLink() {
+    // Vérifier que le client existe et a un email
+    if (!client?.id) {
+      toast.error("Client introuvable");
+      return;
+    }
+
+    if (!client?.email) {
+      toast.error("Email client manquant. Veuillez renseigner l'email du client.");
+      return;
+    }
+
+    try {
+      setIsSending(true);
+
+      // Appel API pour envoyer l'email
+      const response = await fetch("/api/send-form-link", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          clientId: client.id,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Erreur de l'API
+        const errorMessage = data.error || "Erreur lors de l'envoi de l'email";
+        toast.error(`Erreur : ${errorMessage}`);
+        console.error("Erreur API send-form-link:", data);
+        return;
+      }
+
+      // Succès
+      if (data.success) {
+        toast.success("Email envoyé avec succès !");
+      } else {
+        toast.error("Erreur : L'envoi a échoué");
+      }
+    } catch (error) {
+      // Erreur réseau ou autre
+      console.error("Erreur lors de l'envoi de l'email:", error);
+      toast.error(
+        error instanceof Error
+          ? `Erreur : ${error.message}`
+          : "Erreur lors de l'envoi de l'email"
+      );
+    } finally {
+      setIsSending(false);
+    }
+  }
+
   // Fonction pour formater la taille du fichier
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return "0 Bytes";
@@ -555,7 +632,14 @@ export default function ClientDetailPage() {
           .eq("client_id", clientId)
           .order("created_at", { ascending: false });
 
-        if (!error && data) {
+        if (error) {
+          console.error("❌ Erreur rechargement pieces_jointes après upload:", {
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code
+          });
+        } else if (data) {
           setPiecesJointes(data);
         }
       }
@@ -611,7 +695,14 @@ export default function ClientDetailPage() {
         .eq("client_id", clientId)
         .order("created_at", { ascending: false });
 
-      if (!error && data) {
+      if (error) {
+        console.error("❌ Erreur rechargement pieces_jointes après suppression:", {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
+      } else if (data) {
         setPiecesJointes(data);
       }
     } catch (error) {
@@ -619,6 +710,8 @@ export default function ClientDetailPage() {
       toast.error("Erreur lors de la suppression de la pièce jointe");
     }
   }
+
+  console.log('🔍 DEBUG isSending:', isSending, '| email:', client?.email);
 
   return (
     <div className="space-y-8">
@@ -794,8 +887,14 @@ export default function ClientDetailPage() {
                     <p className="text-sm text-green-600">Lien copié dans le presse-papier !</p>
                   )}
                 </div>
-                <Button variant="outline" className="w-full">
-                  Envoyer le lien formulaire
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleSendFormLink}
+                  disabled={isSending || !client?.email}
+                >
+                  <Mail className="w-4 h-4 mr-2" />
+                  {isSending ? "Envoi..." : "Envoyer le lien formulaire"}
                 </Button>
               </div>
             )}

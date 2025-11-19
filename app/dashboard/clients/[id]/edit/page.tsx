@@ -553,6 +553,8 @@ export default function EditClientPage() {
       errors.email = "L'adresse e-mail n'est pas valide.";
     }
 
+    // Validation email (déjà fait plus haut, mais gardé pour cohérence)
+
     // Validation associés (exclure ceux marqués pour suppression)
     const associesActifs = formState.associes.filter(a => !a._deleted);
     if (associesActifs.length === 0) {
@@ -931,7 +933,43 @@ export default function EditClientPage() {
           </CardContent>
         </Card>
 
-        {/* Section 2 : Capital et dates */}
+        {/* Section 2 : Informations de contact */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Informations de contact</CardTitle>
+            <CardDescription>Coordonnées de l'entreprise</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email de contact</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="contact@entreprise.fr"
+                value={formState.client.email}
+                onChange={(e) => handleClientChange("email", e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Email pour recevoir le lien du formulaire
+              </p>
+              {validationErrors.email && (
+                <p className="text-sm text-red-600">{validationErrors.email}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="telephone">Téléphone</Label>
+              <Input
+                id="telephone"
+                type="tel"
+                value={formState.client.telephone}
+                onChange={(e) => handleClientChange("telephone", e.target.value)}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Section 3 : Capital et dates */}
         <Card>
           <CardHeader>
             <CardTitle>Capital social et dates</CardTitle>
@@ -1036,7 +1074,7 @@ export default function EditClientPage() {
           </CardContent>
         </Card>
 
-        {/* Section 3 : Siège social */}
+        {/* Section 4 : Siège social */}
         <Card>
           <CardHeader>
             <CardTitle>Siège social</CardTitle>
@@ -1104,7 +1142,7 @@ export default function EditClientPage() {
           </CardContent>
         </Card>
 
-        {/* Section 4 : Associés */}
+        {/* Section 5 : Associés */}
         <Card>
           <CardHeader>
             <CardTitle>Associés</CardTitle>
@@ -1309,7 +1347,7 @@ export default function EditClientPage() {
           </CardContent>
         </Card>
 
-        {/* Section 5 : Documents */}
+        {/* Section 6 : Documents */}
         <Card>
           <CardHeader>
             <CardTitle>Pièces jointes</CardTitle>
