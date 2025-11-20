@@ -83,42 +83,6 @@ async function checkDatabase(): Promise<{ status: "up" | "down"; latency: number
   }
 }
 
-/**
- * Vérifie la santé d'Upstash Redis
- */
-async function checkRedis(): Promise<{ status: "up" | "down"; latency: number }> {
-  const startTime = Date.now();
-
-  try {
-    // Créer une instance Redis pour le health check
-    const redis = Redis.fromEnv();
-
-    // PING Redis avec timeout
-    const pingPromise = redis.ping();
-    
-    const result = await withTimeout(
-      pingPromise,
-      SERVICE_TIMEOUT_MS,
-      "TIMEOUT"
-    );
-
-    const latency = Date.now() - startTime;
-
-    if (result === "TIMEOUT") {
-      return { status: "down", latency: SERVICE_TIMEOUT_MS };
-    }
-
-    // Redis PING retourne "PONG" si OK
-    if (result === "PONG") {
-      return { status: "up", latency };
-    }
-
-    return { status: "down", latency };
-  } catch (error) {
-    const latency = Date.now() - startTime;
-    return { status: "down", latency };
-  }
-}
 
 /**
  * GET /api/health
@@ -136,10 +100,37 @@ async function checkRedis(): Promise<{ status: "up" | "down"; latency: number }>
  */
 export async function GET() {
   try {
+    // Initialiser Redis au runtime uniquement
+    const redisInstance = Redis.fromEnv();
+    
+    // Fonction checkRedis avec Redis initialisé
+    const checkRedisWithInstance = async (): Promise<{ status: "up" | "down"; latency: number }> => {
+      const startTime = Date.now();
+      try {
+        const pingPromise = redisInstance.ping();
+        const result = await withTimeout(
+          pingPromise,
+          SERVICE_TIMEOUT_MS,
+          "TIMEOUT"
+        );
+        const latency = Date.now() - startTime;
+        if (result === "TIMEOUT") {
+          return { status: "down", latency: SERVICE_TIMEOUT_MS };
+        }
+        if (result === "PONG") {
+          return { status: "up", latency };
+        }
+        return { status: "down", latency };
+      } catch (error) {
+        const latency = Date.now() - startTime;
+        return { status: "down", latency };
+      }
+    };
+    
     // Vérifier tous les services en parallèle
     const [database, redis, api] = await Promise.all([
       checkDatabase(),
-      checkRedis(),
+      checkRedisWithInstance(),
       Promise.resolve({
         status: "up" as const,
         uptime: Math.floor((Date.now() - APP_START_TIME) / 1000), // en secondes

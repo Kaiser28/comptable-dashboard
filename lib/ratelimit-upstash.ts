@@ -21,19 +21,29 @@ if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN
 }
 
 // ============================================================================
-// INSTANCE REDIS
+// INSTANCE REDIS (LAZY INITIALIZATION)
 // ============================================================================
 
 /**
- * Instance Redis Upstash configurée depuis les variables d'environnement
+ * Instance Redis Upstash (initialisée de manière lazy au runtime uniquement)
  * Utilise Redis.fromEnv() qui lit automatiquement :
  * - UPSTASH_REDIS_REST_URL
  * - UPSTASH_REDIS_REST_TOKEN
  */
-const redis = Redis.fromEnv();
+let redisInstance: Redis | null = null;
+
+/**
+ * Obtient l'instance Redis (créée au premier appel, au runtime uniquement)
+ */
+function getRedis(): Redis {
+  if (!redisInstance) {
+    redisInstance = Redis.fromEnv();
+  }
+  return redisInstance;
+}
 
 // ============================================================================
-// RATE LIMITERS (selon recommandations OWASP)
+// RATE LIMITERS (LAZY INITIALIZATION)
 // ============================================================================
 
 /**
@@ -41,39 +51,76 @@ const redis = Redis.fromEnv();
  * - 20 requêtes par fenêtre de 1 minute
  * - Utilisé pour : création/modification d'associés, génération documents
  * - Algorithme : slidingWindow (plus précis, évite les pics)
+ * - Créé de manière lazy au premier appel
  */
-export const strictLimiter = new Ratelimit({
-  redis,
-  limiter: Ratelimit.slidingWindow(20, "1 m"),
-  analytics: true, // Tracking Upstash pour monitoring
-  prefix: "@upstash/ratelimit/strict", // Préfixe pour les clés Redis
-});
+let strictLimiterInstance: Ratelimit | null = null;
+function getStrictLimiter(): Ratelimit {
+  if (!strictLimiterInstance) {
+    strictLimiterInstance = new Ratelimit({
+      redis: getRedis(),
+      limiter: Ratelimit.slidingWindow(20, "1 m"),
+      analytics: true,
+      prefix: "@upstash/ratelimit/strict",
+    });
+  }
+  return strictLimiterInstance;
+}
 
 /**
  * Rate limiter MODERATE - Pour lectures authentifiées
  * - 100 requêtes par fenêtre de 1 minute
  * - Utilisé pour : consultation clients, listes
  * - Algorithme : slidingWindow (cohérence avec strict)
+ * - Créé de manière lazy au premier appel
  */
-export const moderateLimiter = new Ratelimit({
-  redis,
-  limiter: Ratelimit.slidingWindow(100, "1 m"),
-  analytics: true,
-  prefix: "@upstash/ratelimit/moderate",
-});
+let moderateLimiterInstance: Ratelimit | null = null;
+function getModerateLimiter(): Ratelimit {
+  if (!moderateLimiterInstance) {
+    moderateLimiterInstance = new Ratelimit({
+      redis: getRedis(),
+      limiter: Ratelimit.slidingWindow(100, "1 m"),
+      analytics: true,
+      prefix: "@upstash/ratelimit/moderate",
+    });
+  }
+  return moderateLimiterInstance;
+}
 
 /**
  * Rate limiter GENEROUS - Pour endpoints publics
  * - 300 requêtes par fenêtre de 1 minute
  * - Utilisé pour : formulaires clients, pages publiques
  * - Algorithme : fixedWindow (plus rapide, acceptable pour contenu public)
+ * - Créé de manière lazy au premier appel
  */
-export const generousLimiter = new Ratelimit({
-  redis,
-  limiter: Ratelimit.fixedWindow(300, "1 m"),
-  analytics: true,
-  prefix: "@upstash/ratelimit/generous",
-});
+let generousLimiterInstance: Ratelimit | null = null;
+function getGenerousLimiter(): Ratelimit {
+  if (!generousLimiterInstance) {
+    generousLimiterInstance = new Ratelimit({
+      redis: getRedis(),
+      limiter: Ratelimit.fixedWindow(300, "1 m"),
+      analytics: true,
+      prefix: "@upstash/ratelimit/generous",
+    });
+  }
+  return generousLimiterInstance;
+}
+
+// Exports pour compatibilité (lazy getters via Proxy - initialisation au runtime uniquement)
+// Les Proxy délèguent tous les appels aux getters, évitant l'initialisation au build time
+const createLazyLimiter = (getter: () => Ratelimit): Ratelimit => {
+  return new Proxy({} as Ratelimit, {
+    get(_target, prop) {
+      const limiter = getter();
+      const value = (limiter as any)[prop];
+      return typeof value === 'function' ? value.bind(limiter) : value;
+    },
+  });
+};
+
+export const strictLimiter = createLazyLimiter(getStrictLimiter);
+export const moderateLimiter = createLazyLimiter(getModerateLimiter);
+export const generousLimiter = createLazyLimiter(getGenerousLimiter);
 
 // ============================================================================
 // HELPER : EXTRACTION CLÉ DE RATE LIMITING
@@ -167,15 +214,15 @@ export function withRateLimit<T extends any[]>(
   handler: RouteHandler<T>,
   options: RateLimitOptions
 ): RouteHandler<T> {
-  // Sélectionner le limiter approprié
-  const limiter =
-    options.limiter === "strict"
-      ? strictLimiter
-      : options.limiter === "moderate"
-      ? moderateLimiter
-      : generousLimiter;
-
   return async (request: Request, ...args: T): Promise<NextResponse> => {
+    // Sélectionner le limiter approprié (lazy initialization au runtime)
+    const limiter =
+      options.limiter === "strict"
+        ? getStrictLimiter()
+        : options.limiter === "moderate"
+        ? getModerateLimiter()
+        : getGenerousLimiter();
+
     try {
       // Extraire la clé de rate limiting
       const key = getRateLimitKey(request);
