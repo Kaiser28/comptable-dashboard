@@ -158,7 +158,7 @@ export default function LandingPage() {
 
             {/* H2 */}
             <h2 className="text-center text-xl sm:text-2xl md:text-3xl text-gray-700 mb-8 max-w-3xl mx-auto animate-slide-up">
-              LexiGen automatise en 20 minutes. Formulaires clients + 10+ docs + validations juridiques.
+              LexiGen automatise en 20 minutes. Formulaires clients + 10+ docs + vérifications automatiques.
             </h2>
 
             {/* CTA géant */}
@@ -216,7 +216,7 @@ export default function LandingPage() {
                 <strong>Septembre 2025 :</strong> Un Expert-Comptable me demande une solution automatisée pour créer des statuts SAS. Les solutions existantes coûtent 4500€, trop cher pour un cabinet de taille moyenne.
               </p>
               <p className="text-lg text-gray-700 leading-relaxed mt-4">
-                J'ai créé LexiGen : un SaaS accessible à <strong>49€/mois</strong> qui automatise toute la chaîne de création de documents juridiques.
+                J'ai créé LexiGen : un SaaS accessible à <strong>49€/mois</strong> qui automatise toute la chaîne de création de documents.
               </p>
             </div>
             <div className="mt-8 flex items-center gap-4">
@@ -305,7 +305,7 @@ export default function LandingPage() {
                   <ul className="list-disc list-inside text-orange-800 space-y-1 text-sm">
                     <li>Formulaire client auto</li>
                     <li>Génération instantanée</li>
-                    <li>Validation automatique</li>
+                    <li>Contrôles de cohérence automatiques</li>
                     <li>Téléchargement docs</li>
                     <li>C'est tout !</li>
                   </ul>
@@ -352,8 +352,8 @@ export default function LandingPage() {
               },
               {
                 icon: Shield,
-                title: 'Validations juridiques',
-                desc: 'Vérification automatique de la cohérence des données saisies',
+                title: 'Contrôles de cohérence',
+                desc: 'Vérification automatique de la cohérence des données saisies (capital, durée, etc.)',
               },
               {
                 icon: Building2,
@@ -484,8 +484,8 @@ export default function LandingPage() {
             <Accordion type="single" collapsible className="w-full">
               {[
                 {
-                  q: 'Les documents générés sont-ils conformes juridiquement ?',
-                  a: 'LexiGen génère des documents basés sur des modèles standards. Nous ne garantissons pas la conformité juridique des documents générés. Il est essentiel de faire relire et valider tous les documents par un professionnel du droit (avocat ou expert-comptable) avant tout dépôt officiel.',
+                  q: 'Les documents générés sont-ils fiables ?',
+                  a: 'LexiGen génère des documents basés sur des modèles standards et effectue des contrôles de cohérence automatiques (capital, durée, etc.). Nous ne garantissons pas la conformité juridique des documents générés. Il est essentiel de faire relire et valider tous les documents par un professionnel du droit (avocat ou expert-comptable) avant tout dépôt officiel.',
                 },
                 {
                   q: 'Puis-je personnaliser les documents générés ?',
@@ -575,7 +575,7 @@ export default function LandingPage() {
                 <span className="text-xl font-bold text-white">LexiGen</span>
               </div>
               <p className="text-sm">
-                Automatisation juridique pour experts-comptables
+                Génération automatique de documents pour experts-comptables
               </p>
             </div>
 
