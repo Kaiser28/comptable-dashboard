@@ -881,35 +881,23 @@ export default function WorkflowClients() {
 
   return (
     <div className="space-y-6">
-      {/* Section DOCUMENTS URGENTS */}
-      <Card className="bg-gradient-to-r from-red-50 to-orange-50 border-l-4 border-red-500 shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <AlertCircle className="h-5 w-5 text-red-600" />
-            DOCUMENTS URGENTS ({documentsUrgents.length})
-          </CardTitle>
-          <CardDescription>Documents nécessitant une attention immédiate</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {documentsUrgents.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
-                <CheckCircle className="h-8 w-8 text-green-600" />
-              </div>
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                Aucun document urgent
-              </h3>
-              <p className="text-slate-600">
-                Tous vos documents sont à jour ! 🎉
-              </p>
-            </div>
-          ) : (
+      {/* Section DOCUMENTS URGENTS - Affichée uniquement si count > 0 */}
+      {documentsUrgents.length > 0 && (
+        <Card className="bg-gradient-to-r from-red-50 to-orange-50 border-l-4 border-red-500 shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-red-600" />
+              DOCUMENTS URGENTS ({documentsUrgents.length})
+            </CardTitle>
+            <CardDescription>Documents nécessitant une attention immédiate</CardDescription>
+          </CardHeader>
+          <CardContent>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               {documentsUrgents.map((acte) => renderDocumentCard(acte, true))}
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Section VUE PAR CLIENT */}
       <Card className="bg-slate-50 rounded-lg p-3 sm:p-6 border border-slate-200 shadow-lg overflow-hidden">
