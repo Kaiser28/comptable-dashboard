@@ -179,16 +179,6 @@ export default function LandingPage() {
                 ⏰ Plus que <span className="font-bold text-orange-600">{placesRestantes}</span> places
               </p>
             </div>
-
-            {/* Vidéo démo placeholder */}
-            <div className="mt-12 rounded-xl overflow-hidden shadow-2xl border-4 border-orange-200 animate-fade-in">
-              <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                <div className="text-center">
-                  <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500">Vidéo démo à venir</p>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </section>
@@ -318,16 +308,6 @@ export default function LandingPage() {
                 </div>
               </CardContent>
             </Card>
-          </div>
-
-          {/* GIF démo placeholder */}
-          <div className="mt-12 rounded-xl overflow-hidden shadow-xl border-2 border-orange-200 max-w-4xl mx-auto">
-            <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-              <div className="text-center">
-                <Zap className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">GIF démo à venir</p>
-              </div>
-            </div>
           </div>
         </div>
       </section>
