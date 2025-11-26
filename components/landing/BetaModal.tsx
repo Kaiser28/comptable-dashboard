@@ -39,14 +39,15 @@ export function BetaModal({ isOpen, onClose, placesRestantes }: BetaModalProps) 
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/beta-signup', {
+      // NOTE: /api/beta-signup removed - using /api/candidature-founders instead
+      const response = await fetch('/api/candidature-founders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          prenom,
+          prenom_nom: prenom,
           email,
-          cabinet: cabinet || undefined,
-          nb_creations_mois: nbCreations || undefined,
+          nom_cabinet: cabinet || undefined,
+          nb_creations: nbCreations || undefined,
         }),
       });
 

@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import {
+import { 
   CheckCircle2,
   Clock,
   AlertTriangle,
-  FileText,
+  FileText, 
   Shield,
   Building2,
   Users,
@@ -18,6 +18,12 @@ import {
   Mail,
   Calendar,
   Sparkles,
+  TrendingUp,
+  Scale,
+  X,
+  Phone,
+  Linkedin,
+  Gavel,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,24 +34,26 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { BetaModal } from '@/components/landing/BetaModal';
 import { supabaseClient } from '@/lib/supabase';
+import BetaSignupModal from '@/components/landing/BetaSignupModal';
+import { Toaster } from 'sonner';
 
 export default function LandingPage() {
   const router = useRouter();
-  const [modalOpen, setModalOpen] = useState(false);
-  const [placesRestantes, setPlacesRestantes] = useState(50);
+  const [placesRestantes, setPlacesRestantes] = useState(13);
   const [scrollY, setScrollY] = useState(0);
+  const [showBetaModal, setShowBetaModal] = useState(false);
 
   useEffect(() => {
-
     // Fetch places restantes
+    // NOTE: beta_signups table removed - using hardcoded value for now
     const fetchPlaces = async () => {
       try {
-        const { count } = await supabaseClient
-          .from('beta_signups')
-          .select('*', { count: 'exact', head: true });
-        setPlacesRestantes(Math.max(0, 50 - (count || 0)));
+        // const { count } = await supabaseClient
+        //   .from('beta_signups')
+        //   .select('*', { count: 'exact', head: true });
+        // setPlacesRestantes(Math.max(0, 20 - (count || 0)));
+        setPlacesRestantes(13); // Hardcoded: 13 places restantes sur 20
       } catch (error) {
         console.error('Erreur fetch places:', error);
       }
@@ -86,12 +94,22 @@ export default function LandingPage() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleCTAClick = () => {
-    setModalOpen(true);
+  const handlePostulerClick = () => {
+    setShowBetaModal(true);
     if (typeof window !== 'undefined' && (window as any).gtag) {
       (window as any).gtag('event', 'cta_click', {
         event_category: 'CTA',
-        event_label: 'Beta Founder',
+        event_label: 'Postuler Founders',
+      });
+    }
+  };
+
+  const handleDemoClick = () => {
+    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('event', 'cta_click', {
+        event_category: 'CTA',
+        event_label: 'Réserver démo',
       });
     }
   };
@@ -106,205 +124,200 @@ export default function LandingPage() {
             : 'bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/40'
         }`}
       >
-        <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
+        <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8 max-w-7xl">
           <Link href="/" className="flex items-center gap-2">
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-orange-600 to-orange-500 text-white font-bold text-xl">
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-blue-800 to-blue-600 text-white font-bold text-xl">
               L
             </div>
             <span className="text-xl font-bold text-gray-900">LexiGen</span>
           </Link>
           <nav className="hidden md:flex items-center gap-6">
-            <Link href="#features" className="text-sm text-gray-600 hover:text-gray-900">
-              Fonctionnalités
+            <Link href="#fonctionnalites" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
+              Comment ça marche
             </Link>
-            <Link href="#roadmap" className="text-sm text-gray-600 hover:text-gray-900">
+            <Link href="#roadmap" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
               Roadmap
             </Link>
-            <Link href="#faq" className="text-sm text-gray-600 hover:text-gray-900">
+            <Link href="#faq" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
               FAQ
-            </Link>
+          </Link>
           </nav>
           <div className="flex items-center gap-3">
-            <Button onClick={() => router.push('/login')} variant="ghost" size="sm">
-              Se connecter
+            <Link href="/login">
+              <Button variant="ghost" size="sm">
+                  Se connecter
+                </Button>
+            </Link>
+            <Button onClick={handleDemoClick} variant="ghost" size="sm">
+              Réserver une démo
             </Button>
             <Button
-              onClick={handleCTAClick}
+              onClick={handlePostulerClick}
               className="bg-orange-600 hover:bg-orange-700 text-white"
               size="sm"
             >
-              Beta Founder
+              Postuler Founders
             </Button>
           </div>
         </div>
       </header>
 
       {/* SECTION 1 - HERO */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-orange-50 via-white to-orange-50 py-20 sm:py-32">
-        <div className="absolute inset-0 bg-grid-orange-100/50 [mask-image:linear-gradient(0deg,white,transparent)]" />
-        <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-5xl">
-            {/* Badge Beta */}
+      <section className="relative overflow-hidden bg-white py-20 sm:py-32">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
+          <div className="text-center animate-fade-in">
+            {/* Badge urgence */}
             <div className="flex justify-center mb-6">
-              <Badge className="bg-orange-600 text-white px-4 py-2 text-sm font-semibold">
-                🚀 Beta privée - 50 places
+              <Badge className="bg-red-600 text-white px-4 py-2 text-sm font-semibold">
+                🔥 Programme Founders : 20 places | ⏰ {placesRestantes} restantes
               </Badge>
             </div>
+            <p className="text-sm text-red-600 font-medium mb-2">
+              Clôture des candidatures : 31 janvier 2026
+            </p>
 
             {/* H1 */}
-            <h1 className="text-center text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-gray-900 mb-6 animate-slide-up">
-              2 heures. C'est le temps perdu à créer des statuts SAS manuellement.
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-gray-900 mb-6 leading-tight">
+              Traitez plus de créations de SAS sans recruter
             </h1>
 
             {/* H2 */}
-            <h2 className="text-center text-xl sm:text-2xl md:text-3xl text-gray-700 mb-8 max-w-3xl mx-auto animate-slide-up">
-              LexiGen automatise en 20 minutes. Formulaires clients + 10+ docs + vérifications automatiques.
+            <h2 className="text-xl sm:text-2xl text-gray-700 mb-8 leading-relaxed max-w-3xl mx-auto">
+              Automatisez la génération des statuts, PV, DNC et annonces légales. Vos clients remplissent les infos, vous validez et personnalisez en quelques clics.
             </h2>
 
-            {/* CTA géant */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
-              <Button
-                onClick={handleCTAClick}
-                size="lg"
-                className="bg-orange-600 hover:bg-orange-700 text-white text-lg px-10 py-7 h-auto shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200"
+            {/* CTA */}
+            <div className="flex justify-center mb-6">
+              <Button 
+                onClick={handlePostulerClick}
+                size="lg" 
+                className="bg-orange-600 hover:bg-orange-700 text-white text-lg px-8 py-6 h-auto shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200"
               >
-                Devenir Beta Founder (50 places)
-                <Rocket className="ml-2 h-5 w-5" />
+                Postuler au Programme Founders
+                <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </div>
 
-            {/* Compteur */}
-            <div className="text-center">
-              <p className="text-lg text-gray-600">
-                ⏰ Plus que <span className="font-bold text-orange-600">{placesRestantes}</span> places
-              </p>
+            {/* Badge sous CTA */}
+            <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-gray-600">
+              <span className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-green-600" />
+                14 jours d'essai gratuit
+              </span>
+              <span className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-green-600" />
+                Réponse sous 48h
+              </span>
+              <span className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-green-600" />
+                Entretien 30 min gratuit
+              </span>
             </div>
           </div>
         </div>
       </section>
 
       {/* SECTION 2 - CRÉDIBILITÉ */}
-      <section className="py-12 bg-white border-y border-gray-200">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-center">
-            <div className="flex items-center gap-3">
-              <Shield className="h-6 w-6 text-orange-600" />
-              <span className="text-sm font-medium text-gray-700">
-                RGPD + Hébergé France
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* SECTION 3 - GENÈSE */}
-      <section className="py-20 sm:py-32 bg-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl">
-            <div className="prose prose-lg mx-auto">
-              <p className="text-lg text-gray-700 leading-relaxed">
-                <strong>Septembre 2025 :</strong> Un Expert-Comptable me demande une solution automatisée pour créer des statuts SAS. Les solutions existantes coûtent 4500€, trop cher pour un cabinet de taille moyenne.
-              </p>
-              <p className="text-lg text-gray-700 leading-relaxed mt-4">
-                J'ai créé LexiGen : un SaaS accessible à <strong>49€/mois</strong> qui automatise toute la chaîne de création de documents.
-              </p>
-            </div>
-            <div className="mt-8 flex items-center gap-4">
-              <div className="h-16 w-16 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white font-bold text-xl">
-                L
-              </div>
-              <div>
-                <p className="font-semibold text-gray-900">L'équipe LexiGen</p>
-                <p className="text-sm text-gray-600">Fondateurs</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* SECTION 4 - PROBLÈME */}
-      <section className="py-20 sm:py-32 bg-red-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-center text-3xl sm:text-4xl font-bold text-gray-900 mb-12">
-            Les problèmes que vous rencontrez
+      <section className="py-20 sm:py-24 bg-gray-50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
+          <h2 className="text-center text-3xl sm:text-4xl font-bold text-gray-900 mb-8">
+            Créé par un développeur expert en automatisation juridique
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-            {[
-              { icon: Clock, title: '2-3h/dossier', desc: 'Temps perdu sur chaque création' },
-              { icon: Mail, title: '10+ emails/client', desc: 'Allers-retours interminables' },
-              { icon: AlertTriangle, title: 'Risques erreurs', desc: 'Erreurs de saisie coûteuses' },
-              { icon: FileText, title: '6750€/mois perdus', desc: 'Coût d\'opportunité énorme' },
-            ].map((problem, idx) => {
-              const Icon = problem.icon;
-              return (
-                <Card key={idx} className="bg-white border-red-200 hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <Icon className="h-10 w-10 text-red-600 mb-2" />
-                    <CardTitle className="text-xl text-red-900">{problem.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600">{problem.desc}</p>
-                  </CardContent>
-                </Card>
-              );
-            })}
+          <div className="prose prose-lg mx-auto text-center text-gray-700 leading-relaxed max-w-2xl">
+            <p className="text-lg mb-4">
+              LexiGen est né d'un constat simple : les experts-comptables perdent des heures sur des tâches répétitives à faible valeur ajoutée.
+            </p>
+            <p className="text-lg">
+              Notre mission : automatiser la partie administrative pour que vous puissiez vous concentrer sur l'accompagnement de vos clients.
+            </p>
+            </div>
+
+          {/* Encadré disclaimer */}
+          <div className="mt-12 bg-white border-l-4 border-blue-600 rounded-lg p-6 shadow-sm max-w-3xl mx-auto">
+            <div className="flex items-start gap-4">
+              <Gavel className="h-6 w-6 text-blue-600 flex-shrink-0 mt-1" />
+              <div>
+                <p className="font-semibold text-gray-900 mb-2">⚖️ Note importante</p>
+                <p className="text-gray-700 text-sm leading-relaxed">
+                  LexiGen fournit des templates génériques de documents juridiques. Vous restez responsable de la validation et de l'adaptation des documents à chaque situation client. LexiGen automatise la génération, pas le conseil juridique.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* SECTION 5 - SOLUTION (Avant/Après) */}
-      <section className="py-20 sm:py-32 bg-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      {/* SECTION 3 - ROI / AVANT-APRÈS */}
+      <section className="py-20 sm:py-24 bg-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
           <h2 className="text-center text-3xl sm:text-4xl font-bold text-gray-900 mb-12">
-            Avant vs Après LexiGen
+            Le coût réel d'une création manuelle
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-            {/* Avant - Gauche gris */}
-            <Card className="bg-gray-100 border-gray-300">
+            {/* COLONNE GAUCHE - Méthode manuelle */}
+            <Card className="bg-red-50 border-red-200">
               <CardHeader>
-                <CardTitle className="text-2xl text-gray-900">Avant</CardTitle>
+                <CardTitle className="text-2xl text-red-900">❌ Méthode traditionnelle</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <p className="font-semibold text-gray-900">10 étapes manuelles</p>
-                  <ul className="list-disc list-inside text-gray-700 space-y-1 text-sm">
-                    <li>Récupération infos client</li>
-                    <li>Rédaction statuts</li>
-                    <li>Vérification données</li>
-                    <li>Génération PV</li>
-                    <li>Etc.</li>
-                  </ul>
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-900">⏱️ 2-3h par dossier</p>
-                </div>
-                <div>
-                  <p className="font-semibold text-red-600">😰 Stress élevé</p>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-600 font-bold">❌</span>
+                    <span>2-3 heures par dossier</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-600 font-bold">❌</span>
+                    <span>Multiples allers-retours clients (infos manquantes)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-600 font-bold">❌</span>
+                    <span>Ressaisie manuelle dans chaque document</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-600 font-bold">❌</span>
+                    <span>Risque d'incohérence entre les documents</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-600 font-bold">❌</span>
+                    <span>Dossiers qui traînent pendant plusieurs semaines</span>
+                  </li>
+                </ul>
+                <div className="pt-4 border-t border-red-200">
+                  <p className="text-red-900 font-semibold">📉 Résultat : Vous refusez des missions rentables faute de temps</p>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Après - Droite couleur */}
-            <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-300">
+            {/* COLONNE DROITE - Avec LexiGen */}
+            <Card className="bg-green-50 border-green-200">
               <CardHeader>
-                <CardTitle className="text-2xl text-orange-900">Après LexiGen</CardTitle>
+                <CardTitle className="text-2xl text-green-900">✅ Avec LexiGen</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <p className="font-semibold text-orange-900">6 clics seulement</p>
-                  <ul className="list-disc list-inside text-orange-800 space-y-1 text-sm">
-                    <li>Formulaire client auto</li>
-                    <li>Génération instantanée</li>
-                    <li>Contrôles de cohérence automatiques</li>
-                    <li>Téléchargement docs</li>
-                    <li>C'est tout !</li>
-                  </ul>
-                </div>
-                <div>
-                  <p className="font-semibold text-orange-900">⚡ 20 minutes</p>
-                </div>
-                <div>
-                  <p className="font-semibold text-green-600">✨ Zéro erreur</p>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-600 font-bold">✅</span>
+                    <span>Processus accéléré (collecte + génération + validation)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-600 font-bold">✅</span>
+                    <span>Client remplit tout seul via formulaire self-service</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-600 font-bold">✅</span>
+                    <span>Génération instantanée de tous les documents</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-600 font-bold">✅</span>
+                    <span>Cohérence garantie entre tous les documents</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-600 font-bold">✅</span>
+                    <span>Livraison rapide = satisfaction client</span>
+                  </li>
+                </ul>
+                <div className="pt-4 border-t border-green-200">
+                  <p className="text-green-900 font-semibold">📈 Résultat : Acceptez plus de missions avec la même équipe</p>
                 </div>
               </CardContent>
             </Card>
@@ -312,56 +325,50 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* SECTION 6 - FEATURES */}
-      <section id="features" className="py-20 sm:py-32 bg-gray-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-center text-3xl sm:text-4xl font-bold text-gray-900 mb-12">
-            Fonctionnalités complètes
+      {/* SECTION 4 - TRANSFORMATION */}
+      <section className="py-20 sm:py-24 bg-gradient-to-br from-blue-900 via-blue-800 to-gray-900 text-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+          <h2 className="text-center text-3xl sm:text-4xl font-bold mb-4">
+            Ne vendez plus vos heures. Vendez votre expertise.
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          <p className="text-center text-xl text-white/90 mb-12 max-w-3xl mx-auto">
+            LexiGen ne fait pas gagner du temps. LexiGen transforme votre positionnement.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {[
               {
-                icon: FileText,
-                title: 'Formulaires clients self-service',
-                desc: 'Vos clients remplissent leurs infos directement via un lien sécurisé',
+                icon: Rocket,
+                title: 'Devenez le cabinet premium',
+                desc: 'Livraison ultra-rapide vs plusieurs semaines pour vos concurrents. Vos clients apprécient votre réactivité et votre efficacité.',
+                result: 'Vous vous démarquez de la concurrence',
               },
               {
-                icon: Zap,
-                title: 'Génération 10+ docs auto',
-                desc: 'Statuts, PV, DNC, Annonces légales... tout est généré automatiquement',
+                icon: TrendingUp,
+                title: 'Scalez sans recruter',
+                desc: 'Traitez plus de dossiers avec la même équipe. Vos collaborateurs se concentrent sur la validation et le conseil, pas sur la saisie répétitive.',
+                result: 'Augmentez votre CA sans coût additionnel',
               },
               {
-                icon: Shield,
-                title: 'Contrôles de cohérence',
-                desc: 'Vérification automatique de la cohérence des données saisies (capital, durée, etc.)',
+                icon: Scale,
+                title: 'Cohérence garantie',
+                desc: 'Données synchronisées entre tous les documents. Capital, durée du mandat, quorum... les informations sont cohérentes automatiquement.',
+                result: 'Gain de temps sur la relecture et la validation',
               },
-              {
-                icon: Building2,
-                title: 'Enrichissement SIRET',
-                desc: 'Récupération automatique des données depuis le SIRET',
-              },
-              {
-                icon: Users,
-                title: 'Collab multi-users',
-                desc: 'Plusieurs experts peuvent travailler dans le même cabinet',
-              },
-              {
-                icon: Sparkles,
-                title: 'Dashboard intelligent',
-                desc: 'Suivi en temps réel de tous vos dossiers et documents',
-              },
-            ].map((feature, idx) => {
-              const Icon = feature.icon;
+            ].map((card, idx) => {
+              const Icon = card.icon;
               return (
-                <Card key={idx} className="bg-white hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
+                <Card key={idx} className="bg-white text-gray-900 h-full">
                   <CardHeader>
-                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-orange-100">
-                      <Icon className="h-6 w-6 text-orange-600" />
+                    <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-blue-800">
+                      <Icon className="h-8 w-8 text-white" />
                     </div>
-                    <CardTitle className="text-xl">{feature.title}</CardTitle>
+                    <CardTitle className="text-xl mb-3">{card.title}</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <CardDescription className="text-base">{feature.desc}</CardDescription>
+                  <CardContent className="space-y-4">
+                    <p className="text-gray-700 leading-relaxed">{card.desc}</p>
+                    <div className="pt-4 border-t border-gray-200">
+                      <p className="font-semibold text-blue-900">Résultat : {card.result}</p>
+                    </div>
                   </CardContent>
                 </Card>
               );
@@ -370,217 +377,472 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* SECTION 7 - OFFRE BETA FOUNDER */}
-      <section className="py-20 sm:py-32 bg-gradient-to-br from-orange-500 via-orange-600 to-red-600 text-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-4xl text-center">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6">
-              Devenez Beta Founder de LexiGen
-            </h2>
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 mb-8 text-left">
-              <ul className="space-y-4 text-lg">
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="h-6 w-6 flex-shrink-0 mt-0.5" />
-                  <span>Accès gratuit 1 mois complet</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="h-6 w-6 flex-shrink-0 mt-0.5" />
-                  <span>Prix bloqué à vie <strong>29€/mois</strong> (vs 59€)</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="h-6 w-6 flex-shrink-0 mt-0.5" />
-                  <span>Priorité support</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="h-6 w-6 flex-shrink-0 mt-0.5" />
-                  <span>Badge Founder exclusif</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="h-6 w-6 flex-shrink-0 mt-0.5" />
-                  <span>Accès anticipé nouvelles features</span>
-                </li>
-              </ul>
-            </div>
-            <Button
-              onClick={handleCTAClick}
-              size="lg"
-              className="bg-white text-orange-600 hover:bg-gray-100 text-lg px-10 py-7 h-auto shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-200"
-            >
-              Je deviens Beta Founder 🚀
-            </Button>
-            <p className="mt-6 text-orange-100 text-lg">
-              ⏰ Plus que <span className="font-bold">{placesRestantes}</span> places disponibles
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* SECTION 8 - ROADMAP */}
-      <section id="roadmap" className="py-20 sm:py-32 bg-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-center text-3xl sm:text-4xl font-bold text-gray-900 mb-12">
-            Roadmap 2025
+      {/* SECTION 5 - FONCTIONNALITÉS */}
+      <section id="fonctionnalites" className="py-20 sm:py-24 bg-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+          <h2 className="text-center text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+            Comment ça marche ?
           </h2>
-          <div className="max-w-4xl mx-auto">
-            <div className="relative">
-              {/* Timeline line */}
-              <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-orange-200" />
-              
-              <div className="space-y-12">
+          <p className="text-center text-xl text-gray-700 mb-12">
+            3 étapes. Quelques clics. 10+ documents prêts à personnaliser.
+          </p>
+
+          {/* Timeline 3 étapes */}
+          <div className="max-w-4xl mx-auto mb-16">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {[
+                {
+                  num: 1,
+                  icon: FileText,
+                  title: 'Votre client remplit le formulaire',
+                  desc: [
+                    'Vous envoyez un lien sécurisé',
+                    'Client saisit : dénomination, capital, associés, etc.',
+                    'Récupération auto des données SIRET',
+                  ],
+                  time: '~10 minutes pour le client',
+                },
+                {
+                  num: 2,
+                  icon: CheckCircle2,
+                  title: 'Vous validez et personnalisez',
+                  desc: [
+                    'Vérification des données saisies',
+                    'Vous personnalisez selon les besoins du client',
+                    '1 clic = génération de tous les documents',
+                  ],
+                  time: 'Quelques minutes pour vous',
+                },
+                {
+                  num: 3,
+                  icon: Rocket,
+                  title: 'Vous livrez le dossier complet',
+                  desc: [
+                    'Statuts SAS',
+                    'PV de constitution',
+                    'DNC (Déclaration de Non-Condamnation)',
+                    'Annonce légale pré-remplie',
+                    'Formulaire M0',
+                    'Attestation de dépôt de capital',
+                    '... 10+ documents au total',
+                  ],
+                  time: 'Export instantané PDF/Word',
+                },
+              ].map((step, idx) => {
+                const Icon = step.icon;
+              return (
+                  <div key={idx} className="relative">
+                    <div className="flex flex-col items-center text-center">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-white font-bold text-xl mb-4 relative z-10">
+                        {step.num}
+                      </div>
+                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100">
+                      <Icon className="h-6 w-6 text-blue-600" />
+                    </div>
+                      <h3 className="text-lg font-bold text-gray-900 mb-3">{step.title}</h3>
+                      <ul className="text-sm text-gray-700 space-y-2 mb-4 text-left">
+                        {step.desc.map((item, i) => (
+                          <li key={i} className="flex items-start gap-2">
+                            <span className="text-blue-600 mt-1">•</span>
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <p className="text-xs font-medium text-gray-600">⏱️ {step.time}</p>
+                    </div>
+                    {idx < 2 && (
+                      <div className="hidden md:block absolute top-6 left-[60%] w-[80%] h-0.5 bg-gray-300" />
+                    )}
+                  </div>
+              );
+            })}
+            </div>
+          </div>
+
+          {/* Liste complète fonctionnalités */}
+          <div className="max-w-5xl mx-auto">
+            <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">
+              Tout ce dont vous avez besoin
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-3">
                 {[
-                  { month: 'Jan', title: 'Beta 50 cabinets', desc: 'Lancement beta privée avec 50 cabinets sélectionnés' },
-                  { month: 'Fév', title: 'API Infogreffe', desc: 'Intégration API Infogreffe pour dépôt automatique' },
-                  { month: 'Mars', title: 'Annonces légales + SARL/EURL', desc: 'Support SARL/EURL et génération annonces légales' },
-                  { month: 'Avril', title: 'Ouverture publique', desc: 'Lancement public avec tarifs complets' },
+                  'Formulaire client self-service (branded)',
+                  '10+ documents générés automatiquement',
+                  'Cohérence des données garantie',
+                  'Récupération SIRET automatique',
+                  'Multi-utilisateurs (toute votre équipe)',
                 ].map((item, idx) => (
-                  <div key={idx} className="relative flex items-start gap-6">
-                    <div className="flex-shrink-0">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-600 text-white font-bold text-sm z-10 relative">
-                        {idx + 1}
-                      </div>
-                    </div>
-                    <div className="flex-1 pt-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className="text-sm font-semibold text-orange-600">{item.month}</span>
-                        <h3 className="text-xl font-bold text-gray-900">{item.title}</h3>
-                      </div>
-                      <p className="text-gray-600">{item.desc}</p>
-                    </div>
+                  <div key={idx} className="flex items-start gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700">{item}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-3">
+                {[
+                  'Dashboard de suivi des dossiers',
+                  'Personnalisation des documents',
+                  'Export PDF/Word instantané',
+                  'Support dédié (Beta Founders)',
+                  'Mises à jour régulières',
+                ].map((item, idx) => (
+                  <div key={idx} className="flex items-start gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700">{item}</span>
                   </div>
                 ))}
               </div>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* SECTION 9 - FAQ */}
-      <section id="faq" className="py-20 sm:py-32 bg-gray-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-center text-3xl sm:text-4xl font-bold text-gray-900 mb-12">
-            Questions fréquentes
-          </h2>
-          <div className="mx-auto max-w-3xl">
-            <Accordion type="single" collapsible className="w-full">
-              {[
-                {
-                  q: 'Les documents générés sont-ils fiables ?',
-                  a: 'LexiGen génère des documents basés sur des modèles standards et effectue des contrôles de cohérence automatiques (capital, durée, etc.). Nous ne garantissons pas la conformité juridique des documents générés. Il est essentiel de faire relire et valider tous les documents par un professionnel du droit (avocat ou expert-comptable) avant tout dépôt officiel.',
-                },
-                {
-                  q: 'Puis-je personnaliser les documents générés ?',
-                  a: 'Absolument ! Les documents sont générés au format Word (.docx) et sont entièrement modifiables. Vous pouvez ajouter des clauses spécifiques, modifier le texte ou adapter selon vos besoins.',
-                },
-                {
-                  q: 'Mes données sont-elles sécurisées ?',
-                  a: 'Oui, LexiGen est conforme RGPD et hébergé en France. Toutes les données sont chiffrées et nous ne partageons jamais vos informations avec des tiers.',
-                },
-                {
-                  q: 'Est-ce compliqué à utiliser ?',
-                  a: 'Non ! LexiGen a été conçu pour être simple. En 6 clics, vous générez tous les documents. Aucune formation n\'est nécessaire.',
-                },
-                {
-                  q: 'Que se passe-t-il après le 1 mois gratuit ?',
-                  a: 'Après le mois gratuit, vous passez automatiquement au tarif Beta Founder à 29€/mois (bloqué à vie). Vous pouvez annuler à tout moment sans engagement.',
-                },
-                {
-                  q: 'Puis-je importer mes clients existants ?',
-                  a: 'Oui, vous pouvez importer vos clients via CSV ou les ajouter manuellement. L\'import CSV est disponible dès votre inscription.',
-                },
-                {
-                  q: 'Y a-t-il une limite au nombre d\'utilisateurs ?',
-                  a: 'Non, le nombre d\'utilisateurs est illimité dans votre cabinet. Tous vos collaborateurs peuvent utiliser LexiGen.',
-                },
-                {
-                  q: 'Quelles formes juridiques sont supportées ?',
-                  a: 'Actuellement SAS et SASU. SARL et EURL arriveront en mars 2025 selon notre roadmap.',
-                },
-              ].map((item, idx) => (
-                <AccordionItem key={idx} value={`item-${idx}`}>
-                  <AccordionTrigger className="text-left font-semibold text-gray-900 hover:text-orange-600">
-                    {item.q}
-                  </AccordionTrigger>
-                  <AccordionContent className="text-gray-700 pt-2">
-                    {item.a}
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
+          <div className="text-center mt-12">
+            <Button onClick={handleDemoClick} variant="outline" size="lg">
+              Réserver une démo personnalisée
+            </Button>
           </div>
         </div>
       </section>
 
-      {/* SECTION 10 - CTA FINAL */}
-      <section className="py-20 sm:py-32 bg-gradient-to-br from-blue-600 to-blue-800 text-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl text-center">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6">
-              Prêt à récupérer 30h/mois ?
-            </h2>
+      {/* SECTION 6 - PROGRAMME FOUNDERS */}
+      <section className="py-20 sm:py-24 bg-gradient-to-br from-blue-900 via-blue-800 to-gray-900 text-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+          <div className="text-center mb-4">
+            <Badge className="bg-orange-600 text-white px-4 py-2 text-sm font-semibold mb-6">
+              EXCLUSIF
+            </Badge>
+          </div>
+          <h2 className="text-center text-3xl sm:text-4xl font-bold mb-4">
+            Programme Founders : Construisez LexiGen avec nous
+          </h2>
+          <p className="text-center text-xl text-white/90 mb-12 max-w-3xl mx-auto">
+            20 cabinets sélectionnés pour co-créer l'outil parfait. En échange : avantages exclusifs à vie.
+          </p>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+            {/* COLONNE GAUCHE - Avantages */}
+            <Card className="bg-white text-gray-900">
+              <CardHeader>
+                <CardTitle className="text-2xl mb-6">Vos avantages Founders</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {[
+                  { icon: '🎁', title: '14 jours d\'essai gratuit', desc: 'Testez LexiGen sans engagement' },
+                  { icon: '💎', title: 'Prix bloqué à vie : 39,99€ HT/mois', desc: 'vs 79,99€ HT au lancement public février 2026' },
+                  { icon: '🏆', title: 'Badge "Founder" sur votre profil', desc: '' },
+                  { icon: '🚀', title: 'Roadmap prioritaire', desc: 'Vos features en premier' },
+                  { icon: '📞', title: 'Support dédié', desc: 'Réponse < 2h ouvrées' },
+                  { icon: '🎥', title: 'Témoignage mis en avant (optionnel)', desc: 'Votre logo sur notre page Success Stories' },
+                  { icon: '📅', title: 'Accès anticipé', desc: 'Toutes les nouvelles features avant tout le monde' },
+                  { icon: '💰', title: 'Économie à vie : 40€ HT/mois', desc: '= 480€ HT/an' },
+                ].map((item, idx) => (
+                  <div key={idx} className="flex items-start gap-3 pb-4 border-b border-gray-200 last:border-0">
+                    <span className="text-2xl flex-shrink-0">{item.icon}</span>
+                    <div>
+                      <p className="font-semibold text-gray-900">{item.title}</p>
+                      {item.desc && <p className="text-sm text-gray-600 mt-1">{item.desc}</p>}
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* COLONNE DROITE - Engagements */}
+            <Card className="bg-white text-gray-900">
+              <CardHeader>
+                <CardTitle className="text-2xl mb-6">Vos engagements</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-3">Ce que nous attendons de vous :</h4>
+                  <ul className="space-y-2">
+                    {[
+                      'Tester activement pendant les 14 jours d\'essai',
+                      'Utiliser LexiGen sur minimum 10 créations pendant la beta',
+                      '1 call feedback/mois (30 min) pendant 3 mois',
+                      'Signaler les bugs/suggestions dans les 24h',
+                      'Témoignage écrit + logo sur notre site (optionnel : témoignage vidéo)',
+                    ].map((item, idx) => (
+                      <li key={idx} className="flex items-start gap-2">
+                        <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                        <span className="text-gray-700">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="pt-4 border-t border-gray-200">
+                  <h4 className="font-semibold text-gray-900 mb-3">Profil recherché :</h4>
+                  <ul className="space-y-2 text-gray-700">
+                    <li>• Cabinet 5-15 collaborateurs</li>
+                    <li>• 10+ créations SAS/mois actuellement</li>
+                    <li>• Ouvert aux outils SaaS</li>
+                    <li>• Envie d'automatiser pour scaler</li>
+                  </ul>
+                </div>
+
+                <div className="pt-4 border-t border-gray-200 bg-amber-50 border-l-4 border-amber-400 rounded p-4">
+                  <p className="font-semibold text-amber-900 mb-2">⚠️ Sélection sur dossier (entretien 30 min)</p>
+                  <p className="text-sm text-amber-800">
+                    Nous recherchons des cabinets qui : font de la création de SAS une activité récurrente, ont une vision de croissance, souhaitent se positionner en cabinet premium, peuvent s'engager sur le programme (3 mois).
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* CTA Principal */}
+          <div className="text-center mt-12">
             <Button
-              onClick={handleCTAClick}
+              onClick={handlePostulerClick}
               size="lg"
-              className="bg-white text-blue-600 hover:bg-gray-100 text-lg px-10 py-7 h-auto shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-200"
+              className="bg-orange-600 hover:bg-orange-700 text-white text-xl px-12 py-8 h-auto shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-200"
             >
-              Devenir Beta Founder 🚀
+              Postuler au Programme Founders
+              <ArrowRight className="ml-2 h-6 w-6" />
             </Button>
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-6 text-sm">
-              <span className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5" />
-                Sans engagement
-              </span>
-              <span className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5" />
-                Sans CB
-              </span>
-              <span className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5" />
-                Annulation 1 clic
-              </span>
+          </div>
+
+          {/* Urgency footer */}
+          <div className="mt-8 text-center bg-red-600 rounded-lg p-4 max-w-2xl mx-auto">
+            <p className="text-white font-semibold text-lg">
+              ⏰ {placesRestantes} places restantes sur 20 | 🔒 Clôture : 31 janvier 2026
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 7 - ROADMAP */}
+      <section id="roadmap" className="py-20 sm:py-24 bg-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+          <h2 className="text-center text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+            Roadmap 2025-2026 : Ce qui arrive
+          </h2>
+          <p className="text-center text-xl text-gray-700 mb-12">
+            🎯 Beta Founders choisissent les features prioritaires
+          </p>
+
+          <div className="max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              {[
+                {
+                  badge: '✅ EN COURS',
+                  badgeColor: 'bg-green-600',
+                  title: 'NOVEMBRE 2025',
+                  subtitle: 'Beta Founders',
+                  items: [
+                    '✓ Génération statuts SAS/SASU',
+                    '✓ PV d\'AG ordinaire et extraordinaire',
+                    '✓ Déclaration de Non-Condamnation (DNC)',
+                    '✓ Cession d\'actions',
+                    '✓ Courrier de reprise d\'entreprise',
+                    '✓ Lettre de mission',
+                    '✓ Augmentation de capital',
+                    '✓ Réduction de capital',
+                    '✓ Ordre de mouvement de titres',
+                    '✓ Annonces légales pré-remplies',
+                    '✓ Formulaires clients self-service',
+                    '✓ Dashboard de suivi',
+                    '✓ Multi-utilisateurs',
+                  ],
+                },
+                {
+                  badge: 'À VENIR',
+                  badgeColor: 'bg-gray-600',
+                  title: 'FÉVRIER 2026',
+                  subtitle: 'V1.0 Lancement Public',
+                  items: [
+                    '→ Ouverture au public (79,99€ HT/mois)',
+                    '→ Support SARL/EURL',
+                    '→ Templates de clauses personnalisables',
+                    '→ Plans Cabinet (149,99€) et Premium (249,99€)',
+                  ],
+                },
+                {
+                  badge: 'À VENIR',
+                  badgeColor: 'bg-gray-600',
+                  title: 'MAI 2026',
+                  subtitle: 'V1.5',
+                  items: [
+                    '→ Intégration Infogreffe (dépôt automatique)',
+                    '→ Signature électronique intégrée',
+                    '→ API pour intégration logiciels métier',
+                  ],
+                },
+                {
+                  badge: 'À VENIR',
+                  badgeColor: 'bg-gray-600',
+                  title: 'Q4 2026',
+                  subtitle: 'V2.0',
+                  items: [
+                    '→ Support SCI',
+                    '→ Intégration comptable (Cegid, ACD, Sage)',
+                    '→ App mobile (suivi dossiers)',
+                  ],
+                },
+              ].map((jalon, idx) => (
+                <Card key={idx} className="bg-gray-50 border-gray-200">
+                <CardHeader>
+                    <Badge className={`${jalon.badgeColor} text-white w-fit mb-2`}>
+                      {jalon.badge}
+                    </Badge>
+                    <CardTitle className="text-lg font-bold text-gray-900">{jalon.title}</CardTitle>
+                    <CardDescription className="font-semibold text-gray-700">{jalon.subtitle}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <ul className="space-y-2 text-sm text-gray-700">
+                      {jalon.items.map((item, i) => (
+                        <li key={i}>{item}</li>
+                      ))}
+                    </ul>
+                </CardContent>
+              </Card>
+            ))}
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 8 - FAQ */}
+      <section id="faq" className="py-20 sm:py-24 bg-gray-50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
+          <h2 className="text-center text-3xl sm:text-4xl font-bold text-gray-900 mb-12">
+            Questions fréquentes
+          </h2>
+            <Accordion type="single" collapsible className="w-full">
+            {[
+              {
+                q: 'Les documents sont-ils conformes juridiquement ?',
+                a: 'LexiGen génère des documents à partir de templates génériques conformes aux pratiques courantes.\n\n⚖️ IMPORTANT : Vous restez responsable de la validation et de l\'adaptation des documents à chaque situation client. LexiGen automatise la génération, pas le conseil juridique.\n\nNous recommandons de faire relire vos premiers documents par un avocat spécialisé pour valider votre processus.',
+              },
+              {
+                q: 'Mon logiciel comptable génère déjà des statuts, pourquoi LexiGen ?',
+                a: 'Votre logiciel métier génère probablement UN document (les statuts). LexiGen génère les 10+ documents nécessaires (PV, DNC, annonce, M0, etc.)\n\nMais surtout : LexiGen permet à VOS CLIENTS de remplir les infos directement via un formulaire. Vous éliminez les multiples allers-retours.\n\nRésultat : vous ne touchez le dossier qu\'une seule fois, au lieu de 5-7 échanges avec la méthode manuelle.',
+              },
+              {
+                q: 'Je peux personnaliser les documents ?',
+                a: 'Oui, totalement. Vous pouvez ajuster chaque document généré selon les besoins du client (clauses d\'agrément, de préemption, etc.).\n\nLexiGen génère la structure de base avec les données saisies, vous personnalisez ensuite selon votre expertise.',
+              },
+              {
+                q: 'C\'est sécurisé ? Où sont stockées les données ?',
+                a: 'Hébergement en France (AWS Paris), certifié RGPD. Chiffrement des données en transit et au repos. Vous restez propriétaire à 100% des données de vos clients. Sauvegarde quotidienne automatique.',
+              },
+              {
+                q: 'Combien de temps pour prendre en main l\'outil ?',
+                a: 'Environ 30 minutes.\n\nOnboarding inclus : 1 call de formation avec notre équipe. Interface intuitive : si vous savez utiliser un formulaire Google, vous savez utiliser LexiGen.',
+              },
+              {
+                q: 'Je peux annuler quand je veux ?',
+                a: 'Oui, sans préavis, en 1 clic depuis votre dashboard. Aucun engagement de durée minimum.\n\n⚠️ Note : Si vous annulez puis revenez plus tard, vous perdez le tarif Beta Founder (39,99€) et passez au tarif public (79,99€+).',
+              },
+              {
+                q: 'Combien coûte LexiGen après l\'essai ?',
+                a: 'Programme Beta Founders : 39,99€ HT/mois à vie (réservé aux 20 premiers cabinets - novembre 2025 à janvier 2026)\n\nTarif public à partir de février 2026 : 79,99€ HT/mois minimum\n\nLes Beta Founders conservent leur tarif à 39,99€ HT/mois à vie, même après le lancement public.',
+              },
+              {
+                q: 'Quand LexiGen sera disponible au public ?',
+                a: 'Lancement public prévu en février 2026.\n\nProgramme Beta Founders : novembre 2025 - janvier 2026 → 20 places uniquement → Tarif : 39,99€ HT/mois à vie\n\nAprès février 2026 :\n→ Tarif public : 79,99€ HT/mois minimum (Plan Solo)\n→ Plans Cabinet (149,99€) et Premium (249,99€) disponibles\n→ Les Beta Founders conservent leur tarif à 39,99€ à vie',
+              },
+            ].map((item, idx) => (
+              <AccordionItem key={idx} value={`item-${idx}`} className="bg-white border border-gray-200 rounded-lg mb-4 px-6">
+                <AccordionTrigger className="text-left font-semibold text-gray-900 hover:text-orange-600 py-6">
+                  {item.q}
+                </AccordionTrigger>
+                <AccordionContent className="text-gray-700 pb-6 whitespace-pre-line leading-relaxed">
+                  {item.a}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+            </Accordion>
+        </div>
+      </section>
+
+      {/* SECTION 9 - CTA FINAL */}
+      <section className="py-20 sm:py-24 bg-gradient-to-br from-blue-600 to-blue-800 text-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl text-center">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6">
+            Prêt à récupérer 30h/mois ?
+            </h2>
+              <Button 
+            onClick={handlePostulerClick}
+                size="lg" 
+            className="bg-white text-blue-600 hover:bg-gray-100 text-lg px-10 py-7 h-auto shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-200"
+              >
+            Postuler au Programme Founders 🚀
+              </Button>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-6 text-sm">
+            <span className="flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5" />
+              Sans engagement
+            </span>
+            <span className="flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5" />
+              Réponse sous 48h
+            </span>
+            <span className="flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5" />
+              Entretien 30 min gratuit
+            </span>
           </div>
         </div>
       </section>
 
       {/* FOOTER */}
       <footer className="bg-gray-900 text-gray-300 py-12">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Branding */}
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-orange-600 to-orange-500 text-white font-bold text-xl">
+                <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-blue-800 to-blue-600 text-white font-bold text-xl">
                   L
                 </div>
                 <span className="text-xl font-bold text-white">LexiGen</span>
               </div>
-              <p className="text-sm">
-                Génération automatique de documents pour experts-comptables
+              <p className="text-sm mb-4">
+                L'automatisation juridique pour experts-comptables
               </p>
+              <div className="space-y-2 text-sm">
+                <p className="flex items-center gap-2">
+                  <Mail className="h-4 w-4" />
+                  Email : contact@lexigen.fr
+                </p>
+                <p className="flex items-center gap-2">
+                  <Linkedin className="h-4 w-4" />
+                  LinkedIn : <Link href="#" className="hover:text-white">LexiGen</Link>
+                </p>
+              </div>
             </div>
 
-            {/* Liens */}
+            {/* Ressources */}
             <div>
-              <h3 className="font-semibold text-white mb-4">Navigation</h3>
+              <h3 className="font-semibold text-white mb-4">Ressources</h3>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <Link href="#features" className="hover:text-white transition-colors">
-                    Comment ça marche
+                  <Link href="#" onClick={handleDemoClick} className="hover:text-white transition-colors">
+                    Réserver une démo
                   </Link>
                 </li>
                 <li>
                   <Link href="#roadmap" className="hover:text-white transition-colors">
-                    Tarifs
+                    Roadmap
                   </Link>
                 </li>
                 <li>
-                  <Link href="#faq" className="hover:text-white transition-colors">
-                    FAQ
+                  <button
+                    onClick={handlePostulerClick}
+                    className="hover:text-white transition-colors text-left"
+                  >
+                    Programme Founders
+                  </button>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-white transition-colors">
+                    Documentation (bientôt)
                   </Link>
                 </li>
                 <li>
-                  <Link href="mailto:contact@lexigen.fr" className="hover:text-white transition-colors">
-                    Contact
+                  <Link href="#" className="hover:text-white transition-colors">
+                    Blog (bientôt)
                   </Link>
                 </li>
               </ul>
@@ -592,33 +854,41 @@ export default function LandingPage() {
               <ul className="space-y-2 text-sm">
                 <li>
                   <Link href="#" className="hover:text-white transition-colors">
-                    Mentions légales
+                    CGU / CGV
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="hover:text-white transition-colors">
-                    CGU
+                    Politique de confidentialité
                   </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-white transition-colors">
+                Mentions légales
+              </Link>
                 </li>
                 <li>
                   <Link href="#" className="hover:text-white transition-colors">
                     RGPD
-                  </Link>
+              </Link>
                 </li>
               </ul>
             </div>
           </div>
           <div className="mt-8 pt-8 border-t border-gray-800 text-center text-sm">
-            <p>LexiGen © 2025</p>
+            <p>© 2025 LexiGen - Tous droits réservés</p>
+            <p className="mt-2">Made with ❤️ for French accountants</p>
           </div>
         </div>
       </footer>
 
-      {/* Modal */}
-      <BetaModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        placesRestantes={placesRestantes}
+      {/* Toaster pour les notifications */}
+      <Toaster position="top-right" richColors />
+
+      {/* Modal d'inscription Beta */}
+      <BetaSignupModal 
+        open={showBetaModal} 
+        onOpenChange={setShowBetaModal} 
       />
     </div>
   );

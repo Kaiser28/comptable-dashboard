@@ -2,7 +2,7 @@
 
 ## 📋 Prérequis
 
-1. **Table Supabase** : Créer la table `beta_signups` (voir `docs/beta-signups-table.sql`)
+1. **Table Supabase** : ~~Créer la table `beta_signups` (voir `docs/beta-signups-table.sql`)~~ **DEPRECATED** - Utiliser `founders_applications` à la place
 2. **Variables d'environnement** : Ajouter dans `.env.local`
 
 ## 🔧 Variables d'environnement
@@ -27,8 +27,8 @@ SUPABASE_SERVICE_ROLE_KEY=eyJxxxxx
 ## 🗄️ Création de la table Supabase
 
 1. Ouvrez Supabase Dashboard → SQL Editor
-2. Exécutez le script `docs/beta-signups-table.sql`
-3. Vérifiez que la table `beta_signups` est créée avec les bonnes policies RLS
+2. ~~Exécutez le script `docs/beta-signups-table.sql`~~ **DEPRECATED** - La table `beta_signups` n'est plus utilisée
+3. ~~Vérifiez que la table `beta_signups` est créée avec les bonnes policies RLS~~ **DEPRECATED** - Utiliser `founders_applications` à la place
 
 ## 📧 Configuration Resend (optionnel)
 
@@ -84,7 +84,7 @@ Les heatmaps et enregistrements sont activés automatiquement si `NEXT_PUBLIC_HO
 
 ## ✅ Checklist avant mise en production
 
-- [ ] Table `beta_signups` créée dans Supabase
+- [ ] ~~Table `beta_signups` créée dans Supabase~~ **DEPRECATED** - Utiliser `founders_applications`
 - [ ] Variables d'environnement configurées
 - [ ] Google Analytics configuré et testé
 - [ ] Hotjar configuré (optionnel)
@@ -97,7 +97,7 @@ Les heatmaps et enregistrements sont activés automatiquement si `NEXT_PUBLIC_HO
 ## 🐛 Dépannage
 
 ### Le formulaire ne fonctionne pas
-- Vérifiez que la table `beta_signups` existe
+- ~~Vérifiez que la table `beta_signups` existe~~ **DEPRECATED** - Vérifiez que la table `founders_applications` existe
 - Vérifiez les policies RLS dans Supabase
 - Vérifiez les logs dans la console navigateur
 
