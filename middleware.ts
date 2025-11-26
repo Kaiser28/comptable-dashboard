@@ -69,7 +69,11 @@ export async function middleware(request: NextRequest) {
   return response;
 }
 
+// Matcher universel : s'exécute sur toutes les routes sauf les fichiers statiques
+// Exclut : fichiers Next.js statiques, images optimisées, favicon, et assets (svg, png, jpg, etc.)
 export const config = {
-  matcher: ["/dashboard/:path*", "/login", "/signup"],
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ],
 };
 
