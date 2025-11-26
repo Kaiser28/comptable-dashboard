@@ -34,10 +34,34 @@ export async function POST(request: NextRequest) {
       trial_end_date,
     } = body;
 
-    // Validation des champs requis
+    // Validation des champs requis avec vérification stricte
     if (!email || !password || !nom_cabinet || !prenom || !nom || !stripe_customer_id) {
+      console.error('[CREATE ACCOUNT] Champs manquants:', {
+        email: !!email,
+        password: !!password,
+        nom_cabinet: !!nom_cabinet,
+        prenom: !!prenom,
+        nom: !!nom,
+        stripe_customer_id: !!stripe_customer_id,
+      });
       return NextResponse.json(
         { error: 'Tous les champs sont requis' },
+        { status: 400 }
+      );
+    }
+
+    // Validation stricte : s'assurer que les valeurs ne sont pas des chaînes vides
+    if (
+      email.trim() === '' ||
+      password.trim() === '' ||
+      nom_cabinet.trim() === '' ||
+      prenom.trim() === '' ||
+      nom.trim() === '' ||
+      stripe_customer_id.trim() === ''
+    ) {
+      console.error('[CREATE ACCOUNT] Champs vides détectés');
+      return NextResponse.json(
+        { error: 'Tous les champs doivent être renseignés' },
         { status: 400 }
       );
     }
@@ -82,15 +106,39 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Vérifier si le cabinet existe déjà (par email ou stripe_customer_id)
-    const { data: existingCabinet } = await supabaseAdmin
+    // Vérification stricte pour éviter les cabinets zombies
+    const { data: existingCabinetByEmail, error: errorEmail } = await supabaseAdmin
       .from('cabinets')
-      .select('id')
-      .or(`email.eq.${email},stripe_customer_id.eq.${stripe_customer_id}`)
+      .select('id, nom, stripe_customer_id, email')
+      .eq('email', email)
       .maybeSingle();
 
-    if (existingCabinet) {
+    if (errorEmail) {
+      console.error('[CREATE ACCOUNT] Erreur vérification cabinet par email:', errorEmail);
+    }
+
+    const { data: existingCabinetByStripe, error: errorStripe } = await supabaseAdmin
+      .from('cabinets')
+      .select('id, nom, stripe_customer_id, email')
+      .eq('stripe_customer_id', stripe_customer_id)
+      .maybeSingle();
+
+    if (errorStripe) {
+      console.error('[CREATE ACCOUNT] Erreur vérification cabinet par stripe_customer_id:', errorStripe);
+    }
+
+    if (existingCabinetByEmail) {
+      console.error('[CREATE ACCOUNT] Cabinet existant trouvé par email:', existingCabinetByEmail);
       return NextResponse.json(
-        { error: 'Un cabinet avec cet email ou ce customer Stripe existe déjà' },
+        { error: 'Un cabinet avec cet email existe déjà' },
+        { status: 400 }
+      );
+    }
+
+    if (existingCabinetByStripe) {
+      console.error('[CREATE ACCOUNT] Cabinet existant trouvé par stripe_customer_id:', existingCabinetByStripe);
+      return NextResponse.json(
+        { error: 'Un cabinet avec ce customer Stripe existe déjà' },
         { status: 400 }
       );
     }
@@ -123,22 +171,52 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 4. Créer le cabinet avec les infos Stripe
+    // 4. Créer le cabinet avec TOUTES les infos Stripe en une seule insertion
+    // Préparer les données avec validation stricte
+    const cabinetData = {
+      nom: nom_cabinet.trim(), // Colonne 'nom' dans la table, pas 'nom_cabinet'
+      email: email.trim(),
+      stripe_customer_id: stripe_customer_id.trim(),
+      stripe_subscription_id: stripe_subscription_id?.trim() || null,
+      subscription_status: 'trialing' as const,
+      trial_end_date: trial_end_date ? new Date(trial_end_date).toISOString() : null,
+    };
+
+    // Log des données avant insertion pour debug
+    console.log('[CREATE ACCOUNT] Données cabinet à insérer:', {
+      nom: cabinetData.nom,
+      email: cabinetData.email,
+      stripe_customer_id: cabinetData.stripe_customer_id,
+      stripe_subscription_id: cabinetData.stripe_subscription_id,
+      subscription_status: cabinetData.subscription_status,
+      trial_end_date: cabinetData.trial_end_date,
+    });
+
+    // Insertion unique avec toutes les données
     const { data: cabinet, error: cabinetError } = await supabaseAdmin
       .from('cabinets')
-      .insert({
-        nom: nom_cabinet,
-        email: email,
-        stripe_customer_id: stripe_customer_id,
-        stripe_subscription_id: stripe_subscription_id || null,
-        subscription_status: 'trialing',
-        trial_end_date: trial_end_date || null,
-      })
+      .insert(cabinetData)
       .select()
       .single();
 
     if (cabinetError) {
-      console.error('[CREATE ACCOUNT] Erreur création cabinet:', cabinetError);
+      console.error('[CREATE ACCOUNT] Erreur création cabinet:', {
+        message: cabinetError.message,
+        details: cabinetError.details,
+        hint: cabinetError.hint,
+        code: cabinetError.code,
+      });
+      
+      // Si erreur de duplicate key, logger et retourner erreur claire
+      if (cabinetError.code === '23505') {
+        console.error('[CREATE ACCOUNT] Erreur duplicate key - cabinet existe déjà');
+        // Supprimer l'utilisateur créé pour éviter les orphelins
+        await supabaseAdmin.auth.admin.deleteUser(userId);
+        return NextResponse.json(
+          { error: 'Un cabinet avec ces informations existe déjà' },
+          { status: 400 }
+        );
+      }
       
       // Si erreur de création cabinet, supprimer l'utilisateur créé pour éviter les orphelins
       await supabaseAdmin.auth.admin.deleteUser(userId);
@@ -148,6 +226,35 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    // Vérifier que le cabinet a bien été créé avec toutes les données
+    if (!cabinet || !cabinet.id) {
+      console.error('[CREATE ACCOUNT] Cabinet créé mais id manquant');
+      await supabaseAdmin.auth.admin.deleteUser(userId);
+      return NextResponse.json(
+        { error: 'Erreur : cabinet créé mais id manquant' },
+        { status: 500 }
+      );
+    }
+
+    // Vérifier que les données critiques sont présentes
+    if (!cabinet.nom || !cabinet.email || !cabinet.stripe_customer_id) {
+      console.error('[CREATE ACCOUNT] Cabinet créé avec données incomplètes:', cabinet);
+      // Nettoyer : supprimer le cabinet incomplet et l'utilisateur
+      await supabaseAdmin.from('cabinets').delete().eq('id', cabinet.id);
+      await supabaseAdmin.auth.admin.deleteUser(userId);
+      return NextResponse.json(
+        { error: 'Erreur : cabinet créé avec des données incomplètes' },
+        { status: 500 }
+      );
+    }
+
+    console.log('[CREATE ACCOUNT] Cabinet créé avec succès:', {
+      id: cabinet.id,
+      nom: cabinet.nom,
+      email: cabinet.email,
+      stripe_customer_id: cabinet.stripe_customer_id,
+    });
 
     // 5. Créer l'expert_comptable lié au cabinet (FK cabinet_id obligatoire)
     const { error: ecError } = await supabaseAdmin
