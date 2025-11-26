@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { CheckCircle2, ArrowRight, Mail, Phone } from 'lucide-react';
+import { CheckCircle2, ArrowRight, Mail, Phone, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
-export default function MerciCandidaturePage() {
+function MerciCandidatureContent() {
   const searchParams = useSearchParams();
   const [prenom, setPrenom] = useState('');
   const [email, setEmail] = useState('');
@@ -85,6 +85,18 @@ export default function MerciCandidaturePage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function MerciCandidaturePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      </div>
+    }>
+      <MerciCandidatureContent />
+    </Suspense>
   );
 }
 

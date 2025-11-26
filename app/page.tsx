@@ -94,6 +94,8 @@ export default function LandingPage() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const formRef = useRef<HTMLDivElement>(null);
+
   const handlePostulerClick = () => {
     setShowBetaModal(true);
     if (typeof window !== 'undefined' && (window as any).gtag) {
@@ -886,6 +888,7 @@ export default function LandingPage() {
       <Toaster position="top-right" richColors />
 
       {/* Modal d'inscription Beta */}
+      <div ref={formRef} />
       <BetaSignupModal 
         open={showBetaModal} 
         onOpenChange={setShowBetaModal} 
