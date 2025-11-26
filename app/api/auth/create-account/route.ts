@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { sendEmail } from '@/lib/email';
+import { welcomeEmail } from '@/lib/email-templates';
 
 /**
  * POST /api/auth/create-account
@@ -172,7 +174,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 6. Succès : retourner les données de l'utilisateur créé
+    // 6. Envoyer l'email de bienvenue (ne pas bloquer si échec)
+    if (process.env.NODE_ENV === 'production' && trial_end_date) {
+      try {
+        const emailHtml = welcomeEmail(prenom, nom, nom_cabinet, trial_end_date);
+        const emailId = await sendEmail({
+          to: email,
+          subject: 'Bienvenue sur LexiGen ! 🎉',
+          html: emailHtml,
+        });
+        if (emailId) {
+          console.log('[CREATE-ACCOUNT] Email de bienvenue envoyé:', emailId);
+        } else {
+          console.warn('[CREATE-ACCOUNT] Échec envoi email de bienvenue (non bloquant)');
+        }
+      } catch (emailError: any) {
+        console.error('[CREATE-ACCOUNT] Erreur envoi email de bienvenue (non bloquant):', emailError);
+        // Ne pas faire échouer la création si l'email échoue
+      }
+    }
+
+    // 7. Succès : retourner les données de l'utilisateur créé
     return NextResponse.json({
       success: true,
       user: {

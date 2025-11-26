@@ -2,6 +2,8 @@ export const dynamic = 'force-dynamic';
 
 import { stripe } from '@/lib/stripe';
 import { createClient } from '@supabase/supabase-js';
+import { sendEmail } from '@/lib/email';
+import { firstPaymentSuccessEmail, paymentFailedEmail } from '@/lib/email-templates';
 
 /**
  * POST /api/webhooks/stripe
@@ -206,12 +208,16 @@ export async function POST(request: Request) {
           updateData.subscription_end_date = new Date(invoice.period_end * 1000).toISOString();
         }
 
+        let isFirstPayment = false;
         // Si c'est le premier paiement après le trial, mettre à jour le statut
         if (invoice.subscription) {
           try {
             const subscription = await stripe.subscriptions.retrieve(invoice.subscription);
             if (subscription.status === 'active' && !subscription.trial_end) {
               updateData.subscription_status = 'active';
+              // Vérifier si c'est le premier paiement (pas de trial_end et billing_reason = 'subscription_create')
+              isFirstPayment = invoice.billing_reason === 'subscription_create' || 
+                                (invoice.billing_reason === 'subscription_cycle' && !subscription.trial_end);
             }
           } catch (err) {
             console.error('[WEBHOOK STRIPE] Erreur récupération subscription (invoice.payment_succeeded):', err);
@@ -228,6 +234,60 @@ export async function POST(request: Request) {
             console.error('[WEBHOOK STRIPE] Erreur mise à jour cabinet (invoice.payment_succeeded):', error);
           } else {
             console.log('[WEBHOOK STRIPE] Cabinet mis à jour (invoice.payment_succeeded):', customerId);
+          }
+        }
+
+        // Envoyer l'email de confirmation si c'est le premier paiement
+        if (isFirstPayment && process.env.NODE_ENV === 'production') {
+          try {
+            // Récupérer d'abord le cabinet via stripe_customer_id
+            const { data: cabinetData, error: cabinetError } = await supabaseAdmin
+              .from('cabinets')
+              .select('id')
+              .eq('stripe_customer_id', customerId)
+              .single();
+
+            if (cabinetError || !cabinetData) {
+              console.warn('[WEBHOOK STRIPE] Cabinet non trouvé pour customer_id:', customerId);
+            } else {
+              // Récupérer l'expert admin du cabinet
+              const { data: expertData, error: expertError } = await supabaseAdmin
+                .from('experts_comptables')
+                .select('prenom, nom, email')
+                .eq('cabinet_id', cabinetData.id)
+                .eq('role', 'admin')
+                .maybeSingle();
+
+              if (expertError || !expertData) {
+                console.warn('[WEBHOOK STRIPE] Expert non trouvé pour cabinet_id:', cabinetData.id);
+              } else {
+                const amount = (invoice.amount_paid / 100).toFixed(2);
+                const nextBillingDate = invoice.period_end 
+                  ? new Date(invoice.period_end * 1000).toISOString()
+                  : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
+                const emailHtml = firstPaymentSuccessEmail(
+                  expertData.prenom || 'Utilisateur',
+                  amount,
+                  nextBillingDate
+                );
+
+                const emailId = await sendEmail({
+                  to: expertData.email || invoice.customer_email,
+                  subject: 'Paiement confirmé - LexiGen',
+                  html: emailHtml,
+                });
+
+                if (emailId) {
+                  console.log('[WEBHOOK STRIPE] Email premier paiement envoyé:', emailId);
+                } else {
+                  console.warn('[WEBHOOK STRIPE] Échec envoi email premier paiement (non bloquant)');
+                }
+              }
+            }
+          } catch (emailError: any) {
+            console.error('[WEBHOOK STRIPE] Erreur envoi email premier paiement (non bloquant):', emailError);
+            // Ne pas faire échouer le webhook si l'email échoue
           }
         }
         break;
@@ -259,6 +319,58 @@ export async function POST(request: Request) {
           console.error('[WEBHOOK STRIPE] Erreur mise à jour cabinet (invoice.payment_failed):', error);
         } else {
           console.log('[WEBHOOK STRIPE] Cabinet mis à jour (invoice.payment_failed):', customerId);
+        }
+
+        // Envoyer l'email d'alerte paiement échoué
+        if (process.env.NODE_ENV === 'production') {
+          try {
+            // Récupérer d'abord le cabinet via stripe_customer_id
+            const { data: cabinetData, error: cabinetError } = await supabaseAdmin
+              .from('cabinets')
+              .select('id')
+              .eq('stripe_customer_id', customerId)
+              .single();
+
+            if (cabinetError || !cabinetData) {
+              console.warn('[WEBHOOK STRIPE] Cabinet non trouvé pour customer_id:', customerId);
+            } else {
+              // Récupérer l'expert admin du cabinet
+              const { data: expertData, error: expertError } = await supabaseAdmin
+                .from('experts_comptables')
+                .select('prenom, nom, email')
+                .eq('cabinet_id', cabinetData.id)
+                .eq('role', 'admin')
+                .maybeSingle();
+
+              if (expertError || !expertData) {
+                console.warn('[WEBHOOK STRIPE] Expert non trouvé pour cabinet_id:', cabinetData.id);
+              } else {
+                const retryDate = invoice.next_payment_attempt
+                  ? new Date(invoice.next_payment_attempt * 1000).toISOString()
+                  : new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
+
+                const emailHtml = paymentFailedEmail(
+                  expertData.prenom || 'Utilisateur',
+                  retryDate
+                );
+
+                const emailId = await sendEmail({
+                  to: expertData.email || invoice.customer_email,
+                  subject: 'Problème de paiement - LexiGen',
+                  html: emailHtml,
+                });
+
+                if (emailId) {
+                  console.log('[WEBHOOK STRIPE] Email paiement échoué envoyé:', emailId);
+                } else {
+                  console.warn('[WEBHOOK STRIPE] Échec envoi email paiement échoué (non bloquant)');
+                }
+              }
+            }
+          } catch (emailError: any) {
+            console.error('[WEBHOOK STRIPE] Erreur envoi email paiement échoué (non bloquant):', emailError);
+            // Ne pas faire échouer le webhook si l'email échoue
+          }
         }
         break;
       }
