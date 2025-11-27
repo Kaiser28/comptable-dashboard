@@ -1,7 +1,8 @@
 export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { stripe } from '@/lib/stripe';
+import Stripe from 'stripe';
+import { getStripeSecretKey } from '@/lib/stripe-config';
 
 /**
  * GET /api/stripe/session?session_id=xxx
@@ -9,6 +10,23 @@ import { stripe } from '@/lib/stripe';
  */
 export async function GET(request: NextRequest) {
   try {
+    // Initialiser Stripe dans la fonction GET (pas au top level)
+    // Utiliser la configuration selon l'environnement
+    let stripe: Stripe;
+    try {
+      const secretKey = getStripeSecretKey();
+      stripe = new Stripe(secretKey, {
+        apiVersion: '2025-11-17.clover',
+        typescript: true,
+      });
+    } catch (configError: any) {
+      console.error('[STRIPE SESSION] Erreur configuration Stripe:', configError);
+      return NextResponse.json(
+        { error: 'Erreur de configuration Stripe' },
+        { status: 500 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const sessionId = searchParams.get('session_id');
 

@@ -1,9 +1,10 @@
 export const dynamic = 'force-dynamic';
 
-import { stripe } from '@/lib/stripe';
+import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 import { sendEmail } from '@/lib/email';
 import { firstPaymentSuccessEmail, paymentFailedEmail } from '@/lib/email-templates';
+import { getStripeSecretKey, getStripeWebhookSecret } from '@/lib/stripe-config';
 
 /**
  * POST /api/webhooks/stripe
@@ -18,6 +19,26 @@ import { firstPaymentSuccessEmail, paymentFailedEmail } from '@/lib/email-templa
  */
 export async function POST(request: Request) {
   try {
+    // Initialiser Stripe dans la fonction POST (pas au top level)
+    // Utiliser la configuration selon l'environnement
+    let stripe: Stripe;
+    let webhookSecret: string;
+    
+    try {
+      const secretKey = getStripeSecretKey();
+      webhookSecret = getStripeWebhookSecret();
+      stripe = new Stripe(secretKey, {
+        apiVersion: '2025-11-17.clover',
+        typescript: true,
+      });
+    } catch (configError: any) {
+      console.error('[WEBHOOK STRIPE] Erreur configuration Stripe:', configError);
+      return new Response(JSON.stringify({ error: 'Erreur de configuration Stripe' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     // Lire le raw body (requis pour vérifier la signature Stripe)
     const body = await request.text();
     const signature = request.headers.get('stripe-signature');
@@ -36,7 +57,7 @@ export async function POST(request: Request) {
       event = stripe.webhooks.constructEvent(
         body,
         signature,
-        process.env.STRIPE_WEBHOOK_SECRET!
+        webhookSecret
       );
     } catch (err: any) {
       console.error('[WEBHOOK STRIPE] Erreur vérification signature:', err.message);

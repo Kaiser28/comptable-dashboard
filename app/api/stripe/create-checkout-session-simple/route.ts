@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { stripe } from '@/lib/stripe';
+import Stripe from 'stripe';
+import { getStripeSecretKey, getStripePriceId } from '@/lib/stripe-config';
 
 /**
  * POST /api/stripe/create-checkout-session-simple
@@ -14,6 +15,23 @@ import { stripe } from '@/lib/stripe';
  */
 export async function POST(request: NextRequest) {
   try {
+    // Initialiser Stripe dans la fonction POST (pas au top level)
+    // Utiliser la configuration selon l'environnement
+    let stripe: Stripe;
+    try {
+      const secretKey = getStripeSecretKey();
+      stripe = new Stripe(secretKey, {
+        apiVersion: '2025-11-17.clover',
+        typescript: true,
+      });
+    } catch (configError: any) {
+      console.error('[STRIPE CHECKOUT SIMPLE] Erreur configuration Stripe:', configError);
+      return NextResponse.json(
+        { error: 'Erreur de configuration Stripe' },
+        { status: 500 }
+      );
+    }
+
     const body = await request.json();
     const { email, nom_cabinet } = body;
 
@@ -21,6 +39,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Email et nom du cabinet requis' },
         { status: 400 }
+      );
+    }
+
+    // Récupérer le Price ID selon l'environnement
+    let priceId: string;
+    try {
+      priceId = getStripePriceId();
+    } catch (configError: any) {
+      console.error('[STRIPE CHECKOUT SIMPLE] Erreur récupération Price ID:', configError);
+      return NextResponse.json(
+        { error: 'Erreur de configuration Stripe Price ID' },
+        { status: 500 }
       );
     }
 
@@ -32,7 +62,7 @@ export async function POST(request: NextRequest) {
       customer_email: email, // Stripe crée le customer automatiquement
       line_items: [
         {
-          price: process.env.STRIPE_PRICE_ID!,
+          price: priceId,
           quantity: 1,
         },
       ],

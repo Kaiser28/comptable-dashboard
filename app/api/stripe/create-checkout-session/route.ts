@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { stripe } from '@/lib/stripe';
+import Stripe from 'stripe';
 import { createClient } from '@/lib/supabase/server';
+import { getStripeSecretKey, getStripePriceId } from '@/lib/stripe-config';
 
 /**
  * POST /api/stripe/create-checkout-session
@@ -15,6 +16,23 @@ import { createClient } from '@/lib/supabase/server';
  */
 export async function POST(request: NextRequest) {
   try {
+    // Initialiser Stripe dans la fonction POST (pas au top level)
+    // Utiliser la configuration selon l'environnement
+    let stripe: Stripe;
+    try {
+      const secretKey = getStripeSecretKey();
+      stripe = new Stripe(secretKey, {
+        apiVersion: '2025-11-17.clover',
+        typescript: true,
+      });
+    } catch (configError: any) {
+      console.error('[STRIPE CHECKOUT] Erreur configuration Stripe:', configError);
+      return NextResponse.json(
+        { error: 'Erreur de configuration Stripe' },
+        { status: 500 }
+      );
+    }
+
     const supabase = createClient();
     
     // Vérifier l'authentification
@@ -75,6 +93,18 @@ export async function POST(request: NextRequest) {
         .eq('id', cabinet_id);
     }
 
+    // Récupérer le Price ID selon l'environnement
+    let priceId: string;
+    try {
+      priceId = getStripePriceId();
+    } catch (configError: any) {
+      console.error('[STRIPE CHECKOUT] Erreur récupération Price ID:', configError);
+      return NextResponse.json(
+        { error: 'Erreur de configuration Stripe Price ID' },
+        { status: 500 }
+      );
+    }
+
     // Créer la session Checkout avec trial 14 jours
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -82,7 +112,7 @@ export async function POST(request: NextRequest) {
       payment_method_types: ['card'],
       line_items: [
         {
-          price: process.env.STRIPE_PRICE_ID!,
+          price: priceId,
           quantity: 1,
         },
       ],
