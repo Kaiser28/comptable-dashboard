@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { createClient } from '@/lib/supabase/server';
 import { getStripeSecretKey, getStripePriceId } from '@/lib/stripe-config';
+import { getSiteUrl } from '@/lib/site-config';
 
 /**
  * POST /api/stripe/create-checkout-session
@@ -105,6 +106,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Récupérer l'URL de base selon l'environnement
+    let siteUrl: string;
+    try {
+      siteUrl = getSiteUrl();
+    } catch (configError: any) {
+      console.error('[STRIPE CHECKOUT] Erreur récupération Site URL:', configError);
+      return NextResponse.json(
+        { error: 'Erreur de configuration Site URL' },
+        { status: 500 }
+      );
+    }
+
     // Créer la session Checkout avec trial 14 jours
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -122,8 +135,8 @@ export async function POST(request: NextRequest) {
           cabinet_id,
         },
       },
-      success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard?checkout=success`,
-      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard?checkout=cancel`,
+      success_url: `${siteUrl}/dashboard?checkout=success`,
+      cancel_url: `${siteUrl}/dashboard?checkout=cancel`,
       metadata: {
         cabinet_id,
       },

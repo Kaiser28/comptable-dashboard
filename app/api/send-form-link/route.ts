@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { withRateLimit } from "@/lib/ratelimit-upstash";
 import { Resend } from "resend";
+import { getSiteUrl } from "@/lib/site-config";
 
 /**
  * Route POST /api/send-form-link
@@ -27,10 +28,12 @@ export const POST = withRateLimit(
         );
       }
 
-      // Vérifier que NEXT_PUBLIC_SITE_URL est configurée
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-      if (!siteUrl) {
-        console.error("NEXT_PUBLIC_SITE_URL non configurée");
+      // Récupérer l'URL de base selon l'environnement
+      let siteUrl: string;
+      try {
+        siteUrl = getSiteUrl();
+      } catch (configError: any) {
+        console.error("[SEND FORM LINK] Erreur récupération Site URL:", configError);
         return NextResponse.json(
           { error: "Configuration site manquante" },
           { status: 500 }

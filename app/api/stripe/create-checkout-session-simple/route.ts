@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { getStripeSecretKey, getStripePriceId } from '@/lib/stripe-config';
+import { getSiteUrl } from '@/lib/site-config';
 
 /**
  * POST /api/stripe/create-checkout-session-simple
@@ -54,6 +55,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Récupérer l'URL de base selon l'environnement
+    let siteUrl: string;
+    try {
+      siteUrl = getSiteUrl();
+    } catch (configError: any) {
+      console.error('[STRIPE CHECKOUT SIMPLE] Erreur récupération Site URL:', configError);
+      return NextResponse.json(
+        { error: 'Erreur de configuration Site URL' },
+        { status: 500 }
+      );
+    }
+
     // Créer la session Checkout avec trial 14 jours
     // On stocke les infos dans metadata pour les récupérer dans le webhook
     const session = await stripe.checkout.sessions.create({
@@ -73,8 +86,8 @@ export async function POST(request: NextRequest) {
           email,
         },
       },
-      success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/onboarding?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/?checkout=cancel`,
+      success_url: `${siteUrl}/onboarding?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${siteUrl}/?checkout=cancel`,
       metadata: {
         nom_cabinet,
         email,
