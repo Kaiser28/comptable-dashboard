@@ -29,7 +29,8 @@ export async function sendEmail(options: EmailOptions): Promise<string | null> {
     }
 
     const result = await resend.emails.send({
-      from: options.from || 'LexiGen <contact@lexigen.fr>',
+      // Expéditeur : contact@sferia.fr (domaine vérifié SFERIA)
+      from: options.from || 'LexiGen <contact@sferia.fr>',
       to: options.to,
       subject: options.subject,
       html: options.html,

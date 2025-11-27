@@ -246,8 +246,9 @@ export const POST = withRateLimit(
       `.trim();
 
       // Envoyer l'email via Resend
+      // Expéditeur : contact@sferia.fr (domaine vérifié SFERIA)
       const result = await resend.emails.send({
-        from: "LexiGen <contact@lexigen.fr>",
+        from: "LexiGen <contact@sferia.fr>",
         to: client.email,
         subject: "Complétez votre dossier de création d'entreprise",
         html: emailHtml,

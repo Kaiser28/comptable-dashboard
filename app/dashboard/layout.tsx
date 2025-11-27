@@ -3,50 +3,45 @@
 import type { ReactNode } from "react";
 import { Toaster } from "sonner";
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
+import { CabinetProvider, useCabinet } from "@/lib/contexts/CabinetContext";
+import { Loader2 } from "lucide-react";
 
 type DashboardLayoutProps = {
   children: ReactNode;
 };
 
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
-  // TODO: Réactiver après avoir corrigé les RLS policies
-  // Filet de sécurité : vérifier et créer l'expert-comptable au chargement
-  // useEffect(() => {
-  //   const ensureExpertComptable = async () => {
-  //     try {
-  //       const {
-  //         data: { user },
-  //         error: userError,
-  //       } = await supabaseClient.auth.getUser();
+/**
+ * Composant interne qui utilise le hook useCabinet
+ * Nécessaire car les hooks doivent être utilisés dans un composant enfant du Provider
+ */
+function DashboardContent({ children }: DashboardLayoutProps) {
+  const { loading, error } = useCabinet();
 
-  //       if (userError || !user) {
-  //         return; // Pas d'utilisateur connecté, ne rien faire
-  //       }
+  // Afficher un loading pendant le chargement du cabinet_id
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+          <p className="text-sm text-muted-foreground">Chargement de votre cabinet...</p>
+        </div>
+      </div>
+    );
+  }
 
-  //       // Récupérer le cabinet_id
-  //       const cabinetId = await getCabinetIdByUserId(user.id);
-  //       if (!cabinetId) {
-  //         console.warn("Cabinet non trouvé pour l'utilisateur:", user.id);
-  //         return;
-  //       }
-
-  //       // Vérifier si l'expert existe, sinon le créer
-  //       const result = await initExpertComptable(
-  //         user.id,
-  //         cabinetId,
-  //         user.email || ""
-  //       );
-
-  //       if (!result.success) {
-  //         console.error("Erreur lors de l'initialisation de l'expert:", result.error);
-  //       }
-  //     } catch (error) {
-  //       console.error("Erreur dans ensureExpertComptable:", error);
-  //     }
-  //   };
-
-  //   void ensureExpertComptable();
-  // }, []);
+  // Afficher une erreur si le cabinet_id n'a pas pu être chargé
+  if (error) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="flex flex-col items-center gap-4 p-6">
+          <p className="text-sm font-medium text-destructive">{error}</p>
+          <p className="text-xs text-muted-foreground">
+            Redirection vers la page de connexion...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -58,6 +53,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       </div>
       <Toaster />
     </>
+  );
+}
+
+export default function DashboardLayout({ children }: DashboardLayoutProps) {
+  return (
+    <CabinetProvider>
+      <DashboardContent>{children}</DashboardContent>
+    </CabinetProvider>
   );
 }
 

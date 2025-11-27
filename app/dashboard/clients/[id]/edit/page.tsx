@@ -31,6 +31,8 @@ import type { Client, Associe, PieceJointe } from "@/types/database";
 import { validateStatutsData } from "@/lib/validateStatuts";
 import { searchEntreprise } from "@/lib/pappers";
 import { checkRateLimit, getRateLimitCount } from "@/lib/rateLimiter";
+import { toast } from "sonner";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const FORME_JURIDIQUE_OPTIONS = ["SAS", "SASU", "SARL", "EURL", "SA", "SCI"] as const;
 
@@ -272,6 +274,15 @@ export default function EditClientPage() {
   };
 
   const handleAddAssocie = () => {
+    // Validation SASU : une SASU ne peut avoir qu'un seul associé
+    const isSASU = formState.client?.forme_juridique === 'SASU';
+    const existingAssociesCount = formState.associes.filter(a => !a._deleted).length;
+    
+    if (isSASU && existingAssociesCount >= 1) {
+      toast.error("⚠️ Une SASU ne peut avoir qu'un seul associé unique");
+      return;
+    }
+
     const newAssocie: AssocieFormData = {
       id: undefined,
       civilite: "M.",
@@ -1335,15 +1346,45 @@ export default function EditClientPage() {
               </div>
             ))}
 
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleAddAssocie}
-              className="w-full mt-4"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Ajouter un associé
-            </Button>
+            {(() => {
+              const isSASU = formState.client?.forme_juridique === 'SASU';
+              const existingAssociesCount = formState.associes.filter(a => !a._deleted).length;
+              const canAddAssocie = !isSASU || existingAssociesCount === 0;
+              const sasuLimitMessage = isSASU && existingAssociesCount >= 1
+                ? "⚠️ Une SASU ne peut avoir qu'un seul associé unique"
+                : null;
+
+              return (
+                <div className="w-full mt-4">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="w-full">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={handleAddAssocie}
+                            disabled={!canAddAssocie}
+                            className="w-full"
+                          >
+                            <Plus className="mr-2 h-4 w-4" />
+                            Ajouter un associé
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+                      {sasuLimitMessage && (
+                        <TooltipContent>
+                          <p>{sasuLimitMessage}</p>
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                  </TooltipProvider>
+                  {sasuLimitMessage && (
+                    <p className="text-sm text-amber-600 mt-2">{sasuLimitMessage}</p>
+                  )}
+                </div>
+              );
+            })()}
           </CardContent>
         </Card>
 

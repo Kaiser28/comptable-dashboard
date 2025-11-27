@@ -806,7 +806,7 @@ export default function LandingPage() {
               <div className="space-y-2 text-sm">
                 <p className="flex items-center gap-2">
                   <Mail className="h-4 w-4" />
-                  Email : contact@lexigen.fr
+                  Email : contact@sferia.fr
                 </p>
                 <p className="flex items-center gap-2">
                   <Linkedin className="h-4 w-4" />

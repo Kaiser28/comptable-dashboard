@@ -75,7 +75,6 @@ export default function ClientDetailPage() {
     nom_fichier: string;
     taille_fichier: number;
     url_fichier: string;
-    created_at: string;
   }>>([]);
   const [isLoadingPiecesJointes, setIsLoadingPiecesJointes] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -141,9 +140,9 @@ export default function ClientDetailPage() {
         
         const { data, error } = await supabaseClient
           .from("pieces_jointes")
-          .select("id, nom_fichier, taille_fichier, url_fichier, created_at")
+          .select("id, nom_fichier, taille_fichier, url_fichier")
           .eq("client_id", clientId)
-          .order("created_at", { ascending: false });
+          .order("id", { ascending: false });
 
         if (error) {
           console.error("❌ Erreur Supabase pieces_jointes:", {
@@ -628,9 +627,9 @@ export default function ClientDetailPage() {
         // Recharger la liste des pièces jointes
         const { data, error } = await supabaseClient
           .from("pieces_jointes")
-          .select("id, nom_fichier, taille_fichier, url_fichier, created_at")
+          .select("id, nom_fichier, taille_fichier, url_fichier")
           .eq("client_id", clientId)
-          .order("created_at", { ascending: false });
+          .order("id", { ascending: false });
 
         if (error) {
           console.error("❌ Erreur rechargement pieces_jointes après upload:", {
@@ -691,9 +690,9 @@ export default function ClientDetailPage() {
       // Recharger la liste
       const { data, error } = await supabaseClient
         .from("pieces_jointes")
-        .select("id, nom_fichier, taille_fichier, url_fichier, created_at")
+        .select("id, nom_fichier, taille_fichier, url_fichier")
         .eq("client_id", clientId)
-        .order("created_at", { ascending: false });
+        .order("id", { ascending: false });
 
       if (error) {
         console.error("❌ Erreur rechargement pieces_jointes après suppression:", {
@@ -1036,16 +1035,6 @@ export default function ClientDetailPage() {
                           <p className="text-sm font-medium truncate">{piece.nom_fichier}</p>
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
                             <span>{formatFileSize(piece.taille_fichier)}</span>
-                            <span>•</span>
-                            <span>
-                              {new Date(piece.created_at).toLocaleDateString("fr-FR", {
-                                day: "numeric",
-                                month: "short",
-                                year: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
-                            </span>
                           </div>
                         </div>
                       </div>
@@ -1282,6 +1271,7 @@ export default function ClientDetailPage() {
                 clientData={{
                   capital_social: client.capital_social || 0,
                   nb_actions: (client as any).nb_actions || 0,
+                  forme_juridique: client.forme_juridique,
                 }}
               />
             </CardContent>

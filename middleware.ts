@@ -54,18 +54,50 @@ export async function middleware(request: NextRequest) {
     }
   );
 
+  // Récupérer la session actuelle
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
 
+  // Si une session existe, essayer de la rafraîchir pour s'assurer qu'elle est à jour
+  // Cela garantit que auth.uid() fonctionne correctement côté client
+  if (session) {
+    try {
+      // Rafraîchir la session pour mettre à jour les tokens et cookies
+      const {
+        data: { session: refreshedSession },
+        error: refreshError,
+      } = await supabase.auth.refreshSession();
+
+      if (refreshError) {
+        // Si le refresh échoue, la session est probablement expirée
+        console.log('[MIDDLEWARE] Erreur refresh session:', refreshError.message);
+        // On continue avec la session existante ou null
+      } else if (refreshedSession) {
+        // La session a été rafraîchie avec succès
+        // Les cookies sont automatiquement mis à jour via les handlers set() dans createServerClient
+        console.log('[MIDDLEWARE] Session rafraîchie avec succès');
+      }
+    } catch (error) {
+      // Erreur lors du refresh, on continue avec la session existante
+      console.error('[MIDDLEWARE] Erreur lors du refresh de session:', error);
+    }
+  }
+
+  // Utiliser la session (rafraîchie ou originale) pour vérifier l'authentification
+  const user = session?.user ?? null;
+
+  // Redirection si accès dashboard sans authentification
   if (request.nextUrl.pathname.startsWith("/dashboard") && !user) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
+  // Redirection si accès login/signup avec authentification
   if ((request.nextUrl.pathname === "/login" || request.nextUrl.pathname === "/signup") && user) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
+  // Retourner la response avec les cookies mis à jour (via refreshSession)
   return response;
 }
 

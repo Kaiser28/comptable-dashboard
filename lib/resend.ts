@@ -5,7 +5,8 @@
 
 import { Resend } from "resend";
 
-const DEFAULT_FROM = "SaaS Statuts <onboarding@resend.dev>";
+// Expéditeur : contact@sferia.fr (domaine vérifié SFERIA)
+const DEFAULT_FROM = "LexiGen <contact@sferia.fr>";
 
 /**
  * Envoie un email via Resend

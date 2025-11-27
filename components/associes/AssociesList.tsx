@@ -16,6 +16,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
 import { AssocieForm } from './AssocieForm';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 
 interface Associe {
@@ -35,6 +36,7 @@ interface AssociesListProps {
   clientData: {
     capital_social: number;
     nb_actions: number;
+    forme_juridique?: string;
   };
 }
 
@@ -44,6 +46,13 @@ export default function AssociesList({ clientId, clientData }: AssociesListProps
   const [error, setError] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingAssocie, setEditingAssocie] = useState<Associe | null>(null);
+
+  // Validation SASU : une SASU ne peut avoir qu'un seul associé
+  const isSASU = clientData.forme_juridique === 'SASU';
+  const canAddAssocie = !isSASU || associes.length === 0;
+  const sasuLimitMessage = isSASU && associes.length >= 1
+    ? "⚠️ Une SASU ne peut avoir qu'un seul associé unique"
+    : null;
 
   const fetchAssocies = async () => {
     try {
@@ -105,6 +114,16 @@ export default function AssociesList({ clientId, clientData }: AssociesListProps
 
   const formatPercentage = (percent: number) => {
     return `${percent.toFixed(2)}%`;
+  };
+
+  // Fonction pour ouvrir le dialog d'ajout (avec validation SASU)
+  const handleOpenAddDialog = () => {
+    if (!canAddAssocie) {
+      toast.error("⚠️ Une SASU ne peut avoir qu'un seul associé unique");
+      return;
+    }
+    setEditingAssocie(null);
+    setIsDialogOpen(true);
   };
 
   // Fonction pour modifier un associé
@@ -184,15 +203,35 @@ export default function AssociesList({ clientId, clientData }: AssociesListProps
           <p className="text-sm text-muted-foreground mb-6 max-w-md">
             Les associés sont les actionnaires qui détiennent des parts de la société
           </p>
-          <Button onClick={() => setIsDialogOpen(true)}>
-            Ajouter un associé
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                  <Button 
+                    onClick={handleOpenAddDialog}
+                    disabled={!canAddAssocie}
+                  >
+                    Ajouter un associé
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              {sasuLimitMessage && (
+                <TooltipContent>
+                  <p>{sasuLimitMessage}</p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
+          {sasuLimitMessage && (
+            <p className="text-sm text-amber-600 mt-2">{sasuLimitMessage}</p>
+          )}
         </div>
 
         {/* Formulaire modal d'ajout */}
         <AssocieForm
           clientId={clientId}
           clientData={formClientData}
+          formeJuridique={clientData.forme_juridique}
           isOpen={isDialogOpen}
           onClose={() => {
             setIsDialogOpen(false);
@@ -221,9 +260,30 @@ export default function AssociesList({ clientId, clientData }: AssociesListProps
           <span className="font-medium text-foreground">{clientData.nb_actions}</span> actions à{' '}
           <span className="font-medium text-foreground">{formatCurrency(valeurNominale)}</span>
         </div>
-        <Button onClick={() => setIsDialogOpen(true)}>
-          Ajouter un associé
-        </Button>
+        <div className="flex flex-col items-end gap-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                  <Button 
+                    onClick={handleOpenAddDialog}
+                    disabled={!canAddAssocie}
+                  >
+                    Ajouter un associé
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              {sasuLimitMessage && (
+                <TooltipContent>
+                  <p>{sasuLimitMessage}</p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
+          {sasuLimitMessage && (
+            <p className="text-xs text-amber-600">{sasuLimitMessage}</p>
+          )}
+        </div>
       </div>
 
       {/* Tableau des associés */}
@@ -340,6 +400,7 @@ export default function AssociesList({ clientId, clientData }: AssociesListProps
       <AssocieForm
         clientId={clientId}
         clientData={formClientData}
+        formeJuridique={clientData.forme_juridique}
         isOpen={isDialogOpen}
         onClose={() => {
           setIsDialogOpen(false);
