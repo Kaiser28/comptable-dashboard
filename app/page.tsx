@@ -884,6 +884,21 @@ export default function LandingPage() {
         </div>
       </footer>
 
+      {/* Footer discret SFERIA */}
+      <footer className="border-t border-gray-200 bg-white">
+        <div className="container mx-auto px-4 py-6 text-center text-sm text-gray-600">
+          Développé par{' '}
+          <a
+            href="https://sferia.fr"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold text-gray-700 hover:text-gray-900 hover:underline transition-colors"
+          >
+            SFERIA
+          </a>
+        </div>
+      </footer>
+
       {/* Toaster pour les notifications */}
       <Toaster position="top-right" richColors />
 
