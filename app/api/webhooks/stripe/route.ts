@@ -10,12 +10,15 @@ import { getStripeSecretKey, getStripeWebhookSecret } from '@/lib/stripe-config'
  * POST /api/webhooks/stripe
  * Webhook Stripe pour mettre à jour automatiquement les abonnements dans Supabase
  * 
+ * IMPORTANT : Ce webhook NE CRÉE JAMAIS de cabinets.
+ * Les cabinets sont créés uniquement via /api/auth/create-account après /onboarding.
+ * 
  * Événements gérés :
- * - checkout.session.completed : Mise à jour subscription_id et trial_end_date
- * - customer.subscription.updated : Mise à jour statut abonnement
- * - customer.subscription.deleted : Marquer comme annulé
- * - invoice.payment_succeeded : Mise à jour date prochain paiement
- * - invoice.payment_failed : Marquer en impayé
+ * - checkout.session.completed : Logger uniquement (cabinet sera créé via /onboarding)
+ * - customer.subscription.updated : Mise à jour statut abonnement (si cabinet existe)
+ * - customer.subscription.deleted : Marquer comme annulé (si cabinet existe)
+ * - invoice.payment_succeeded : Mise à jour date prochain paiement (si cabinet existe)
+ * - invoice.payment_failed : Marquer en impayé (si cabinet existe)
  */
 export async function POST(request: Request) {
   try {
@@ -92,42 +95,20 @@ export async function POST(request: Request) {
           ? session.subscription
           : session.subscription?.id;
 
-        if (!customerId) {
-          console.error('[WEBHOOK STRIPE] checkout.session.completed: customer_id manquant');
-          return new Response(JSON.stringify({ received: true }), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-          });
-        }
+        // Logger les métadonnées pour debug
+        const email = session.customer_details?.email || session.metadata?.email;
+        const nomCabinet = session.metadata?.nom_cabinet;
 
-        // Récupérer les détails de la subscription pour avoir trial_end
-        let trialEndDate = null;
-        if (subscriptionId) {
-          try {
-            const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-            if (subscription.trial_end) {
-              trialEndDate = new Date(subscription.trial_end * 1000).toISOString();
-            }
-          } catch (err) {
-            console.error('[WEBHOOK STRIPE] Erreur récupération subscription:', err);
-          }
-        }
+        console.log('[WEBHOOK STRIPE] checkout.session.completed reçu, attente de création via /onboarding', {
+          customer_id: customerId,
+          subscription_id: subscriptionId,
+          email: email,
+          nom_cabinet: nomCabinet,
+        });
 
-        // Mettre à jour le cabinet
-        const { error } = await supabaseAdmin
-          .from('cabinets')
-          .update({
-            stripe_subscription_id: subscriptionId || null,
-            subscription_status: 'trialing',
-            trial_end_date: trialEndDate,
-          })
-          .eq('stripe_customer_id', customerId);
-
-        if (error) {
-          console.error('[WEBHOOK STRIPE] Erreur mise à jour cabinet (checkout.session.completed):', error);
-        } else {
-          console.log('[WEBHOOK STRIPE] Cabinet mis à jour (checkout.session.completed):', customerId);
-        }
+        // NE PAS créer ni mettre à jour le cabinet ici
+        // Le cabinet sera créé via /api/auth/create-account après que l'utilisateur complète /onboarding
+        // Retourner 200 OK pour confirmer la réception de l'événement
         break;
       }
 
@@ -139,10 +120,24 @@ export async function POST(request: Request) {
 
         if (!customerId) {
           console.error('[WEBHOOK STRIPE] customer.subscription.updated: customer_id manquant');
-          return new Response(JSON.stringify({ received: true }), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-          });
+          break;
+        }
+
+        // Vérifier que le cabinet existe avant de mettre à jour
+        const { data: existingCabinet, error: checkError } = await supabaseAdmin
+          .from('cabinets')
+          .select('id')
+          .eq('stripe_customer_id', customerId)
+          .maybeSingle();
+
+        if (checkError) {
+          console.error('[WEBHOOK STRIPE] Erreur vérification cabinet (customer.subscription.updated):', checkError);
+          break;
+        }
+
+        if (!existingCabinet) {
+          console.log('[WEBHOOK STRIPE] Cabinet non trouvé pour customer_id:', customerId, '- sera créé via /onboarding');
+          break;
         }
 
         // Déterminer le statut
@@ -151,7 +146,7 @@ export async function POST(request: Request) {
           status = 'trialing';
         }
 
-        // Mettre à jour le cabinet
+        // Mettre à jour le cabinet existant
         const updateData: any = {
           stripe_subscription_id: subscription.id,
           subscription_status: status,
@@ -186,13 +181,27 @@ export async function POST(request: Request) {
 
         if (!customerId) {
           console.error('[WEBHOOK STRIPE] customer.subscription.deleted: customer_id manquant');
-          return new Response(JSON.stringify({ received: true }), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-          });
+          break;
         }
 
-        // Marquer l'abonnement comme annulé
+        // Vérifier que le cabinet existe avant de mettre à jour
+        const { data: existingCabinet, error: checkError } = await supabaseAdmin
+          .from('cabinets')
+          .select('id')
+          .eq('stripe_customer_id', customerId)
+          .maybeSingle();
+
+        if (checkError) {
+          console.error('[WEBHOOK STRIPE] Erreur vérification cabinet (customer.subscription.deleted):', checkError);
+          break;
+        }
+
+        if (!existingCabinet) {
+          console.log('[WEBHOOK STRIPE] Cabinet non trouvé pour customer_id:', customerId, '- sera créé via /onboarding');
+          break;
+        }
+
+        // Marquer l'abonnement comme annulé (cabinet existe)
         const { error } = await supabaseAdmin
           .from('cabinets')
           .update({
@@ -217,10 +226,24 @@ export async function POST(request: Request) {
 
         if (!customerId) {
           console.error('[WEBHOOK STRIPE] invoice.payment_succeeded: customer_id manquant');
-          return new Response(JSON.stringify({ received: true }), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-          });
+          break;
+        }
+
+        // Vérifier que le cabinet existe avant de mettre à jour
+        const { data: existingCabinet, error: checkError } = await supabaseAdmin
+          .from('cabinets')
+          .select('id')
+          .eq('stripe_customer_id', customerId)
+          .maybeSingle();
+
+        if (checkError) {
+          console.error('[WEBHOOK STRIPE] Erreur vérification cabinet (invoice.payment_succeeded):', checkError);
+          break;
+        }
+
+        if (!existingCabinet) {
+          console.log('[WEBHOOK STRIPE] Cabinet non trouvé pour customer_id:', customerId, '- sera créé via /onboarding');
+          break;
         }
 
         // Mettre à jour la date de prochain paiement (period_end)
@@ -261,26 +284,18 @@ export async function POST(request: Request) {
         // Envoyer l'email de confirmation si c'est le premier paiement
         if (isFirstPayment && process.env.NODE_ENV === 'production') {
           try {
-            // Récupérer d'abord le cabinet via stripe_customer_id
-            const { data: cabinetData, error: cabinetError } = await supabaseAdmin
-              .from('cabinets')
-              .select('id')
-              .eq('stripe_customer_id', customerId)
-              .single();
-
-            if (cabinetError || !cabinetData) {
-              console.warn('[WEBHOOK STRIPE] Cabinet non trouvé pour customer_id:', customerId);
-            } else {
+            // Le cabinet existe déjà (vérifié plus haut)
+            if (existingCabinet) {
               // Récupérer l'expert admin du cabinet
               const { data: expertData, error: expertError } = await supabaseAdmin
                 .from('experts_comptables')
                 .select('prenom, nom, email')
-                .eq('cabinet_id', cabinetData.id)
+                .eq('cabinet_id', existingCabinet.id)
                 .eq('role', 'admin')
                 .maybeSingle();
 
               if (expertError || !expertData) {
-                console.warn('[WEBHOOK STRIPE] Expert non trouvé pour cabinet_id:', cabinetData.id);
+                console.warn('[WEBHOOK STRIPE] Expert non trouvé pour cabinet_id:', existingCabinet.id);
               } else {
                 const amount = (invoice.amount_paid / 100).toFixed(2);
                 const nextBillingDate = invoice.period_end 
@@ -322,13 +337,27 @@ export async function POST(request: Request) {
 
         if (!customerId) {
           console.error('[WEBHOOK STRIPE] invoice.payment_failed: customer_id manquant');
-          return new Response(JSON.stringify({ received: true }), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-          });
+          break;
         }
 
-        // Marquer le compte en impayé
+        // Vérifier que le cabinet existe avant de mettre à jour
+        const { data: existingCabinet, error: checkError } = await supabaseAdmin
+          .from('cabinets')
+          .select('id')
+          .eq('stripe_customer_id', customerId)
+          .maybeSingle();
+
+        if (checkError) {
+          console.error('[WEBHOOK STRIPE] Erreur vérification cabinet (invoice.payment_failed):', checkError);
+          break;
+        }
+
+        if (!existingCabinet) {
+          console.log('[WEBHOOK STRIPE] Cabinet non trouvé pour customer_id:', customerId, '- sera créé via /onboarding');
+          break;
+        }
+
+        // Marquer le compte en impayé (cabinet existe)
         const { error } = await supabaseAdmin
           .from('cabinets')
           .update({
@@ -345,26 +374,18 @@ export async function POST(request: Request) {
         // Envoyer l'email d'alerte paiement échoué
         if (process.env.NODE_ENV === 'production') {
           try {
-            // Récupérer d'abord le cabinet via stripe_customer_id
-            const { data: cabinetData, error: cabinetError } = await supabaseAdmin
-              .from('cabinets')
-              .select('id')
-              .eq('stripe_customer_id', customerId)
-              .single();
-
-            if (cabinetError || !cabinetData) {
-              console.warn('[WEBHOOK STRIPE] Cabinet non trouvé pour customer_id:', customerId);
-            } else {
+            // Le cabinet existe déjà (vérifié plus haut)
+            if (existingCabinet) {
               // Récupérer l'expert admin du cabinet
               const { data: expertData, error: expertError } = await supabaseAdmin
                 .from('experts_comptables')
                 .select('prenom, nom, email')
-                .eq('cabinet_id', cabinetData.id)
+                .eq('cabinet_id', existingCabinet.id)
                 .eq('role', 'admin')
                 .maybeSingle();
 
               if (expertError || !expertData) {
-                console.warn('[WEBHOOK STRIPE] Expert non trouvé pour cabinet_id:', cabinetData.id);
+                console.warn('[WEBHOOK STRIPE] Expert non trouvé pour cabinet_id:', existingCabinet.id);
               } else {
                 const retryDate = invoice.next_payment_attempt
                   ? new Date(invoice.next_payment_attempt * 1000).toISOString()
