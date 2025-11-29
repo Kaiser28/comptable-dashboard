@@ -51,80 +51,35 @@ export async function GET(
       );
     }
 
-    // Authentification
-    const authHeader = request.headers.get("authorization");
-    const token = authHeader?.replace("Bearer ", "");
-
-    let supabase;
-    let user;
-    let authError;
-
-    if (token) {
-      supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-          global: {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+    const cookieStore = await cookies();
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) {
+            return cookieStore.get(name)?.value;
           },
-        }
-      );
-      const result = await supabase.auth.getUser(token);
-      user = result.data.user;
-      authError = result.error;
-    } else {
-      const cookieStore = await cookies();
-      supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-          cookies: {
-            get(name: string) {
-              return cookieStore.get(name)?.value;
-            },
-          },
-        }
-      );
-      const result = await supabase.auth.getUser();
-      user = result.data.user;
-      authError = result.error;
-    }
+        },
+      }
+    );
 
-    if (authError || !user) {
-      return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
-    }
-
-    // Vérifier que le client existe et appartient au cabinet de l'expert
+    // Vérifier que le client existe
     const { data: client, error: clientError } = await supabase
       .from("clients")
-      .select("id, cabinet_id, nb_actions, capital_social")
+      .select("id, cabinet_id")
       .eq("id", clientId)
       .single();
 
     if (clientError || !client) {
+      console.error('[API ASSOCIES GET] Client non trouvé:', clientError);
       return NextResponse.json(
         { error: "Client non trouvé" },
         { status: 404 }
       );
     }
 
-    // Vérifier que l'expert appartient au même cabinet que le client
-    const { data: expert } = await supabase
-      .from("experts_comptables")
-      .select("cabinet_id")
-      .eq("user_id", user.id)
-      .single();
-
-    if (!expert || expert.cabinet_id !== client.cabinet_id) {
-      return NextResponse.json(
-        { error: "Accès non autorisé à ce client" },
-        { status: 403 }
-      );
-    }
-
-    // Récupérer tous les associés du client, triés par pourcentage_capital DESC
+    // Récupérer les associés (RLS vérifie les permissions automatiquement)
     const { data: associes, error: associesError } = await supabase
       .from("associes")
       .select("*")
@@ -132,18 +87,21 @@ export async function GET(
       .order("pourcentage_capital", { ascending: false });
 
     if (associesError) {
-      console.error("Erreur récupération associés:", associesError);
+      console.error('[API ASSOCIES GET] Erreur récupération:', associesError);
       return NextResponse.json(
         { error: "Erreur lors de la récupération des associés" },
         { status: 500 }
       );
     }
 
+    console.log('[API ASSOCIES GET] Succès:', associes?.length || 0, 'associés');
     return NextResponse.json(associes || [], { status: 200 });
+
   } catch (error: any) {
-    console.error("Erreur GET associés:", error);
+    console.error('[API ASSOCIES GET] Exception:', error);
+    console.error('[API ASSOCIES GET] Stack:', error.stack);
     return NextResponse.json(
-      { error: "Erreur serveur lors de la récupération des associés" },
+      { error: "Erreur serveur", details: error.message },
       { status: 500 }
     );
   }
