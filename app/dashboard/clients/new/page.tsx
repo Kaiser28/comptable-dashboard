@@ -28,6 +28,7 @@ import { supabaseClient } from "@/lib/supabase";
 import { searchEntreprise } from "@/lib/pappers";
 import { checkRateLimit, getRateLimitCount } from "@/lib/rateLimiter";
 import { getFormulaireEmail } from "@/lib/emailTemplates";
+import { useCabinet } from "@/lib/contexts/CabinetContext";
 import type { Client } from "@/types/database";
 
 type ClientFormData = Pick<
@@ -77,6 +78,7 @@ const isSiretValid = (value: string) => /^\d{14}$/.test(value);
 
 export default function NewClientPage() {
   const router = useRouter();
+  const { cabinetId, loading: cabinetLoading, error: cabinetError } = useCabinet();
   const [formData, setFormData] = useState<ClientFormData>(initialFormState);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -298,20 +300,17 @@ export default function NewClientPage() {
     setIsSubmitting(true);
 
     try {
-      const {
-        data: { user },
-        error: userError,
-      } = await supabaseClient.auth.getUser();
-
-      if (userError || !user) {
+      // Vérifier que le cabinet_id est disponible
+      if (!cabinetId) {
         setFormErrors({
-          global: "Impossible de récupérer votre session. Veuillez vous reconnecter.",
+          global: "Impossible de récupérer votre cabinet. Veuillez vous reconnecter.",
         });
+        setIsSubmitting(false);
         return;
       }
 
       const payload = {
-        cabinet_id: user.id,
+        cabinet_id: cabinetId,
         nom_entreprise: formData.nom_entreprise.trim(),
         forme_juridique: formData.forme_juridique || null,
         capital_social:
@@ -355,6 +354,15 @@ export default function NewClientPage() {
       let emailSentSuccess = false;
       if (formData.email && insertedClient) {
         try {
+          // Récupérer l'utilisateur actuel pour les infos de l'expert-comptable
+          const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+          
+          if (userError || !user) {
+            console.error("Erreur récupération utilisateur pour email:", userError);
+            // Continuer sans envoyer l'email si on ne peut pas récupérer l'utilisateur
+            throw new Error("Impossible de récupérer les informations de l'expert-comptable");
+          }
+
           const formUrl = `${window.location.origin}/formulaire/${payload.formulaire_token}`;
           const expertName = user.user_metadata?.full_name || user.email?.split("@")[0] || "Votre expert-comptable";
           const expertEmail = user.email || "";
@@ -411,6 +419,36 @@ export default function NewClientPage() {
       setIsSubmitting(false);
     }
   };
+
+  // Afficher un loading pendant le chargement du cabinet_id
+  if (cabinetLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 px-4 py-10 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-3xl">
+          <div className="flex flex-col items-center justify-center gap-4 py-20">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+            <p className="text-sm text-muted-foreground">Chargement de votre cabinet...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Afficher une erreur si le cabinet_id n'a pas pu être chargé
+  if (cabinetError || !cabinetId) {
+    return (
+      <div className="min-h-screen bg-gray-50 px-4 py-10 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-3xl">
+          <div className="flex flex-col items-center justify-center gap-4 py-20">
+            <p className="text-sm font-medium text-destructive">
+              {cabinetError || 'Erreur lors de la récupération du cabinet'}
+            </p>
+            <Button onClick={() => router.push('/dashboard')}>Retour au dashboard</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-10 sm:px-6 lg:px-8">

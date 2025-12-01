@@ -32,6 +32,7 @@ interface AssocieFormProps {
     valeur_nominale: number;
     capital_social: number;
   };
+  formeJuridique?: string;
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
@@ -74,6 +75,7 @@ interface FormData {
 export function AssocieForm({
   clientId,
   clientData,
+  formeJuridique,
   isOpen,
   onClose,
   onSuccess,
@@ -176,6 +178,15 @@ export function AssocieForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
+
+    // Validation SASU : vérifier qu'on n'ajoute pas un 2e associé en SASU
+    const isSASU = formeJuridique === 'SASU';
+    const isAddingNewAssocie = !associeId; // Si pas d'associeId, c'est un ajout, pas une édition
+    
+    if (isSASU && isAddingNewAssocie && existingAssocies.length >= 1) {
+      toast.error("⚠️ Une SASU ne peut avoir qu'un seul associé unique");
+      return;
+    }
 
     // Validation
     const newErrors: Partial<Record<keyof FormData, string>> = {};

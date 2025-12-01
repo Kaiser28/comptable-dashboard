@@ -174,7 +174,8 @@ export const POST = withRateLimit(
               Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
             },
             body: JSON.stringify({
-              from: "LexiGen <contact@lexigen.fr>",
+              // Expéditeur : contact@sferia.fr (domaine vérifié SFERIA)
+              from: "LexiGen <contact@sferia.fr>",
               to: email,
               subject: "🎉 Candidature Founders reçue !",
               html: `

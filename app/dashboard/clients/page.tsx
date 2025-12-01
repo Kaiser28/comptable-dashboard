@@ -55,6 +55,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabaseClient } from "@/lib/supabase";
+import { useCabinet } from "@/lib/contexts/CabinetContext";
 import type { Client } from "@/types/database";
 
 type ClientWithProgress = Client & {
@@ -84,8 +85,8 @@ const statusBadgeVariant = (status: string): "default" | "secondary" | "outline"
 
 export default function ClientsPage() {
   const router = useRouter();
+  const { cabinetId, loading: cabinetLoading, error: cabinetError } = useCabinet();
   const [isLoading, setIsLoading] = useState(true);
-  const [cabinetId, setCabinetId] = useState<string | null>(null);
   const [clients, setClients] = useState<ClientWithProgress[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -97,34 +98,27 @@ export default function ClientsPage() {
   const itemsPerPage = 50;
 
   useEffect(() => {
-    void fetchData();
-  }, []);
+    // Attendre que le cabinet_id soit chargé avant de fetch les données
+    if (!cabinetLoading && cabinetId) {
+      void fetchData();
+    } else if (!cabinetLoading && !cabinetId) {
+      // Si le cabinet_id n'est pas disponible après le chargement, arrêter le loading
+      setIsLoading(false);
+    }
+  }, [cabinetId, cabinetLoading]);
 
   const fetchData = async () => {
     try {
       setIsLoading(true);
 
-      // Récupérer l'utilisateur actuel
-      const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
-      if (userError || !user) {
-        router.push("/login");
-        return;
-      }
-
-      // Récupérer le cabinet_id
-      const { data: expertComptable, error: expertError } = await supabaseClient
-        .from("experts_comptables")
-        .select("cabinet_id")
-        .eq("user_id", user.id)
-        .single();
-
-      if (expertError || !expertComptable?.cabinet_id) {
+      // Vérifier que le cabinet_id est disponible
+      if (!cabinetId) {
         toast.error("Erreur lors de la récupération du cabinet");
+        setIsLoading(false);
         return;
       }
 
-      const id = expertComptable.cabinet_id;
-      setCabinetId(id);
+      const id = cabinetId;
 
       // Récupérer tous les clients avec leurs actes
       const [clientsResult, actesResult] = await Promise.all([
@@ -270,6 +264,51 @@ export default function ClientsPage() {
       toast.error("Erreur lors de la suppression du client");
     }
   };
+
+  // Afficher un loading pendant le chargement du cabinet_id
+  if (cabinetLoading || isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <Skeleton className="h-8 w-48 mb-2" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+          <Skeleton className="h-10 w-40" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-6 w-3/4 mb-2" />
+                <Skeleton className="h-4 w-1/2" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-4 w-2/3" />
+              </CardContent>
+              <CardFooter>
+                <Skeleton className="h-9 w-full" />
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Afficher une erreur si le cabinet_id n'a pas pu être chargé
+  if (cabinetError || !cabinetId) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <p className="text-sm font-medium text-destructive mb-4">
+          {cabinetError || 'Erreur lors de la récupération du cabinet'}
+        </p>
+        <Button onClick={() => router.push('/dashboard')}>Retour au dashboard</Button>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-muted">

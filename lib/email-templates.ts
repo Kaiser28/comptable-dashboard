@@ -5,7 +5,8 @@
 
 const BRAND_COLOR = '#0074d4';
 const DASHBOARD_URL = 'https://v0-acpm-pi.vercel.app/dashboard';
-const CONTACT_EMAIL = 'contact@lexigen.fr';
+// Expéditeur : contact@sferia.fr (domaine vérifié SFERIA)
+const CONTACT_EMAIL = 'contact@sferia.fr';
 
 /**
  * Template de base pour tous les emails
