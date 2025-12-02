@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { 
@@ -33,14 +33,12 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { supabaseClient } from '@/lib/supabase';
-import BetaSignupModal from '@/components/landing/BetaSignupModal';
 import { Toaster } from 'sonner';
 
 export default function LandingPage() {
   const router = useRouter();
   const [placesRestantes, setPlacesRestantes] = useState(13);
   const [scrollY, setScrollY] = useState(0);
-  const [showBetaModal, setShowBetaModal] = useState(false);
 
   useEffect(() => {
     // Fetch places restantes
@@ -92,24 +90,12 @@ export default function LandingPage() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const formRef = useRef<HTMLDivElement>(null);
-
   const handlePostulerClick = () => {
-    setShowBetaModal(true);
-      if (typeof window !== 'undefined' && (window as any).gtag) {
-        (window as any).gtag('event', 'cta_click', {
-          event_category: 'CTA',
-          event_label: 'Démarrer essai gratuit',
-        });
-      }
-  };
-
-  const handleDemoClick = () => {
-    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    window.location.href = '/signup-v2';
     if (typeof window !== 'undefined' && (window as any).gtag) {
       (window as any).gtag('event', 'cta_click', {
         event_category: 'CTA',
-        event_label: 'Réserver démo',
+        event_label: 'Démarrer essai gratuit',
       });
     }
   };
@@ -148,9 +134,11 @@ export default function LandingPage() {
                   Se connecter
                 </Button>
             </Link>
-            <Button onClick={handleDemoClick} variant="ghost" size="sm">
-              Réserver une démo
-            </Button>
+            <Link href="/signup-v2">
+              <Button variant="ghost" size="sm">
+                Démarrer mon essai gratuit
+              </Button>
+            </Link>
           </div>
         </div>
       </header>
@@ -486,9 +474,11 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="text-center mt-12">
-            <Button onClick={handleDemoClick} variant="outline" size="lg">
-              Réserver une démo personnalisée
-            </Button>
+            <Link href="/signup-v2">
+              <Button variant="outline" size="lg">
+                Démarrer mon essai gratuit
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
@@ -670,13 +660,6 @@ export default function LandingPage() {
 
       {/* Toaster pour les notifications */}
       <Toaster position="top-right" richColors />
-
-      {/* Modal d'inscription Beta */}
-      <div ref={formRef} />
-      <BetaSignupModal 
-        open={showBetaModal} 
-        onOpenChange={setShowBetaModal} 
-      />
     </div>
   );
 }
