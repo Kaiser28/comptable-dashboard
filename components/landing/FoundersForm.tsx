@@ -8,9 +8,16 @@ import { toast } from 'sonner';
 export function FoundersForm() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [acceptedCGV, setAcceptedCGV] = useState(false);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!acceptedCGV) {
+      toast.error('Vous devez accepter les CGV/CGU pour continuer');
+      return;
+    }
+
     setIsSubmitting(true);
 
     const formData = new FormData(e.currentTarget);
@@ -316,12 +323,47 @@ export function FoundersForm() {
         </label>
       </div>
 
+      {/* Checkbox d'acceptation CGV/CGU */}
+      <div className="bg-gray-50 rounded-lg p-4">
+        <label className="flex items-start gap-2">
+          <input
+            type="checkbox"
+            id="accept-cgv"
+            checked={acceptedCGV}
+            onChange={(e) => setAcceptedCGV(e.target.checked)}
+            className="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
+          />
+          <span className="text-sm text-gray-700">
+            {`J'accepte les `}
+            <a href="/cgv" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-800">CGV</a>
+            {`, les `}
+            <a href="/cgu" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-800">CGU</a>
+            {` et la `}
+            <a href="/confidentialite" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-800">Politique de Confidentialité</a>
+            <span className="text-red-500"> *</span>
+          </span>
+        </label>
+      </div>
+
       {/* CTA Submit */}
+      <div className="bg-gray-50 rounded-lg p-4 mt-4">
+        <label className="flex items-start gap-2">
+          <input
+            type="checkbox"
+            checked={acceptedCGV}
+            onChange={(e) => setAcceptedCGV(e.target.checked)}
+            className="mt-1 rounded border-gray-300"
+          />
+          <span className="text-sm text-gray-700">
+            J&apos;accepte les <a href="/cgv" target="_blank" className="text-blue-600 underline">CGV</a>, <a href="/cgu" target="_blank" className="text-blue-600 underline">CGU</a> et la <a href="/confidentialite" target="_blank" className="text-blue-600 underline">Politique</a> <span className="text-red-500">*</span>
+          </span>
+        </label>
+      </div>
       <Button
         type="submit"
         size="lg"
-        disabled={isSubmitting}
-        className="w-full bg-orange-600 hover:bg-orange-700 text-white text-lg py-6"
+        disabled={!acceptedCGV || isSubmitting}
+        className={`w-full text-lg py-6 ${!acceptedCGV || isSubmitting ? 'bg-gray-300 cursor-not-allowed text-gray-500' : 'bg-orange-600 hover:bg-orange-700 text-white'}`}
       >
         {isSubmitting ? 'Envoi en cours...' : 'Envoyer ma candidature'}
       </Button>

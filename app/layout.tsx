@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { GoogleAnalytics } from "@/components/landing/GoogleAnalytics";
 import { Hotjar } from "@/components/landing/Hotjar";
+import { Footer } from "@/components/Footer";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -33,6 +34,7 @@ export default function RootLayout({
         <GoogleAnalytics />
         <Hotjar />
         {children}
+        <Footer />
       </body>
     </html>
   );

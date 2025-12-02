@@ -2,6 +2,21 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+
+  // Pages légales accessibles sans authentification (pas de vérification de session nécessaire)
+  const legalPages = [
+    '/cgv',
+    '/cgu',
+    '/confidentialite',
+    '/mentions-legales',
+  ];
+
+  // Si c'est une page légale, autoriser l'accès sans vérification d'authentification
+  if (legalPages.includes(pathname)) {
+    return NextResponse.next();
+  }
+
   let response = NextResponse.next({
     request: {
       headers: request.headers,

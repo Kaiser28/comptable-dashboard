@@ -27,9 +27,15 @@ export function BetaModal({ isOpen, onClose, placesRestantes }: BetaModalProps) 
   const [nbCreations, setNbCreations] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [acceptedCGV, setAcceptedCGV] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!acceptedCGV) {
+      alert('Vous devez accepter les CGV/CGU pour continuer');
+      return;
+    }
 
     if (!prenom || !email) {
       toast.error('Veuillez remplir tous les champs obligatoires');
@@ -198,14 +204,42 @@ export function BetaModal({ isOpen, onClose, placesRestantes }: BetaModalProps) 
               <p className="font-semibold">✓ Annulation 1 clic</p>
             </div>
 
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full mt-6 bg-orange-600 hover:bg-orange-700 text-white"
-              size="lg"
+            {/* Checkbox d'acceptation CGV/CGU */}
+            <div className="flex items-start gap-2 mb-4 mt-6">
+              <input 
+                type="checkbox" 
+                id="accept-cgv" 
+                checked={acceptedCGV}
+                onChange={(e) => setAcceptedCGV(e.target.checked)}
+                className="mt-1 h-4 w-4"
+              />
+              <label htmlFor="accept-cgv" className="text-sm text-gray-600">
+                J'accepte les{' '}
+                <a href="/cgv" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+                  CGV
+                </a>
+                ,{' '}
+                <a href="/cgu" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+                  CGU
+                </a>
+                {' '}et la{' '}
+                <a href="/confidentialite" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+                  politique de confidentialité
+                </a>
+              </label>
+            </div>
+
+            <button 
+              type="submit" 
+              disabled={!acceptedCGV || isSubmitting}
+              className={`w-full py-3 rounded-lg ${
+                !acceptedCGV || isSubmitting 
+                  ? 'bg-gray-300 cursor-not-allowed' 
+                  : 'bg-orange-600 hover:bg-orange-700'
+              } text-white font-semibold transition-colors`}
             >
-              {isSubmitting ? 'Inscription...' : 'Rejoindre les Beta Founders 🚀'}
-            </Button>
+              {isSubmitting ? 'Traitement...' : 'Rejoindre le programme Founders'}
+            </button>
           </form>
         )}
       </div>

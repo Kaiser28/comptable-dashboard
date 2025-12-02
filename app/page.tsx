@@ -15,14 +15,12 @@ import {
   ArrowRight,
   ChevronRight,
   Rocket,
-  Mail,
   Calendar,
   Sparkles,
   TrendingUp,
   Scale,
   X,
   Phone,
-  Linkedin,
   Gavel,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -787,117 +785,6 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-
-      {/* FOOTER */}
-      <footer className="bg-gray-900 text-gray-300 py-12">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Branding */}
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-blue-800 to-blue-600 text-white font-bold text-xl">
-                  L
-                </div>
-                <span className="text-xl font-bold text-white">LexiGen</span>
-              </div>
-              <p className="text-sm mb-4">
-                L'automatisation juridique pour experts-comptables
-              </p>
-              <div className="space-y-2 text-sm">
-                <p className="flex items-center gap-2">
-                  <Mail className="h-4 w-4" />
-                  Email : contact@sferia.fr
-                </p>
-                <p className="flex items-center gap-2">
-                  <Linkedin className="h-4 w-4" />
-                  LinkedIn : <Link href="#" className="hover:text-white">LexiGen</Link>
-                </p>
-              </div>
-            </div>
-
-            {/* Ressources */}
-            <div>
-              <h3 className="font-semibold text-white mb-4">Ressources</h3>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <Link href="#" onClick={handleDemoClick} className="hover:text-white transition-colors">
-                    Réserver une démo
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#roadmap" className="hover:text-white transition-colors">
-                    Roadmap
-                  </Link>
-                </li>
-                <li>
-                  <button
-                    onClick={handlePostulerClick}
-                    className="hover:text-white transition-colors text-left"
-                  >
-                    Programme Founders
-                  </button>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-white transition-colors">
-                    Documentation (bientôt)
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-white transition-colors">
-                    Blog (bientôt)
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            {/* Légal */}
-            <div>
-              <h3 className="font-semibold text-white mb-4">Légal</h3>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <Link href="#" className="hover:text-white transition-colors">
-                    CGU / CGV
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-white transition-colors">
-                    Politique de confidentialité
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-white transition-colors">
-                Mentions légales
-              </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-white transition-colors">
-                    RGPD
-              </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="mt-8 pt-8 border-t border-gray-800 text-center text-sm">
-            <p>© 2025 LexiGen - Tous droits réservés</p>
-            <p className="mt-2">Made with ❤️ for French accountants</p>
-          </div>
-        </div>
-      </footer>
-
-      {/* Footer discret SFERIA */}
-      <footer className="border-t border-gray-200 bg-white">
-        <div className="container mx-auto px-4 py-6 text-center text-sm text-gray-600">
-          Développé par{' '}
-          <a
-            href="https://sferia.fr"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-semibold text-gray-700 hover:text-gray-900 hover:underline transition-colors"
-          >
-            SFERIA
-          </a>
-        </div>
-      </footer>
 
       {/* Toaster pour les notifications */}
       <Toaster position="top-right" richColors />

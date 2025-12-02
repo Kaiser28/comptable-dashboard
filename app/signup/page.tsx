@@ -40,6 +40,8 @@ export default function SignupPage() {
   const [adresse, setAdresse] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -78,7 +80,13 @@ export default function SignupPage() {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setAttemptedSubmit(true);
     setErrors({});
+
+    // Validation de l'acceptation des conditions
+    if (!acceptedTerms) {
+      return;
+    }
 
     // Validation
     if (!validateForm()) {
@@ -346,11 +354,59 @@ export default function SignupPage() {
               )}
             </div>
 
+            {/* Checkbox d'acceptation des CGV/CGU */}
+            <div className="flex items-start space-x-2 mb-6">
+              <input
+                type="checkbox"
+                id="acceptTerms"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                className="mt-1 h-4 w-4 rounded border-gray-300"
+                required
+              />
+              <label htmlFor="acceptTerms" className="text-sm text-gray-600 leading-tight">
+                J'accepte les{' '}
+                <a 
+                  href="/cgv" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline font-medium"
+                >
+                  Conditions Générales de Vente
+                </a>
+                {', les '}
+                <a 
+                  href="/cgu" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline font-medium"
+                >
+                  Conditions Générales d'Utilisation
+                </a>
+                {' et la '}
+                <a 
+                  href="/confidentialite" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline font-medium"
+                >
+                  Politique de Confidentialité
+                </a>
+                {'.'}
+              </label>
+            </div>
+            {!acceptedTerms && attemptedSubmit && (
+              <p className="text-red-600 text-sm mt-2 flex items-center gap-1 mb-4">
+                <span>⚠️</span>
+                Vous devez accepter les conditions pour créer un compte
+              </p>
+            )}
+
             {/* Bouton de soumission */}
             <Button
               type="submit"
-              className="w-full"
-              disabled={isSubmitting}
+              className={`w-full ${!acceptedTerms ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={isSubmitting || !acceptedTerms}
               size="lg"
             >
               {isSubmitting ? (
