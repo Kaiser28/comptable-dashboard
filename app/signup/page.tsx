@@ -1,199 +1,60 @@
 'use client';
 
-import { useState, type FormEvent } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { supabaseClient } from "@/lib/supabase";
-import { initExpertComptable } from "@/lib/initExpert";
-import type { Cabinet } from "@/types/database";
-import type { ExpertComptableData } from "@/lib/types/database";
-
-type FormErrors = {
-  email?: string;
-  password?: string;
-  confirmPassword?: string;
-  nom_cabinet?: string;
-  telephone?: string;
-  adresse?: string;
-  global?: string;
-};
+import { useState } from 'react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
 
 export default function SignupPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [nomCabinet, setNomCabinet] = useState("");
-  const [telephone, setTelephone] = useState("");
-  const [adresse, setAdresse] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<FormErrors>({});
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
-  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [acceptedCGV, setAcceptedCGV] = useState(false);
+  
+  const [formData, setFormData] = useState({
+    nom_cabinet: '',
+    email: '',
+  });
 
-  const validateForm = (): boolean => {
-    const newErrors: FormErrors = {};
-
-    // Validation email
-    if (!email.trim()) {
-      newErrors.email = "L'email est requis";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = "L'email n'est pas valide";
-    }
-
-    // Validation mot de passe
-    if (!password) {
-      newErrors.password = "Le mot de passe est requis";
-    } else if (password.length < 8) {
-      newErrors.password = "Le mot de passe doit contenir au moins 8 caractères";
-    }
-
-    // Validation confirmation mot de passe
-    if (!confirmPassword) {
-      newErrors.confirmPassword = "La confirmation du mot de passe est requise";
-    } else if (password !== confirmPassword) {
-      newErrors.confirmPassword = "Les mots de passe ne correspondent pas";
-    }
-
-    // Validation nom du cabinet
-    if (!nomCabinet.trim()) {
-      newErrors.nom_cabinet = "Le nom du cabinet est requis";
-    } else if (nomCabinet.trim().length < 2) {
-      newErrors.nom_cabinet = "Le nom du cabinet doit contenir au moins 2 caractères";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setAttemptedSubmit(true);
-    setErrors({});
-
-    // Validation de l'acceptation des conditions
-    if (!acceptedTerms) {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!acceptedCGV) {
+      toast.error('Vous devez accepter les conditions générales');
       return;
     }
-
-    // Validation
-    if (!validateForm()) {
-      return;
-    }
-
-    setIsSubmitting(true);
+    
+    setLoading(true);
 
     try {
-      // Étape 1 : Créer l'utilisateur avec Supabase Auth
-      const { data: authData, error: authError } = await supabaseClient.auth.signUp({
-        email: email.trim(),
-        password: password,
+      const response = await fetch('/api/stripe/create-checkout-session-simple', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
       });
 
-      if (authError) {
-        console.error("Erreur création utilisateur:", authError);
-        const errorMessage = authError.message.toLowerCase();
-        if (errorMessage.includes("email") && (errorMessage.includes("already") || errorMessage.includes("exists"))) {
-          setErrors({ global: "Cet email est déjà utilisé. Veuillez vous connecter ou utiliser un autre email." });
-        } else if (errorMessage.includes("password")) {
-          setErrors({ password: "Le mot de passe est trop faible. Utilisez au moins 8 caractères." });
-        } else {
-          setErrors({ global: "Impossible de créer le compte. Veuillez réessayer." });
-        }
-        return;
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erreur');
       }
 
-      if (!authData.user) {
-        console.error("Aucun utilisateur retourné par Supabase Auth");
-        setErrors({ global: "Impossible de créer l'utilisateur. Veuillez réessayer." });
-        return;
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error('URL Stripe manquante');
       }
-
-      const userId = authData.user.id;
-
-      // Étape 2 : Créer le cabinet
-      const cabinetPayload: Partial<Cabinet> = {
-        id: userId, // Dans notre structure, cabinet.id = userId
-        nom: nomCabinet.trim(),
-        email: email.trim(),
-        telephone: telephone.trim() || null,
-        adresse: adresse.trim() || null,
-      };
-
-      const { error: cabinetError } = await supabaseClient
-        .from("cabinets")
-        .upsert(cabinetPayload, { onConflict: "email" })
-        .select()
-        .single();
-
-      if (cabinetError) {
-        console.error("Erreur création cabinet:", cabinetError);
-        setErrors({
-          global: "Impossible d'enregistrer le cabinet. Veuillez réessayer plus tard.",
-        });
-        return;
-      }
-
-      const cabinetId = userId; // Dans notre structure, cabinet.id = userId
-
-      // Étape 3 : Créer automatiquement l'expert-comptable admin
-      try {
-        const expertPayload: Partial<ExpertComptableData> = {
-          id: crypto.randomUUID(),
-          cabinet_id: cabinetId,
-          user_id: userId,
-          email: email.trim(),
-          nom: null,
-          prenom: null,
-          telephone: null,
-          role: 'admin' as const,
-          actif: true,
-        };
-
-        const { error: expertError } = await supabaseClient
-          .from("experts_comptables")
-          .insert(expertPayload)
-          .select()
-          .single();
-
-        if (expertError && expertError.code !== "23505") {
-          // Ignorer les erreurs de doublon (23505), mais logger les autres
-          console.error("Erreur création expert:", expertError);
-          // Ne pas bloquer l'inscription si l'expert ne peut pas être créé
-        }
-      } catch (err) {
-        console.error("Exception lors création expert:", err);
-        // Ne pas bloquer l'inscription si l'expert ne peut pas être créé
-        // Il sera créé au prochain chargement du dashboard (filet de sécurité)
-      }
-
-      // Rediriger vers le dashboard
-      router.push("/dashboard");
-    } catch (error) {
-      console.error("Erreur lors de l'inscription:", error);
-      setErrors({ 
-        global: "Une erreur est survenue lors de la création de votre compte. Veuillez réessayer ou contacter le support." 
-      });
-    } finally {
-      setIsSubmitting(false);
+    } catch (error: any) {
+      toast.error(error.message || 'Erreur lors de la redirection');
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
-      <Card className="w-full max-w-md shadow-xl">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mb-4 flex items-center justify-center gap-3">
             <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-gradient-to-br from-blue-800 to-blue-600 text-white font-bold text-xl">
@@ -201,231 +62,96 @@ export default function SignupPage() {
             </div>
             <h1 className="text-2xl font-bold text-gray-900">LexiGen</h1>
           </div>
-          <CardTitle className="text-xl font-semibold">
-            Créer un compte cabinet
-          </CardTitle>
+          <CardTitle>Démarrer mon essai gratuit</CardTitle>
           <CardDescription>
-            Rejoignez LexiGen en quelques secondes
+            14 jours gratuits • Sans engagement
           </CardDescription>
         </CardHeader>
+        
         <CardContent>
-          {errors.global && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertDescription>{errors.global}</AlertDescription>
-            </Alert>
-          )}
-
-          <form className="space-y-4" onSubmit={handleSubmit}>
-            {/* Nom du cabinet */}
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="nom_cabinet">
-                Nom du cabinet <span className="text-red-500">*</span>
-              </Label>
+              <Label htmlFor="nom_cabinet">Nom de votre cabinet *</Label>
               <Input
                 id="nom_cabinet"
-                type="text"
-                value={nomCabinet}
-                onChange={(e) => {
-                  setNomCabinet(e.target.value);
-                  if (errors.nom_cabinet) {
-                    setErrors({ ...errors, nom_cabinet: undefined });
-                  }
-                }}
-                placeholder="Cabinet Dupont"
                 required
-                className={errors.nom_cabinet ? "border-red-500" : ""}
+                value={formData.nom_cabinet}
+                onChange={(e) => setFormData({ ...formData, nom_cabinet: e.target.value })}
+                placeholder="Cabinet Martin & Associés"
+                disabled={loading}
               />
-              {errors.nom_cabinet && (
-                <p className="text-sm text-red-600">{errors.nom_cabinet}</p>
-              )}
             </div>
 
-            {/* Email */}
             <div className="space-y-2">
-              <Label htmlFor="email">
-                Email professionnel <span className="text-red-500">*</span>
-              </Label>
+              <Label htmlFor="email">Email professionnel *</Label>
               <Input
                 id="email"
                 type="email"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  if (errors.email) {
-                    setErrors({ ...errors, email: undefined });
-                  }
-                }}
+                required
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 placeholder="contact@cabinet.fr"
-                required
-                className={errors.email ? "border-red-500" : ""}
+                disabled={loading}
               />
-              {errors.email && (
-                <p className="text-sm text-red-600">{errors.email}</p>
-              )}
             </div>
 
-            {/* Mot de passe */}
-            <div className="space-y-2">
-              <Label htmlFor="password">
-                Mot de passe <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="password"
-                type="password"
-                autoComplete="new-password"
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  if (errors.password) {
-                    setErrors({ ...errors, password: undefined });
-                  }
-                }}
-                placeholder="••••••••"
-                minLength={8}
-                required
-                className={errors.password ? "border-red-500" : ""}
-              />
-              {errors.password && (
-                <p className="text-sm text-red-600">{errors.password}</p>
-              )}
-              <p className="text-xs text-gray-500">
-                Minimum 8 caractères
+            <div className="rounded-md bg-blue-50 p-3 text-sm text-blue-900">
+              <p className="font-semibold">✅ 14 jours gratuits</p>
+              <p className="text-xs mt-1">
+                Puis 39,99€ HT/mois • Annulation en 1 clic
               </p>
             </div>
 
-            {/* Confirmation mot de passe */}
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">
-                Confirmer le mot de passe <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                autoComplete="new-password"
-                value={confirmPassword}
-                onChange={(e) => {
-                  setConfirmPassword(e.target.value);
-                  if (errors.confirmPassword) {
-                    setErrors({ ...errors, confirmPassword: undefined });
-                  }
-                }}
-                placeholder="••••••••"
-                minLength={8}
-                required
-                className={errors.confirmPassword ? "border-red-500" : ""}
-              />
-              {errors.confirmPassword && (
-                <p className="text-sm text-red-600">{errors.confirmPassword}</p>
-              )}
+            {/* CHECKBOX CGV/CGU */}
+            <div className="border-t pt-4">
+              <div className="flex items-start gap-2">
+                <input
+                  type="checkbox"
+                  id="accept-cgv"
+                  checked={acceptedCGV}
+                  onChange={(e) => setAcceptedCGV(e.target.checked)}
+                  className="mt-1 h-4 w-4 rounded border-gray-300"
+                />
+                <label htmlFor="accept-cgv" className="text-xs text-gray-700">
+                  J&apos;accepte les{' '}
+                  <a href="/cgv" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-800">
+                    CGV
+                  </a>
+                  , les{' '}
+                  <a href="/cgu" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-800">
+                    CGU
+                  </a>
+                  {' '}et la{' '}
+                  <a href="/confidentialite" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-800">
+                    Politique de Confidentialité
+                  </a>
+                </label>
+              </div>
             </div>
 
-            {/* Téléphone */}
-            <div className="space-y-2">
-              <Label htmlFor="telephone">Téléphone du cabinet</Label>
-              <Input
-                id="telephone"
-                type="tel"
-                autoComplete="tel"
-                value={telephone}
-                onChange={(e) => setTelephone(e.target.value)}
-                placeholder="01 23 45 67 89"
-                className={errors.telephone ? "border-red-500" : ""}
-              />
-              {errors.telephone && (
-                <p className="text-sm text-red-600">{errors.telephone}</p>
-              )}
-            </div>
-
-            {/* Adresse */}
-            <div className="space-y-2">
-              <Label htmlFor="adresse">Adresse du cabinet</Label>
-              <Input
-                id="adresse"
-                type="text"
-                autoComplete="street-address"
-                value={adresse}
-                onChange={(e) => setAdresse(e.target.value)}
-                placeholder="123 Rue de la République, 75001 Paris"
-                className={errors.adresse ? "border-red-500" : ""}
-              />
-              {errors.adresse && (
-                <p className="text-sm text-red-600">{errors.adresse}</p>
-              )}
-            </div>
-
-            {/* Checkbox d'acceptation des CGV/CGU */}
-            <div className="flex items-start space-x-2 mb-6">
-              <input
-                type="checkbox"
-                id="acceptTerms"
-                checked={acceptedTerms}
-                onChange={(e) => setAcceptedTerms(e.target.checked)}
-                className="mt-1 h-4 w-4 rounded border-gray-300"
-                required
-              />
-              <label htmlFor="acceptTerms" className="text-sm text-gray-600 leading-tight">
-                J'accepte les{' '}
-                <a 
-                  href="/cgv" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:underline font-medium"
-                >
-                  Conditions Générales de Vente
-                </a>
-                {', les '}
-                <a 
-                  href="/cgu" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:underline font-medium"
-                >
-                  Conditions Générales d'Utilisation
-                </a>
-                {' et la '}
-                <a 
-                  href="/confidentialite" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:underline font-medium"
-                >
-                  Politique de Confidentialité
-                </a>
-                {'.'}
-              </label>
-            </div>
-            {!acceptedTerms && attemptedSubmit && (
-              <p className="text-red-600 text-sm mt-2 flex items-center gap-1 mb-4">
-                <span>⚠️</span>
-                Vous devez accepter les conditions pour créer un compte
-              </p>
-            )}
-
-            {/* Bouton de soumission */}
-            <Button
-              type="submit"
-              className={`w-full ${!acceptedTerms ? 'opacity-50 cursor-not-allowed' : ''}`}
-              disabled={isSubmitting || !acceptedTerms}
-              size="lg"
+            <Button 
+              type="submit" 
+              className="w-full"
+              disabled={!acceptedCGV || loading}
             >
-              {isSubmitting ? (
+              {loading ? (
                 <>
-                  <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white/70 border-t-transparent" />
-                  Création du compte…
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Redirection...
                 </>
               ) : (
-                "Créer mon compte"
+                'Continuer vers le paiement →'
               )}
             </Button>
+
+            <p className="text-xs text-center text-muted-foreground">
+              Votre compte sera créé après la validation du paiement
+            </p>
           </form>
 
           <p className="mt-6 text-center text-sm text-gray-500">
-            Déjà inscrit ?{" "}
-            <Link
-              href="/login"
-              className="font-medium text-gray-900 underline-offset-4 hover:underline"
-            >
+            Déjà inscrit ?{' '}
+            <Link href="/login" className="font-medium text-gray-900 underline-offset-4 hover:underline">
               Connectez-vous
             </Link>
           </p>

@@ -91,7 +91,7 @@ export default function LandingPage() {
   }, []);
 
   const handlePostulerClick = () => {
-    window.location.href = '/signup-v2';
+    window.location.href = '/signup';
     if (typeof window !== 'undefined' && (window as any).gtag) {
       (window as any).gtag('event', 'cta_click', {
         event_category: 'CTA',
@@ -134,7 +134,7 @@ export default function LandingPage() {
                   Se connecter
                 </Button>
             </Link>
-            <Link href="/signup-v2">
+            <Link href="/signup">
               <Button variant="ghost" size="sm">
                 Démarrer mon essai gratuit
               </Button>
@@ -474,7 +474,7 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="text-center mt-12">
-            <Link href="/signup-v2">
+            <Link href="/signup">
               <Button variant="outline" size="lg">
                 Démarrer mon essai gratuit
               </Button>
