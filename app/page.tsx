@@ -96,12 +96,12 @@ export default function LandingPage() {
 
   const handlePostulerClick = () => {
     setShowBetaModal(true);
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'cta_click', {
-        event_category: 'CTA',
-        event_label: 'Postuler Founders',
-      });
-    }
+      if (typeof window !== 'undefined' && (window as any).gtag) {
+        (window as any).gtag('event', 'cta_click', {
+          event_category: 'CTA',
+          event_label: 'Démarrer essai gratuit',
+        });
+      }
   };
 
   const handleDemoClick = () => {
@@ -151,13 +151,6 @@ export default function LandingPage() {
             <Button onClick={handleDemoClick} variant="ghost" size="sm">
               Réserver une démo
             </Button>
-            <Button
-              onClick={handlePostulerClick}
-              className="bg-orange-600 hover:bg-orange-700 text-white"
-              size="sm"
-            >
-              Postuler Founders
-            </Button>
           </div>
         </div>
       </header>
@@ -166,15 +159,12 @@ export default function LandingPage() {
       <section className="relative overflow-hidden bg-white py-20 sm:py-32">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
           <div className="text-center animate-fade-in">
-            {/* Badge urgence */}
+            {/* Badge nouveau */}
             <div className="flex justify-center mb-6">
-              <Badge className="bg-red-600 text-white px-4 py-2 text-sm font-semibold">
-                🔥 Programme Founders : 20 places | ⏰ {placesRestantes} restantes
-              </Badge>
+              <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-full text-sm font-medium">
+                ✨ Nouveau : Génération automatique en 5 minutes
+              </div>
             </div>
-            <p className="text-sm text-red-600 font-medium mb-2">
-              Clôture des candidatures : 31 janvier 2026
-            </p>
 
             {/* H1 */}
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-gray-900 mb-6 leading-tight">
@@ -193,7 +183,7 @@ export default function LandingPage() {
                 size="lg" 
                 className="bg-orange-600 hover:bg-orange-700 text-white text-lg px-8 py-6 h-auto shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200"
               >
-                Postuler au Programme Founders
+                Démarrer mon essai gratuit
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </div>
@@ -202,15 +192,15 @@ export default function LandingPage() {
             <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-gray-600">
               <span className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-green-600" />
-                14 jours d'essai gratuit
+                14 jours gratuits
               </span>
               <span className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-green-600" />
-                Réponse sous 48h
+                Sans engagement
               </span>
               <span className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-green-600" />
-                Entretien 30 min gratuit
+                Support inclus
               </span>
             </div>
           </div>
@@ -484,7 +474,7 @@ export default function LandingPage() {
                   'Dashboard de suivi des dossiers',
                   'Personnalisation des documents',
                   'Export PDF/Word instantané',
-                  'Support dédié (Beta Founders)',
+                  'Support dédié',
                   'Mises à jour régulières',
                 ].map((item, idx) => (
                   <div key={idx} className="flex items-start gap-3">
@@ -503,122 +493,14 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* SECTION 6 - PROGRAMME FOUNDERS */}
-      <section className="py-20 sm:py-24 bg-gradient-to-br from-blue-900 via-blue-800 to-gray-900 text-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-          <div className="text-center mb-4">
-            <Badge className="bg-orange-600 text-white px-4 py-2 text-sm font-semibold mb-6">
-              EXCLUSIF
-            </Badge>
-          </div>
-          <h2 className="text-center text-3xl sm:text-4xl font-bold mb-4">
-            Programme Founders : Construisez LexiGen avec nous
-          </h2>
-          <p className="text-center text-xl text-white/90 mb-12 max-w-3xl mx-auto">
-            20 cabinets sélectionnés pour co-créer l'outil parfait. En échange : avantages exclusifs à vie.
-          </p>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
-            {/* COLONNE GAUCHE - Avantages */}
-            <Card className="bg-white text-gray-900">
-              <CardHeader>
-                <CardTitle className="text-2xl mb-6">Vos avantages Founders</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {[
-                  { icon: '🎁', title: '14 jours d\'essai gratuit', desc: 'Testez LexiGen sans engagement' },
-                  { icon: '💎', title: 'Prix bloqué à vie : 39,99€ HT/mois', desc: 'vs 79,99€ HT au lancement public février 2026' },
-                  { icon: '🏆', title: 'Badge "Founder" sur votre profil', desc: '' },
-                  { icon: '🚀', title: 'Roadmap prioritaire', desc: 'Vos features en premier' },
-                  { icon: '📞', title: 'Support dédié', desc: 'Réponse < 2h ouvrées' },
-                  { icon: '🎥', title: 'Témoignage mis en avant (optionnel)', desc: 'Votre logo sur notre page Success Stories' },
-                  { icon: '📅', title: 'Accès anticipé', desc: 'Toutes les nouvelles features avant tout le monde' },
-                  { icon: '💰', title: 'Économie à vie : 40€ HT/mois', desc: '= 480€ HT/an' },
-                ].map((item, idx) => (
-                  <div key={idx} className="flex items-start gap-3 pb-4 border-b border-gray-200 last:border-0">
-                    <span className="text-2xl flex-shrink-0">{item.icon}</span>
-                    <div>
-                      <p className="font-semibold text-gray-900">{item.title}</p>
-                      {item.desc && <p className="text-sm text-gray-600 mt-1">{item.desc}</p>}
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-
-            {/* COLONNE DROITE - Engagements */}
-            <Card className="bg-white text-gray-900">
-              <CardHeader>
-                <CardTitle className="text-2xl mb-6">Vos engagements</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div>
-                  <h4 className="font-semibold text-gray-900 mb-3">Ce que nous attendons de vous :</h4>
-                  <ul className="space-y-2">
-                    {[
-                      'Tester activement pendant les 14 jours d\'essai',
-                      'Utiliser LexiGen sur minimum 10 créations pendant la beta',
-                      '1 call feedback/mois (30 min) pendant 3 mois',
-                      'Signaler les bugs/suggestions dans les 24h',
-                      'Témoignage écrit + logo sur notre site (optionnel : témoignage vidéo)',
-                    ].map((item, idx) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                        <span className="text-gray-700">{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="pt-4 border-t border-gray-200">
-                  <h4 className="font-semibold text-gray-900 mb-3">Profil recherché :</h4>
-                  <ul className="space-y-2 text-gray-700">
-                    <li>• Cabinet 5-15 collaborateurs</li>
-                    <li>• 10+ créations SAS/mois actuellement</li>
-                    <li>• Ouvert aux outils SaaS</li>
-                    <li>• Envie d'automatiser pour scaler</li>
-                  </ul>
-                </div>
-
-                <div className="pt-4 border-t border-gray-200 bg-amber-50 border-l-4 border-amber-400 rounded p-4">
-                  <p className="font-semibold text-amber-900 mb-2">⚠️ Sélection sur dossier (entretien 30 min)</p>
-                  <p className="text-sm text-amber-800">
-                    Nous recherchons des cabinets qui : font de la création de SAS une activité récurrente, ont une vision de croissance, souhaitent se positionner en cabinet premium, peuvent s'engager sur le programme (3 mois).
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* CTA Principal */}
-          <div className="text-center mt-12">
-            <Button
-              onClick={handlePostulerClick}
-              size="lg"
-              className="bg-orange-600 hover:bg-orange-700 text-white text-xl px-12 py-8 h-auto shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-200"
-            >
-              Postuler au Programme Founders
-              <ArrowRight className="ml-2 h-6 w-6" />
-            </Button>
-          </div>
-
-          {/* Urgency footer */}
-          <div className="mt-8 text-center bg-red-600 rounded-lg p-4 max-w-2xl mx-auto">
-            <p className="text-white font-semibold text-lg">
-              ⏰ {placesRestantes} places restantes sur 20 | 🔒 Clôture : 31 janvier 2026
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* SECTION 7 - ROADMAP */}
+      {/* SECTION 6 - ROADMAP */}
       <section id="roadmap" className="py-20 sm:py-24 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
           <h2 className="text-center text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
             Roadmap 2025-2026 : Ce qui arrive
           </h2>
           <p className="text-center text-xl text-gray-700 mb-12">
-            🎯 Beta Founders choisissent les features prioritaires
+            Découvrez les fonctionnalités à venir
           </p>
 
           <div className="max-w-5xl mx-auto">
@@ -628,7 +510,7 @@ export default function LandingPage() {
                   badge: '✅ EN COURS',
                   badgeColor: 'bg-green-600',
                   title: 'NOVEMBRE 2025',
-                  subtitle: 'Beta Founders',
+                  subtitle: 'Version actuelle',
                   items: [
                     '✓ Génération statuts SAS/SASU',
                     '✓ PV d\'AG ordinaire et extraordinaire',
@@ -767,7 +649,7 @@ export default function LandingPage() {
                 size="lg" 
             className="bg-white text-blue-600 hover:bg-gray-100 text-lg px-10 py-7 h-auto shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-200"
               >
-            Postuler au Programme Founders 🚀
+            Démarrer mon essai gratuit
               </Button>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-6 text-sm">
             <span className="flex items-center gap-2">
