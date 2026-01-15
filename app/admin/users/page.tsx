@@ -3,69 +3,21 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { 
-  Users, 
-  UserCog, 
-  Mail, 
-  Shield, 
-  CheckCircle2, 
-  XCircle,
-  Edit,
-  Key,
-  ArrowLeft,
-  Activity
-} from 'lucide-react';
 import { ACPM_CONFIG } from '@/lib/acpm-config';
 import {
   getCurrentUser,
   getAllUsers,
-  updateUser,
-  sendPasswordResetEmail,
   formatUserName,
-  getRoleBadgeColor,
   getRoleLabel,
-  logAction,
   type AcpmUser
 } from '@/lib/acpm-users';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { toast } from 'sonner';
 
 export default function AdminUsersPage() {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<AcpmUser | null>(null);
   const [users, setUsers] = useState<AcpmUser[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editingUser, setEditingUser] = useState<AcpmUser | null>(null);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-
-  // Form state pour édition
-  const [formData, setFormData] = useState({
-    nom: '',
-    prenom: '',
-    telephone: '',
-    role: 'collaborateur' as 'admin' | 'collaborateur',
-    is_active: true,
-  });
+  const [error, setError] = useState<string>('');
 
   useEffect(() => {
     loadData();
@@ -79,10 +31,8 @@ export default function AdminUsersPage() {
       setCurrentUser(user);
 
       if (!user || user.role !== 'admin') {
-        toast.error('Accès refusé', {
-          description: 'Vous devez être administrateur pour accéder à cette page',
-        });
-        router.push('/dashboard');
+        setError('Accès refusé - Admin uniquement');
+        setTimeout(() => router.push('/dashboard'), 2000);
         return;
       }
 
@@ -91,319 +41,208 @@ export default function AdminUsersPage() {
       setUsers(allUsers);
     } catch (error) {
       console.error('Erreur chargement données:', error);
-      toast.error('Erreur', {
-        description: 'Impossible de charger les utilisateurs',
-      });
+      setError('Impossible de charger les utilisateurs');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleEditClick = (user: AcpmUser) => {
-    setEditingUser(user);
-    setFormData({
-      nom: user.nom,
-      prenom: user.prenom,
-      telephone: user.telephone || '',
-      role: user.role,
-      is_active: user.is_active,
-    });
-    setIsEditDialogOpen(true);
-  };
-
-  const handleSaveUser = async () => {
-    if (!editingUser) return;
-
-    try {
-      const result = await updateUser(editingUser.id, formData);
-
-      if (result.success) {
-        toast.success('Utilisateur mis à jour', {
-          description: `${formatUserName(formData)} a été modifié avec succès`,
-        });
-        await logAction('update_user', 'user', editingUser.id, formData);
-        setIsEditDialogOpen(false);
-        loadData(); // Recharger la liste
-      } else {
-        toast.error('Erreur', {
-          description: result.error || 'Impossible de mettre à jour l\'utilisateur',
-        });
-      }
-    } catch (error) {
-      console.error('Erreur sauvegarde:', error);
-      toast.error('Erreur', {
-        description: 'Une erreur est survenue',
-      });
-    }
-  };
-
-  const handleResetPassword = async (userEmail: string) => {
-    try {
-      const result = await sendPasswordResetEmail(userEmail);
-
-      if (result.success) {
-        toast.success('Email envoyé', {
-          description: `Un email de réinitialisation a été envoyé à ${userEmail}`,
-        });
-        await logAction('reset_password_request', 'user', userEmail);
-      } else {
-        toast.error('Erreur', {
-          description: result.error || 'Impossible d\'envoyer l\'email',
-        });
-      }
-    } catch (error) {
-      console.error('Erreur reset password:', error);
-      toast.error('Erreur', {
-        description: 'Une erreur est survenue',
-      });
-    }
-  };
-
   if (loading) {
     return (
-      <div className=\"min-h-screen flex items-center justify-center bg-gray-50\">
-        <div className=\"text-center\">
-          <div className=\"animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4\" style={{ borderColor: ACPM_CONFIG.branding.colors.primary }} />
-          <p className=\"text-gray-600\">Chargement...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div 
+            className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" 
+            style={{ borderColor: ACPM_CONFIG.branding.colors.primary }}
+          />
+          <p className="text-gray-600">Chargement...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            {error}
+          </div>
+          <button
+            onClick={() => router.push('/dashboard')}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Retour au Dashboard
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className=\"min-h-screen bg-gray-50\">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className=\"bg-white border-b border-gray-200\">
-        <div className=\"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6\">
-          <div className=\"flex items-center justify-between\">
-            <div className=\"flex items-center gap-4\">
-              <Image 
-                src={ACPM_CONFIG.branding.logo.light}
-                alt={ACPM_CONFIG.cabinet.name}
-                width={40}
-                height={40}
-                className=\"object-contain\"
+      <div className="bg-white shadow">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Image
+                src="/acpm-logo.png"
+                alt="ACPM"
+                width={50}
+                height={50}
+                className="object-contain"
               />
               <div>
-                <h1 className=\"text-2xl font-bold text-gray-900\">{ACPM_CONFIG.app.name}</h1>
-                <p className=\"text-sm text-gray-600\">Administration - Gestion des utilisateurs</p>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  Gestion des Utilisateurs
+                </h1>
+                <p className="text-sm text-gray-600">
+                  {ACPM_CONFIG.cabinet.name} - Administration
+                </p>
               </div>
             </div>
-            <Button 
-              variant=\"outline\" 
+            <button
               onClick={() => router.push('/dashboard')}
-              className=\"flex items-center gap-2\"
+              className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50"
             >
-              <ArrowLeft className=\"h-4 w-4\" />
-              Retour au dashboard
-            </Button>
+              ← Retour au Dashboard
+            </button>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Content */}
-      <main className=\"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8\">
-        {/* Stats */}
-        <div className=\"grid grid-cols-1 md:grid-cols-3 gap-6 mb-8\">
-          <Card>
-            <CardHeader className=\"flex flex-row items-center justify-between space-y-0 pb-2\">
-              <CardTitle className=\"text-sm font-medium\">Total utilisateurs</CardTitle>
-              <Users className=\"h-4 w-4 text-muted-foreground\" />
-            </CardHeader>
-            <CardContent>
-              <div className=\"text-2xl font-bold\">{users.length}</div>
-              <p className=\"text-xs text-muted-foreground\">
-                {users.filter(u => u.is_active).length} actifs
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className=\"flex flex-row items-center justify-between space-y-0 pb-2\">
-              <CardTitle className=\"text-sm font-medium\">Administrateurs</CardTitle>
-              <Shield className=\"h-4 w-4 text-muted-foreground\" />
-            </CardHeader>
-            <CardContent>
-              <div className=\"text-2xl font-bold\">
-                {users.filter(u => u.role === 'admin').length}
-              </div>
-              <p className=\"text-xs text-muted-foreground\">Accès complet</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className=\"flex flex-row items-center justify-between space-y-0 pb-2\">
-              <CardTitle className=\"text-sm font-medium\">Collaborateurs</CardTitle>
-              <UserCog className=\"h-4 w-4 text-muted-foreground\" />
-            </CardHeader>
-            <CardContent>
-              <div className=\"text-2xl font-bold\">
-                {users.filter(u => u.role === 'collaborateur').length}
-              </div>
-              <p className=\"text-xs text-muted-foreground\">Accès standard</p>
-            </CardContent>
-          </Card>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h3 className="text-sm font-medium text-gray-500">Total Utilisateurs</h3>
+            <p className="text-3xl font-bold mt-2" style={{ color: ACPM_CONFIG.branding.colors.primary }}>
+              {users.length}
+            </p>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h3 className="text-sm font-medium text-gray-500">Administrateurs</h3>
+            <p className="text-3xl font-bold mt-2" style={{ color: ACPM_CONFIG.branding.colors.primary }}>
+              {users.filter(u => u.role === 'admin').length}
+            </p>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h3 className="text-sm font-medium text-gray-500">Collaborateurs</h3>
+            <p className="text-3xl font-bold mt-2" style={{ color: ACPM_CONFIG.branding.colors.primary }}>
+              {users.filter(u => u.role === 'collaborateur').length}
+            </p>
+          </div>
         </div>
 
-        {/* Liste des utilisateurs */}
-        <Card>
-          <CardHeader>
-            <CardTitle className=\"flex items-center gap-2\">
-              <Users className=\"h-5 w-5\" />
-              Utilisateurs ACPM
-            </CardTitle>
-            <CardDescription>
-              Gérer les accès et informations des utilisateurs de la plateforme
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className=\"space-y-4\">
-              {users.map((user) => (
-                <div 
-                  key={user.id}
-                  className=\"flex items-center justify-between p-4 border rounded-lg hover:shadow-sm transition-shadow\"
-                  style={{ borderColor: user.role === 'admin' ? ACPM_CONFIG.branding.colors.primary + '40' : '#e5e7eb' }}
-                >
-                  <div className=\"flex-1\">
-                    <div className=\"flex items-center gap-3 mb-2\">
-                      <h3 className=\"font-semibold text-gray-900\">
-                        {formatUserName(user)}
-                      </h3>
-                      <Badge 
-                        style={{ 
-                          backgroundColor: getRoleBadgeColor(user.role), 
-                          color: 'white' 
-                        }}
+        {/* Users Table */}
+        <div className="bg-white shadow rounded-lg overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900">
+              Liste des Utilisateurs ({users.length})
+            </h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Utilisateur
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Email
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Téléphone
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Rôle
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Statut
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Créé le
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {users.map((user) => (
+                  <tr key={user.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
+                          <span className="text-blue-600 font-semibold">
+                            {user.prenom?.[0]}{user.nom?.[0]}
+                          </span>
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">
+                            {formatUserName(user)}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{user.email}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {user.telephone || '-'}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span 
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          user.role === 'admin'
+                            ? 'bg-purple-100 text-purple-800'
+                            : 'bg-blue-100 text-blue-800'
+                        }`}
                       >
                         {getRoleLabel(user.role)}
-                      </Badge>
-                      {user.is_active ? (
-                        <CheckCircle2 className=\"h-4 w-4\" style={{ color: ACPM_CONFIG.branding.colors.success }} />
-                      ) : (
-                        <XCircle className=\"h-4 w-4 text-gray-400\" />
-                      )}
-                    </div>
-                    <div className=\"flex items-center gap-4 text-sm text-gray-600\">
-                      <span className=\"flex items-center gap-1\">
-                        <Mail className=\"h-3 w-3\" />
-                        {user.email}
                       </span>
-                      {user.telephone && (
-                        <span>{user.telephone}</span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className=\"flex items-center gap-2\">
-                    <Button
-                      variant=\"outline\"
-                      size=\"sm\"
-                      onClick={() => handleEditClick(user)}
-                      className=\"flex items-center gap-1\"
-                    >
-                      <Edit className=\"h-3 w-3\" />
-                      Modifier
-                    </Button>
-                    <Button
-                      variant=\"outline\"
-                      size=\"sm\"
-                      onClick={() => handleResetPassword(user.email)}
-                      className=\"flex items-center gap-1\"
-                    >
-                      <Key className=\"h-3 w-3\" />
-                      Reset MDP
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </main>
-
-      {/* Dialog Edition */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Modifier l'utilisateur</DialogTitle>
-            <DialogDescription>
-              Modifier les informations de {editingUser && formatUserName(editingUser)}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className=\"space-y-4 py-4\">
-            <div className=\"grid grid-cols-2 gap-4\">
-              <div>
-                <Label htmlFor=\"prenom\">Prénom</Label>
-                <Input
-                  id=\"prenom\"
-                  value={formData.prenom}
-                  onChange={(e) => setFormData({ ...formData, prenom: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor=\"nom\">Nom</Label>
-                <Input
-                  id=\"nom\"
-                  value={formData.nom}
-                  onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor=\"telephone\">Téléphone (optionnel)</Label>
-              <Input
-                id=\"telephone\"
-                value={formData.telephone}
-                onChange={(e) => setFormData({ ...formData, telephone: e.target.value })}
-                placeholder=\"+33 6 12 34 56 78\"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor=\"role\">Rôle</Label>
-              <Select 
-                value={formData.role} 
-                onValueChange={(value: 'admin' | 'collaborateur') => setFormData({ ...formData, role: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value=\"admin\">Administrateur</SelectItem>
-                  <SelectItem value=\"collaborateur\">Collaborateur</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className=\"flex items-center space-x-2\">
-              <input
-                type=\"checkbox\"
-                id=\"is_active\"
-                checked={formData.is_active}
-                onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                className=\"rounded\"
-              />
-              <Label htmlFor=\"is_active\" className=\"cursor-pointer\">
-                Compte actif
-              </Label>
-            </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span 
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          user.is_active
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}
+                      >
+                        {user.is_active ? 'Actif' : 'Inactif'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(user.created_at).toLocaleDateString('fr-FR')}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
+        </div>
 
-          <DialogFooter>
-            <Button variant=\"outline\" onClick={() => setIsEditDialogOpen(false)}>
-              Annuler
-            </Button>
-            <Button 
-              onClick={handleSaveUser}
-              style={{ backgroundColor: ACPM_CONFIG.branding.colors.primary }}
+        {/* Info Box */}
+        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-blue-900 mb-2">
+            ℹ️ Gestion des utilisateurs
+          </h3>
+          <p className="text-sm text-blue-700">
+            Pour modifier les utilisateurs (email, nom, mot de passe, rôle), utilisez le dashboard Supabase :
+            <br />
+            <a 
+              href="https://supabase.com/dashboard/project/fdbljadwgeuaqhfgelsd" 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium underline hover:text-blue-900"
             >
-              Enregistrer
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+              Dashboard Supabase ACPM
+            </a>
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
