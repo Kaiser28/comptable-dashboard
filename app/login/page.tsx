@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { supabaseClient } from "@/lib/supabase";
+import { ACPM_CONFIG } from "@/lib/acpm-config";
+import Image from 'next/image';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -62,16 +64,20 @@ export default function LoginPage() {
       <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl">
         <header className="mb-6 text-center">
           <div className="mb-4 flex items-center justify-center gap-3">
-            <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-gradient-to-br from-blue-800 to-blue-600 text-white font-bold text-xl">
-              L
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900">LexiGen</h1>
+            <Image 
+              src={ACPM_CONFIG.branding.logo.light}
+              alt={ACPM_CONFIG.cabinet.name}
+              width={60}
+              height={60}
+              className="object-contain"
+            />
           </div>
-          <h2 className="text-xl font-semibold text-gray-900">
-            Connexion expert-comptable
+          <h1 className="text-2xl font-bold text-gray-900">{ACPM_CONFIG.app.name}</h1>
+          <h2 className="mt-4 text-xl font-semibold text-gray-900">
+            {ACPM_CONFIG.messages.loginTitle}
           </h2>
           <p className="mt-2 text-sm text-gray-500">
-            Accédez à votre espace de génération juridique automatisée.
+            {ACPM_CONFIG.messages.loginSubtitle}
           </p>
         </header>
 
@@ -97,7 +103,7 @@ export default function LoginPage() {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               className="mt-1 w-full rounded-lg border border-gray-200 px-4 py-2.5 text-gray-900 shadow-sm focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
-              placeholder="contact@cabinet.fr"
+              placeholder="contact@acpm-expertise.com"
             />
           </div>
 
@@ -122,7 +128,8 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 disabled:cursor-not-allowed disabled:bg-gray-700"
+            className="flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
+            style={{ backgroundColor: ACPM_CONFIG.branding.colors.primary }}
             disabled={isSubmitting}
           >
             {isSubmitting ? (
@@ -137,13 +144,7 @@ export default function LoginPage() {
         </form>
 
         <p className="mt-6 text-center text-sm text-gray-500">
-          Pas encore inscrit ?{" "}
-          <Link
-            href="/signup"
-            className="font-medium text-gray-900 underline-offset-4 hover:underline"
-          >
-            Créez un compte
-          </Link>
+          Besoin d'aide ? Contactez l'administrateur ACPM
         </p>
       </div>
     </div>
