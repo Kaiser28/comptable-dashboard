@@ -50,12 +50,28 @@ const config: Config = {
   				'4': 'hsl(var(--chart-4))',
   				'5': 'hsl(var(--chart-5))'
   			},
-  			// Brand colors LexiGen
+  			// Brand colors ACPM
   			brand: {
-  				primary: '#1e40af', // blue-800
-  				secondary: '#d97706', // amber-600
-  				success: '#059669', // emerald-600
-  				danger: '#dc2626', // red-600
+  				primary: '#337ab7', // ACPM blue
+  				secondary: '#2e6da4', // ACPM blue dark
+  				tertiary: '#286090', // ACPM blue darker
+  				success: '#0EDD0D', // ACPM green
+  				danger: '#B94A48', // ACPM red
+  			},
+  			// ACPM specific colors
+  			acpm: {
+  				blue: {
+  					DEFAULT: '#337ab7',
+  					light: '#4a90d9',
+  					dark: '#2e6da4',
+  					darker: '#286090',
+  					darkest: '#204d74',
+  				},
+  				gray: {
+  					DEFAULT: '#bfbfbf',
+  					light: '#e0e0e0',
+  					dark: '#808080',
+  				},
   			}
   		},
   		borderRadius: {

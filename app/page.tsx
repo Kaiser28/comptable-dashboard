@@ -34,27 +34,14 @@ import {
 } from '@/components/ui/accordion';
 import { supabaseClient } from '@/lib/supabase';
 import { Toaster } from 'sonner';
+import { ACPM_CONFIG } from '@/lib/acpm-config';
+import Image from 'next/image';
 
 export default function LandingPage() {
   const router = useRouter();
-  const [placesRestantes, setPlacesRestantes] = useState(13);
   const [scrollY, setScrollY] = useState(0);
 
   useEffect(() => {
-    // Fetch places restantes
-    // NOTE: beta_signups table removed - using hardcoded value for now
-    const fetchPlaces = async () => {
-      try {
-        // const { count } = await supabaseClient
-        //   .from('beta_signups')
-        //   .select('*', { count: 'exact', head: true });
-        // setPlacesRestantes(Math.max(0, 20 - (count || 0)));
-        setPlacesRestantes(13); // Hardcoded: 13 places restantes sur 20
-      } catch (error) {
-        console.error('Erreur fetch places:', error);
-      }
-    };
-    void fetchPlaces();
 
     // Scroll tracking
     const handleScroll = () => {
@@ -90,14 +77,8 @@ export default function LandingPage() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handlePostulerClick = () => {
-    window.location.href = '/signup';
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'cta_click', {
-        event_category: 'CTA',
-        event_label: 'Démarrer essai gratuit',
-      });
-    }
+  const handleLoginClick = () => {
+    window.location.href = '/login';
   };
 
   return (
@@ -111,11 +92,15 @@ export default function LandingPage() {
         }`}
       >
         <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8 max-w-7xl">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-blue-800 to-blue-600 text-white font-bold text-xl">
-              L
-            </div>
-            <span className="text-xl font-bold text-gray-900">LexiGen</span>
+          <Link href="/" className="flex items-center gap-3">
+            <Image 
+              src={ACPM_CONFIG.branding.logo.light}
+              alt={ACPM_CONFIG.cabinet.name}
+              width={50}
+              height={50}
+              className="object-contain"
+            />
+            <span className="text-xl font-bold text-gray-900">{ACPM_CONFIG.app.name}</span>
           </Link>
           <nav className="hidden md:flex items-center gap-6">
             <Link href="#fonctionnalites" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
@@ -130,13 +115,8 @@ export default function LandingPage() {
           </nav>
           <div className="flex items-center gap-3">
             <Link href="/login">
-              <Button variant="ghost" size="sm">
-                  Se connecter
-                </Button>
-            </Link>
-            <Link href="/signup">
-              <Button variant="ghost" size="sm">
-                Démarrer mon essai gratuit
+              <Button size="sm" style={{ backgroundColor: ACPM_CONFIG.branding.colors.primary }}>
+                Se connecter
               </Button>
             </Link>
           </div>
@@ -147,10 +127,10 @@ export default function LandingPage() {
       <section className="relative overflow-hidden bg-white py-20 sm:py-32">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
           <div className="text-center animate-fade-in">
-            {/* Badge nouveau */}
+            {/* Badge ACPM */}
             <div className="flex justify-center mb-6">
-              <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-full text-sm font-medium">
-                ✨ Nouveau : Génération automatique en 5 minutes
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium" style={{ backgroundColor: `${ACPM_CONFIG.branding.colors.primary}20`, color: ACPM_CONFIG.branding.colors.primary }}>
+                ✨ {ACPM_CONFIG.cabinet.name} - {ACPM_CONFIG.cabinet.location}
               </div>
             </div>
 
@@ -167,11 +147,12 @@ export default function LandingPage() {
             {/* CTA */}
             <div className="flex justify-center mb-6">
               <Button 
-                onClick={handlePostulerClick}
+                onClick={handleLoginClick}
                 size="lg" 
-                className="bg-orange-600 hover:bg-orange-700 text-white text-lg px-8 py-6 h-auto shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200"
+                className="text-white text-lg px-8 py-6 h-auto shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200"
+                style={{ backgroundColor: ACPM_CONFIG.branding.colors.primary }}
               >
-                Démarrer mon essai gratuit
+                Accéder à la plateforme
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </div>
@@ -179,34 +160,34 @@ export default function LandingPage() {
             {/* Badge sous CTA */}
             <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-gray-600">
               <span className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-green-600" />
-                14 jours gratuits
+                <CheckCircle2 className="h-4 w-4" style={{ color: ACPM_CONFIG.branding.colors.success }} />
+                Plateforme sécurisée
               </span>
               <span className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-green-600" />
-                Sans engagement
+                <CheckCircle2 className="h-4 w-4" style={{ color: ACPM_CONFIG.branding.colors.success }} />
+                Données chiffrées
               </span>
               <span className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-green-600" />
-                Support inclus
+                <CheckCircle2 className="h-4 w-4" style={{ color: ACPM_CONFIG.branding.colors.success }} />
+                Support dédié
               </span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* SECTION 2 - CRÉDIBILITÉ */}
+      {/* SECTION 2 - À PROPOS */}
       <section className="py-20 sm:py-24 bg-gray-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
           <h2 className="text-center text-3xl sm:text-4xl font-bold text-gray-900 mb-8">
-            Créé par un développeur expert en automatisation juridique
+            Une solution développée pour {ACPM_CONFIG.cabinet.shortName}
           </h2>
           <div className="prose prose-lg mx-auto text-center text-gray-700 leading-relaxed max-w-2xl">
             <p className="text-lg mb-4">
-              LexiGen est né d'un constat simple : les experts-comptables perdent des heures sur des tâches répétitives à faible valeur ajoutée.
+              {ACPM_CONFIG.app.name} est une plateforme sur-mesure conçue spécifiquement pour automatiser la génération de documents juridiques du cabinet {ACPM_CONFIG.cabinet.name}.
             </p>
             <p className="text-lg">
-              Notre mission : automatiser la partie administrative pour que vous puissiez vous concentrer sur l'accompagnement de vos clients.
+              Solution sécurisée, hébergée en France, conforme RGPD.
             </p>
             </div>
 
@@ -483,93 +464,89 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* SECTION 6 - ROADMAP */}
+      {/* SECTION 6 - FONCTIONNALITÉS ACTUELLES */}
       <section id="roadmap" className="py-20 sm:py-24 bg-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl">
           <h2 className="text-center text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-            Roadmap 2025-2026 : Ce qui arrive
+            Fonctionnalités disponibles
           </h2>
           <p className="text-center text-xl text-gray-700 mb-12">
-            Découvrez les fonctionnalités à venir
+            Tout ce dont vous avez besoin pour automatiser vos documents juridiques
           </p>
 
-          <div className="max-w-5xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              {[
-                {
-                  badge: '✅ EN COURS',
-                  badgeColor: 'bg-green-600',
-                  title: 'NOVEMBRE 2025',
-                  subtitle: 'Version actuelle',
-                  items: [
-                    '✓ Génération statuts SAS/SASU',
-                    '✓ PV d\'AG ordinaire et extraordinaire',
-                    '✓ Déclaration de Non-Condamnation (DNC)',
-                    '✓ Cession d\'actions',
-                    '✓ Courrier de reprise d\'entreprise',
-                    '✓ Lettre de mission',
-                    '✓ Augmentation de capital',
-                    '✓ Réduction de capital',
-                    '✓ Ordre de mouvement de titres',
-                    '✓ Annonces légales pré-remplies',
-                    '✓ Formulaires clients self-service',
-                    '✓ Dashboard de suivi',
-                    '✓ Multi-utilisateurs',
-                  ],
-                },
-                {
-                  badge: 'À VENIR',
-                  badgeColor: 'bg-gray-600',
-                  title: 'FÉVRIER 2026',
-                  subtitle: 'V1.0 Lancement Public',
-                  items: [
-                    '→ Ouverture au public (79,99€ HT/mois)',
-                    '→ Support SARL/EURL',
-                    '→ Templates de clauses personnalisables',
-                    '→ Plans Cabinet (149,99€) et Premium (249,99€)',
-                  ],
-                },
-                {
-                  badge: 'À VENIR',
-                  badgeColor: 'bg-gray-600',
-                  title: 'MAI 2026',
-                  subtitle: 'V1.5',
-                  items: [
-                    '→ Intégration Infogreffe (dépôt automatique)',
-                    '→ Signature électronique intégrée',
-                    '→ API pour intégration logiciels métier',
-                  ],
-                },
-                {
-                  badge: 'À VENIR',
-                  badgeColor: 'bg-gray-600',
-                  title: 'Q4 2026',
-                  subtitle: 'V2.0',
-                  items: [
-                    '→ Support SCI',
-                    '→ Intégration comptable (Cegid, ACD, Sage)',
-                    '→ App mobile (suivi dossiers)',
-                  ],
-                },
-              ].map((jalon, idx) => (
-                <Card key={idx} className="bg-gray-50 border-gray-200">
-                <CardHeader>
-                    <Badge className={`${jalon.badgeColor} text-white w-fit mb-2`}>
-                      {jalon.badge}
-                    </Badge>
-                    <CardTitle className="text-lg font-bold text-gray-900">{jalon.title}</CardTitle>
-                    <CardDescription className="font-semibold text-gray-700">{jalon.subtitle}</CardDescription>
-                </CardHeader>
-                <CardContent>
+          <div className="max-w-4xl mx-auto">
+            <Card className="bg-gray-50 border-gray-200">
+              <CardHeader>
+                <div className="flex items-center justify-center mb-4">
+                  <Badge className="text-white w-fit" style={{ backgroundColor: ACPM_CONFIG.branding.colors.primary }}>
+                    ✅ DISPONIBLE
+                  </Badge>
+                </div>
+                <CardTitle className="text-2xl font-bold text-gray-900 text-center">Plateforme complète</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-3">Documents générés</h3>
                     <ul className="space-y-2 text-sm text-gray-700">
-                      {jalon.items.map((item, i) => (
-                        <li key={i}>{item}</li>
-                      ))}
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4" style={{ color: ACPM_CONFIG.branding.colors.success }} />
+                        Génération statuts SAS/SASU
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4" style={{ color: ACPM_CONFIG.branding.colors.success }} />
+                        PV d'AG ordinaire et extraordinaire
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4" style={{ color: ACPM_CONFIG.branding.colors.success }} />
+                        Déclaration de Non-Condamnation (DNC)
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4" style={{ color: ACPM_CONFIG.branding.colors.success }} />
+                        Cession d'actions
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4" style={{ color: ACPM_CONFIG.branding.colors.success }} />
+                        Augmentation/Réduction de capital
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4" style={{ color: ACPM_CONFIG.branding.colors.success }} />
+                        Annonces légales pré-remplies
+                      </li>
                     </ul>
-                </CardContent>
-              </Card>
-            ))}
-            </div>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-3">Fonctionnalités</h3>
+                    <ul className="space-y-2 text-sm text-gray-700">
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4" style={{ color: ACPM_CONFIG.branding.colors.success }} />
+                        Formulaires clients self-service
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4" style={{ color: ACPM_CONFIG.branding.colors.success }} />
+                        Dashboard de suivi
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4" style={{ color: ACPM_CONFIG.branding.colors.success }} />
+                        Multi-utilisateurs (4 comptes)
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4" style={{ color: ACPM_CONFIG.branding.colors.success }} />
+                        Gestion des rôles (admin/collaborateur)
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4" style={{ color: ACPM_CONFIG.branding.colors.success }} />
+                        Logs d'activité et traçabilité
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4" style={{ color: ACPM_CONFIG.branding.colors.success }} />
+                        Export PDF/Word instantané
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
@@ -584,39 +561,27 @@ export default function LandingPage() {
             {[
               {
                 q: 'Les documents sont-ils conformes juridiquement ?',
-                a: 'LexiGen génère des documents à partir de templates génériques conformes aux pratiques courantes.\n\n⚖️ IMPORTANT : Vous restez responsable de la validation et de l\'adaptation des documents à chaque situation client. LexiGen automatise la génération, pas le conseil juridique.\n\nNous recommandons de faire relire vos premiers documents par un avocat spécialisé pour valider votre processus.',
+                a: `${ACPM_CONFIG.app.name} génère des documents à partir de templates génériques conformes aux pratiques courantes.\n\n⚖️ IMPORTANT : Le cabinet reste responsable de la validation et de l'adaptation des documents à chaque situation client. L'outil automatise la génération, pas le conseil juridique.`,
               },
               {
-                q: 'Mon logiciel comptable génère déjà des statuts, pourquoi LexiGen ?',
-                a: 'Votre logiciel métier génère probablement UN document (les statuts). LexiGen génère les 10+ documents nécessaires (PV, DNC, annonce, M0, etc.)\n\nMais surtout : LexiGen permet à VOS CLIENTS de remplir les infos directement via un formulaire. Vous éliminez les multiples allers-retours.\n\nRésultat : vous ne touchez le dossier qu\'une seule fois, au lieu de 5-7 échanges avec la méthode manuelle.',
+                q: 'Pourquoi utiliser cette plateforme plutôt que nos outils actuels ?',
+                a: `${ACPM_CONFIG.app.name} génère automatiquement 10+ documents nécessaires (statuts, PV, DNC, annonce, M0, etc.) à partir d'une seule saisie.\n\nLa plateforme permet aux clients de remplir les infos directement via un formulaire, éliminant les multiples allers-retours.\n\nRésultat : traitement du dossier en une seule fois, au lieu de 5-7 échanges avec la méthode manuelle.`,
               },
               {
-                q: 'Je peux personnaliser les documents ?',
-                a: 'Oui, totalement. Vous pouvez ajuster chaque document généré selon les besoins du client (clauses d\'agrément, de préemption, etc.).\n\nLexiGen génère la structure de base avec les données saisies, vous personnalisez ensuite selon votre expertise.',
+                q: 'Puis-je personnaliser les documents ?',
+                a: 'Oui, totalement. Chaque document généré peut être ajusté selon les besoins du client (clauses d\'agrément, de préemption, etc.).\n\nLa plateforme génère la structure de base avec les données saisies, vous personnalisez ensuite selon votre expertise.',
               },
               {
                 q: 'C\'est sécurisé ? Où sont stockées les données ?',
-                a: 'Hébergement en France (AWS Paris), certifié RGPD. Chiffrement des données en transit et au repos. Vous restez propriétaire à 100% des données de vos clients. Sauvegarde quotidienne automatique.',
+                a: 'Hébergement en France, certifié RGPD. Chiffrement des données en transit et au repos. Le cabinet reste propriétaire à 100% des données clients. Sauvegarde quotidienne automatique.',
               },
               {
-                q: 'Combien de temps pour prendre en main l\'outil ?',
-                a: 'Environ 30 minutes.\n\nOnboarding inclus : 1 call de formation avec notre équipe. Interface intuitive : si vous savez utiliser un formulaire Google, vous savez utiliser LexiGen.',
-              },
-              {
-                q: 'Je peux annuler quand je veux ?',
-                a: 'Oui, sans préavis, en 1 clic depuis votre dashboard. Aucun engagement de durée minimum.\n\n⚠️ Note : Si vous annulez puis revenez plus tard, vous perdez le tarif Beta Founder (39,99€) et passez au tarif public (79,99€+).',
-              },
-              {
-                q: 'Combien coûte LexiGen après l\'essai ?',
-                a: 'Programme Beta Founders : 39,99€ HT/mois à vie (réservé aux 20 premiers cabinets - novembre 2025 à janvier 2026)\n\nTarif public à partir de février 2026 : 79,99€ HT/mois minimum\n\nLes Beta Founders conservent leur tarif à 39,99€ HT/mois à vie, même après le lancement public.',
-              },
-              {
-                q: 'Quand LexiGen sera disponible au public ?',
-                a: 'Lancement public prévu en février 2026.\n\nProgramme Beta Founders : novembre 2025 - janvier 2026 → 20 places uniquement → Tarif : 39,99€ HT/mois à vie\n\nAprès février 2026 :\n→ Tarif public : 79,99€ HT/mois minimum (Plan Solo)\n→ Plans Cabinet (149,99€) et Premium (249,99€) disponibles\n→ Les Beta Founders conservent leur tarif à 39,99€ à vie',
+                q: 'Qui peut accéder à la plateforme ?',
+                a: `La plateforme dispose de 4 comptes utilisateurs :\n\n• 1 compte administrateur (gestion complète + utilisateurs)\n• 3 comptes collaborateurs (accès complet sauf gestion des utilisateurs)\n\nChaque utilisateur a ses propres identifiants sécurisés.`,
               },
             ].map((item, idx) => (
-              <AccordionItem key={idx} value={`item-${idx}`} className="bg-white border border-gray-200 rounded-lg mb-4 px-6">
-                <AccordionTrigger className="text-left font-semibold text-gray-900 hover:text-orange-600 py-6">
+              <AccordionItem key={idx} value={`item-${idx}`} className="bg-white border rounded-lg mb-4 px-6" style={{ borderColor: ACPM_CONFIG.branding.colors.primary + '40' }}>
+                <AccordionTrigger className="text-left font-semibold text-gray-900 py-6" style={{ color: ACPM_CONFIG.branding.colors.primary }}>
                   {item.q}
                 </AccordionTrigger>
                 <AccordionContent className="text-gray-700 pb-6 whitespace-pre-line leading-relaxed">
@@ -629,30 +594,31 @@ export default function LandingPage() {
       </section>
 
       {/* SECTION 9 - CTA FINAL */}
-      <section className="py-20 sm:py-24 bg-gradient-to-br from-blue-600 to-blue-800 text-white">
+      <section className="py-20 sm:py-24 text-white" style={{ background: `linear-gradient(to bottom right, ${ACPM_CONFIG.branding.colors.primary}, ${ACPM_CONFIG.branding.colors.tertiary})` }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl text-center">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6">
-            Prêt à récupérer 30h/mois ?
+            Accédez à votre plateforme de documents
             </h2>
               <Button 
-            onClick={handlePostulerClick}
+            onClick={handleLoginClick}
                 size="lg" 
-            className="bg-white text-blue-600 hover:bg-gray-100 text-lg px-10 py-7 h-auto shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-200"
+            className="bg-white text-lg px-10 py-7 h-auto shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-200"
+            style={{ color: ACPM_CONFIG.branding.colors.primary }}
               >
-            Démarrer mon essai gratuit
+            Se connecter
               </Button>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-6 text-sm">
             <span className="flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5" />
-              Sans engagement
+              Sécurisé & RGPD
             </span>
             <span className="flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5" />
-              Réponse sous 48h
+              Hébergement France
             </span>
             <span className="flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5" />
-              Entretien 30 min gratuit
+              Support dédié
             </span>
           </div>
         </div>
