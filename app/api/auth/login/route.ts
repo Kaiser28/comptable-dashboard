@@ -111,7 +111,9 @@ export async function POST(request: Request) {
       );
     }
     
+    console.log('[LOGIN API] AVANT await cookies()');
     const cookieStore = await cookies();
+    console.log('[LOGIN API] APRÈS await cookies() - succès');
     const supabase = createServerClient(
       supabaseUrl,
       supabaseKey,
