@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
-import { Redis } from "@upstash/redis";
 
 /**
  * Rate limiting strict pour login : 5 tentatives / 15 minutes par IP
  * Protection contre les attaques brute force
+ * Note: Nécessite Upstash Redis configuré (optionnel)
  */
 const LOGIN_RATE_LIMIT = {
   maxAttempts: 5,
@@ -35,28 +35,39 @@ function getClientIP(request: Request): string {
  */
 export async function POST(request: Request) {
   try {
+    console.log('[LOGIN API] Début de la requête de connexion');
+    
     // Instance Redis Upstash pour stocker le compteur d'échecs (optionnel)
-    let redis: Redis | null = null;
+    let redis: any = null;
     let currentFailures: number | null = null;
     
     // Initialiser Redis uniquement si les variables sont configurées
     if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
-      redis = Redis.fromEnv();
-      const ip = getClientIP(request);
-      const key = `login-fails:${ip}`;
-      
-      // ============================================
-      // SÉCURITÉ : Vérification rate limit AVANT traitement
-      // ============================================
-      currentFailures = await redis.get<number>(key);
-      
-      if (currentFailures !== null && currentFailures >= LOGIN_RATE_LIMIT.maxAttempts) {
-        return NextResponse.json(
-          {
-            error: `Trop de tentatives de connexion. Réessayez dans ${LOGIN_RATE_LIMIT.windowMinutes} minutes.`,
-          },
-          { status: 429 }
-        );
+      try {
+        const { Redis } = await import("@upstash/redis");
+        redis = Redis.fromEnv();
+        const ip = getClientIP(request);
+        const key = `login-fails:${ip}`;
+        
+        console.log('[LOGIN API] Redis initialisé, vérification rate limit pour IP:', ip);
+        
+        // ============================================
+        // SÉCURITÉ : Vérification rate limit AVANT traitement
+        // ============================================
+        currentFailures = await redis.get<number>(key);
+        
+        if (currentFailures !== null && currentFailures >= LOGIN_RATE_LIMIT.maxAttempts) {
+          console.log('[LOGIN API] Rate limit dépassé pour IP:', ip);
+          return NextResponse.json(
+            {
+              error: `Trop de tentatives de connexion. Réessayez dans ${LOGIN_RATE_LIMIT.windowMinutes} minutes.`,
+            },
+            { status: 429 }
+          );
+        }
+      } catch (redisError) {
+        console.error('[LOGIN API] Erreur initialisation Redis:', redisError);
+        // Continuer sans rate limiting si Redis échoue
       }
     } else {
       console.warn('[LOGIN API] Upstash Redis non configuré - Rate limiting désactivé');
@@ -71,6 +82,7 @@ export async function POST(request: Request) {
     });
     
     if (!body || typeof body.email !== "string" || typeof body.password !== "string") {
+      console.error('[LOGIN API] Body invalide ou données manquantes');
       return NextResponse.json(
         { error: "Email et mot de passe requis" },
         { status: 400 }
@@ -78,14 +90,31 @@ export async function POST(request: Request) {
     }
 
     const { email, password } = body;
+    console.log('[LOGIN API] Tentative de connexion pour:', email);
 
     // ============================================
     // AUTHENTIFICATION SUPABASE
     // ============================================
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    
+    console.log('[LOGIN API] Variables Supabase:', {
+      url: supabaseUrl ? 'définie' : 'MANQUANTE',
+      key: supabaseKey ? 'définie' : 'MANQUANTE'
+    });
+    
+    if (!supabaseUrl || !supabaseKey) {
+      console.error('[LOGIN API] Variables Supabase manquantes!');
+      return NextResponse.json(
+        { error: "Configuration serveur incorrecte" },
+        { status: 500 }
+      );
+    }
+    
     const cookieStore = await cookies();
     const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      supabaseUrl,
+      supabaseKey,
       {
         cookies: {
           get(name: string) {
@@ -112,6 +141,11 @@ export async function POST(request: Request) {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
+    });
+    
+    console.log('[LOGIN API] Résultat authentification:', {
+      success: !!data.user,
+      error: error?.message || 'aucune'
     });
 
     // ============================================
