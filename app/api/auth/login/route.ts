@@ -35,24 +35,31 @@ function getClientIP(request: Request): string {
  */
 export async function POST(request: Request) {
   try {
-    // Instance Redis Upstash pour stocker le compteur d'échecs (initialisée au runtime uniquement)
-    const redis = Redis.fromEnv();
+    // Instance Redis Upstash pour stocker le compteur d'échecs (optionnel)
+    let redis: Redis | null = null;
+    let currentFailures: number | null = null;
     
-    const ip = getClientIP(request);
-    const key = `login-fails:${ip}`;
-
-    // ============================================
-    // SÉCURITÉ : Vérification rate limit AVANT traitement
-    // ============================================
-    const currentFailures = await redis.get<number>(key);
-    
-    if (currentFailures !== null && currentFailures >= LOGIN_RATE_LIMIT.maxAttempts) {
-      return NextResponse.json(
-        {
-          error: `Trop de tentatives de connexion. Réessayez dans ${LOGIN_RATE_LIMIT.windowMinutes} minutes.`,
-        },
-        { status: 429 }
-      );
+    // Initialiser Redis uniquement si les variables sont configurées
+    if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+      redis = Redis.fromEnv();
+      const ip = getClientIP(request);
+      const key = `login-fails:${ip}`;
+      
+      // ============================================
+      // SÉCURITÉ : Vérification rate limit AVANT traitement
+      // ============================================
+      currentFailures = await redis.get<number>(key);
+      
+      if (currentFailures !== null && currentFailures >= LOGIN_RATE_LIMIT.maxAttempts) {
+        return NextResponse.json(
+          {
+            error: `Trop de tentatives de connexion. Réessayez dans ${LOGIN_RATE_LIMIT.windowMinutes} minutes.`,
+          },
+          { status: 429 }
+        );
+      }
+    } else {
+      console.warn('[LOGIN API] Upstash Redis non configuré - Rate limiting désactivé');
     }
 
     // ============================================
@@ -111,15 +118,19 @@ export async function POST(request: Request) {
     // GESTION SUCCÈS / ÉCHEC
     // ============================================
     if (error || !data.user) {
-      // Échec : incrémenter le compteur d'échecs
-      const newFailureCount = (currentFailures ?? 0) + 1;
-      
-      // Stocker avec expiration de 15 minutes
-      await redis.setex(
-        key,
-        LOGIN_RATE_LIMIT.windowMinutes * 60, // Convertir minutes en secondes
-        newFailureCount
-      );
+      // Échec : incrémenter le compteur d'échecs (si Redis disponible)
+      if (redis) {
+        const ip = getClientIP(request);
+        const key = `login-fails:${ip}`;
+        const newFailureCount = (currentFailures ?? 0) + 1;
+        
+        // Stocker avec expiration de 15 minutes
+        await redis.setex(
+          key,
+          LOGIN_RATE_LIMIT.windowMinutes * 60, // Convertir minutes en secondes
+          newFailureCount
+        );
+      }
 
       // Message d'erreur générique (ne pas révéler si l'email existe)
       const errorMessage = 
@@ -133,8 +144,12 @@ export async function POST(request: Request) {
       );
     }
 
-    // Succès : réinitialiser le compteur d'échecs
-    await redis.del(key);
+    // Succès : réinitialiser le compteur d'échecs (si Redis disponible)
+    if (redis) {
+      const ip = getClientIP(request);
+      const key = `login-fails:${ip}`;
+      await redis.del(key);
+    }
 
     return NextResponse.json(
       {
