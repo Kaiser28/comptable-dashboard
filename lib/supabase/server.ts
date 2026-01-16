@@ -1,13 +1,15 @@
 /**
- * Supabase Server Client pour Next.js 14
+ * Supabase Server Client pour Next.js 16
  * Utilisé dans les Server Components et API Routes
+ * 
+ * ⚠️  Next.js 16 : cookies() est maintenant ASYNC
  */
 
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
-export function createClient() {
-  const cookieStore = cookies();
+export async function createClient() {
+  const cookieStore = await cookies();
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
