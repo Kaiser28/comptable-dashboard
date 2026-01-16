@@ -14,9 +14,14 @@ import { NextResponse } from "next/server";
 // VÉRIFICATION VARIABLES D'ENVIRONNEMENT
 // ============================================================================
 
-if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
-  throw new Error(
-    "❌ Variables Upstash manquantes : UPSTASH_REDIS_REST_URL et UPSTASH_REDIS_REST_TOKEN sont requises"
+// Note: Les variables Upstash sont optionnelles au build time
+// La vérification se fait au runtime lors du premier appel aux limiters
+const UPSTASH_ENABLED = !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN);
+
+if (!UPSTASH_ENABLED) {
+  console.warn(
+    "⚠️ Variables Upstash manquantes : Le rate limiting est DÉSACTIVÉ. " +
+    "Ajoutez UPSTASH_REDIS_REST_URL et UPSTASH_REDIS_REST_TOKEN pour l'activer."
   );
 }
 
@@ -34,8 +39,12 @@ let redisInstance: Redis | null = null;
 
 /**
  * Obtient l'instance Redis (créée au premier appel, au runtime uniquement)
+ * Si Upstash n'est pas configuré, retourne null
  */
-function getRedis(): Redis {
+function getRedis(): Redis | null {
+  if (!UPSTASH_ENABLED) {
+    return null;
+  }
   if (!redisInstance) {
     redisInstance = Redis.fromEnv();
   }
@@ -52,12 +61,16 @@ function getRedis(): Redis {
  * - Utilisé pour : création/modification d'associés, génération documents
  * - Algorithme : slidingWindow (plus précis, évite les pics)
  * - Créé de manière lazy au premier appel
+ * - Retourne null si Upstash n'est pas configuré
  */
 let strictLimiterInstance: Ratelimit | null = null;
-function getStrictLimiter(): Ratelimit {
+function getStrictLimiter(): Ratelimit | null {
+  if (!UPSTASH_ENABLED) return null;
   if (!strictLimiterInstance) {
+    const redis = getRedis();
+    if (!redis) return null;
     strictLimiterInstance = new Ratelimit({
-      redis: getRedis(),
+      redis,
       limiter: Ratelimit.slidingWindow(20, "1 m"),
       analytics: true,
       prefix: "@upstash/ratelimit/strict",
@@ -72,12 +85,16 @@ function getStrictLimiter(): Ratelimit {
  * - Utilisé pour : consultation clients, listes
  * - Algorithme : slidingWindow (cohérence avec strict)
  * - Créé de manière lazy au premier appel
+ * - Retourne null si Upstash n'est pas configuré
  */
 let moderateLimiterInstance: Ratelimit | null = null;
-function getModerateLimiter(): Ratelimit {
+function getModerateLimiter(): Ratelimit | null {
+  if (!UPSTASH_ENABLED) return null;
   if (!moderateLimiterInstance) {
+    const redis = getRedis();
+    if (!redis) return null;
     moderateLimiterInstance = new Ratelimit({
-      redis: getRedis(),
+      redis,
       limiter: Ratelimit.slidingWindow(100, "1 m"),
       analytics: true,
       prefix: "@upstash/ratelimit/moderate",
@@ -92,12 +109,16 @@ function getModerateLimiter(): Ratelimit {
  * - Utilisé pour : formulaires clients, pages publiques
  * - Algorithme : fixedWindow (plus rapide, acceptable pour contenu public)
  * - Créé de manière lazy au premier appel
+ * - Retourne null si Upstash n'est pas configuré
  */
 let generousLimiterInstance: Ratelimit | null = null;
-function getGenerousLimiter(): Ratelimit {
+function getGenerousLimiter(): Ratelimit | null {
+  if (!UPSTASH_ENABLED) return null;
   if (!generousLimiterInstance) {
+    const redis = getRedis();
+    if (!redis) return null;
     generousLimiterInstance = new Ratelimit({
-      redis: getRedis(),
+      redis,
       limiter: Ratelimit.fixedWindow(300, "1 m"),
       analytics: true,
       prefix: "@upstash/ratelimit/generous",
@@ -215,6 +236,12 @@ export function withRateLimit<T extends any[]>(
   options: RateLimitOptions
 ): RouteHandler<T> {
   return async (request: Request, ...args: T): Promise<NextResponse> => {
+    // Si Upstash n'est pas configuré, exécuter le handler sans rate limiting
+    if (!UPSTASH_ENABLED) {
+      console.warn("[RATE LIMIT] Upstash non configuré, rate limiting désactivé");
+      return handler(request, ...args);
+    }
+
     // Sélectionner le limiter approprié (lazy initialization au runtime)
     const limiter =
       options.limiter === "strict"
@@ -222,6 +249,12 @@ export function withRateLimit<T extends any[]>(
         : options.limiter === "moderate"
         ? getModerateLimiter()
         : getGenerousLimiter();
+
+    // Si le limiter n'a pas pu être créé, exécuter sans rate limiting
+    if (!limiter) {
+      console.warn("[RATE LIMIT] Limiter non disponible, rate limiting désactivé");
+      return handler(request, ...args);
+    }
 
     try {
       // Extraire la clé de rate limiting
