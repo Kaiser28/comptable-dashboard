@@ -113,22 +113,27 @@ export async function POST(request: Request) {
     
     console.log('[LOGIN API] AVANT création client Supabase');
     
-    // Utiliser la méthode officielle Supabase avec getAll/setAll
+    // @supabase/ssr 0.5.2 utilise get/set/remove (pas getAll/setAll)
     const cookieStore = await cookies();
     const supabase = createServerClient(
       supabaseUrl,
       supabaseKey,
       {
         cookies: {
-          getAll() {
-            return cookieStore.getAll();
+          get(name: string) {
+            return cookieStore.get(name)?.value;
           },
-          setAll(cookiesToSet) {
+          set(name: string, value: string, options: any) {
             try {
-              cookiesToSet.forEach(({ name, value, options }) =>
-                cookieStore.set(name, value, options)
-              );
-            } catch {
+              cookieStore.set({ name, value, ...options });
+            } catch (error) {
+              // Server Component - ignore
+            }
+          },
+          remove(name: string, options: any) {
+            try {
+              cookieStore.set({ name, value: "", ...options });
+            } catch (error) {
               // Server Component - ignore
             }
           },
