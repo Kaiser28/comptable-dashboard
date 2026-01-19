@@ -64,10 +64,10 @@ export async function GET(
       }
     );
 
-    // Vérifier que le client existe
+    // Vérifier que le client existe (ACPM mono-tenant)
     const { data: client, error: clientError } = await supabase
       .from("clients")
-      .select("id, cabinet_id")
+      .select("id")
       .eq("id", clientId)
       .single();
 
@@ -202,10 +202,10 @@ export const POST = withRateLimit(
       return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
     }
 
-    // Vérifier que le client existe et appartient au cabinet de l'expert
+    // Vérifier que le client existe (ACPM mono-tenant)
     const { data: client, error: clientError } = await supabase
       .from("clients")
-      .select("id, cabinet_id, nb_actions, capital_social")
+      .select("id, nb_actions, capital_social")
       .eq("id", clientId)
       .single();
 
@@ -216,19 +216,7 @@ export const POST = withRateLimit(
       );
     }
 
-    // Vérifier que l'expert appartient au même cabinet que le client
-    const { data: expert } = await supabase
-      .from("experts_comptables")
-      .select("cabinet_id")
-      .eq("user_id", user.id)
-      .single();
-
-    if (!expert || expert.cabinet_id !== client.cabinet_id) {
-      return NextResponse.json(
-        { error: "Accès non autorisé à ce client" },
-        { status: 403 }
-      );
-    }
+    // RLS vérifie automatiquement les permissions (ACPM mono-tenant)
 
     // Validation : vérifier le nombre d'actions disponibles
     const nombreActionsDemande = validatedData.nombre_actions;

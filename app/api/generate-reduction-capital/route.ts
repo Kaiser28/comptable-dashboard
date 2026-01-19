@@ -9,6 +9,7 @@ import { logAudit } from "@/lib/audit";
 
 import type { ActeJuridiqueData, ClientData, CabinetData } from "@/lib/types/database";
 import { generateReductionCapital } from "@/lib/generateReductionCapital";
+import { getCabinetInfo } from "@/lib/cabinet-params";
 
 // Rate limiting strict : 20 req/min (génération documents - OWASP)
 export const POST = withRateLimit(
@@ -153,30 +154,10 @@ export const POST = withRateLimit(
       );
     }
 
-    const { data: expertComptable, error: expertError } = await supabase
-      .from("experts_comptables")
-      .select("cabinet_id")
-      .eq("user_id", user.id)
-      .single();
+    // Récupérer les informations du cabinet (ACPM mono-tenant)
+    const cabinet = await getCabinetInfo();
 
-    if (expertError || !expertComptable?.cabinet_id) {
-      console.error("Erreur récupération expert comptable", expertError);
-      return NextResponse.json(
-        { error: "Cabinet introuvable ou inaccessible." },
-        { status: 404 }
-      );
-    }
-
-    const { data: cabinet, error: cabinetError } = await supabase
-      .from("cabinets")
-      .select("*")
-      .eq("id", expertComptable.cabinet_id)
-      .single();
-
-    if (cabinetError || !cabinet) {
-      console.error("Erreur récupération cabinet", cabinetError);
-      return NextResponse.json(
-        { error: "Cabinet introuvable ou inaccessible." },
+    // Générer le document
         { status: 404 }
       );
     }

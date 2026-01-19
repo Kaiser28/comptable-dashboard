@@ -61,13 +61,6 @@ export async function logAudit({
       return;
     }
 
-    // Récupérer le cabinet_id de l'expert
-    const { data: expert } = await supabase
-      .from('experts_comptables')
-      .select('cabinet_id')
-      .eq('user_id', user.id)
-      .single();
-
     // Extraire l'IP et user agent depuis les headers
     let ipAddress = 'unknown';
     let userAgent = 'unknown';
@@ -85,9 +78,8 @@ export async function logAudit({
       }
     }
 
-    // Insérer le log d'audit
+    // Insérer le log d'audit (ACPM mono-tenant : pas de cabinet_id)
     const { error } = await supabase.from('audit_logs').insert({
-      cabinet_id: expert?.cabinet_id ?? null,
       user_id: user.id,
       action,
       resource_type: resourceType ?? null,

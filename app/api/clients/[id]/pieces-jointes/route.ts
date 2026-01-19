@@ -76,26 +76,12 @@ export const POST = withRateLimit(
       }
 
       // ============================================
-      // SÉCURITÉ : Vérification que le client existe et appartient au cabinet
+      // SÉCURITÉ : Vérification que le client existe (ACPM mono-tenant)
       // ============================================
-      const { data: expertComptable, error: expertError } = await supabase
-        .from("experts_comptables")
-        .select("cabinet_id")
-        .eq("user_id", user.id)
-        .single();
-
-      if (expertError || !expertComptable?.cabinet_id) {
-        return NextResponse.json(
-          { error: "Cabinet introuvable ou inaccessible." },
-          { status: 404 }
-        );
-      }
-
       const { data: client, error: clientError } = await supabase
         .from("clients")
-        .select("id, cabinet_id")
+        .select("id")
         .eq("id", clientId)
-        .eq("cabinet_id", expertComptable.cabinet_id)
         .single();
 
       if (clientError || !client) {

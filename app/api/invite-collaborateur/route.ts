@@ -66,43 +66,35 @@ export const POST = withRateLimit(
         );
       }
 
-      // Vérifier que l'utilisateur est admin
-      const { data: expertComptable, error: expertError } = await supabase
-        .from("experts_comptables")
-        .select("id, role, cabinet_id")
-        .eq("user_id", user.id)
+      // Vérifier que l'utilisateur est admin (ACPM mono-tenant)
+      const { data: currentUser, error: userError } = await supabase
+        .from("users")
+        .select("id, role")
+        .eq("id", user.id)
         .single();
 
-      if (expertError || !expertComptable) {
+      if (userError || !currentUser) {
         return NextResponse.json(
-          { error: "Expert-comptable introuvable" },
+          { error: "Utilisateur introuvable" },
           { status: 404 }
         );
       }
 
-      if (expertComptable.role !== "admin") {
+      if (currentUser.role !== "admin") {
         return NextResponse.json(
           { error: "Accès refusé. Seuls les administrateurs peuvent inviter des collaborateurs." },
           { status: 403 }
         );
       }
 
-      const cabinetId = expertComptable.cabinet_id;
-      if (!cabinetId) {
-        return NextResponse.json(
-          { error: "Cabinet introuvable" },
-          { status: 404 }
-        );
-      }
-
-      // Vérifier si l'email existe déjà
-      const { data: existingExpert } = await supabase
-        .from("experts_comptables")
+      // Vérifier si l'email existe déjà (ACPM mono-tenant)
+      const { data: existingUser } = await supabase
+        .from("users")
         .select("id")
         .eq("email", email)
         .single();
 
-      if (existingExpert) {
+      if (existingUser) {
         return NextResponse.json(
           { error: "Cet email est déjà associé à un compte" },
           { status: 400 }
@@ -128,7 +120,6 @@ export const POST = withRateLimit(
           data: {
             nom,
             prenom,
-            cabinet_id: cabinetId,
           },
         }
       );
@@ -148,28 +139,17 @@ export const POST = withRateLimit(
         );
       }
 
-      // Créer l'enregistrement dans experts_comptables
-      const defaultPermissions = {
-        clients: {
-          read: true,
-          write: true,
-          delete: false,
-        },
-      };
-
+      // Créer l'utilisateur dans la table users (ACPM mono-tenant)
       const { error: insertError } = await supabase
-        .from("experts_comptables")
+        .from("users")
         .insert({
-          user_id: invitedUser.user.id,
+          id: invitedUser.user.id,
           email: email,
           nom: nom,
           prenom: prenom || null,
           role: "collaborateur",
-          cabinet_id: cabinetId,
-          created_by: user.id,
           is_active: true,
-          permissions: defaultPermissions,
-          invited_at: new Date().toISOString(),
+          created_at: new Date().toISOString(),
         });
 
       if (insertError) {

@@ -4,6 +4,7 @@ import { createServerClient } from "@supabase/ssr";
 
 import type { ClientData, CabinetData } from "@/lib/types/database";
 import { generateCourrierReprise } from "@/lib/generateCourrierReprise";
+import { getCabinetInfo } from "@/lib/cabinet-params";
 
 /**
  * Route POST /api/generate-courrier-reprise
@@ -93,43 +94,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // Récupérer le cabinet_id depuis experts_comptables
-    const { data: expertComptable, error: expertError } = await supabase
-      .from("experts_comptables")
-      .select("cabinet_id")
-      .eq("user_id", user.id)
-      .single();
-
-    console.log('👤 Expert comptable:', expertComptable);
-    console.log('🏢 Cabinet ID trouvé:', expertComptable?.cabinet_id);
-    console.log('❌ Error expert:', expertError);
-
-    if (expertError || !expertComptable?.cabinet_id) {
-      console.error("Erreur récupération expert comptable", expertError);
-      return NextResponse.json(
-        { error: "Cabinet introuvable ou inaccessible." },
-        { status: 404 }
-      );
-    }
-
-    // Récupérer le cabinet repreneur
-    const { data: cabinet, error: cabinetError } = await supabase
-      .from('cabinets')
-      .select('*')
-      .eq("id", expertComptable.cabinet_id)
-      .single();
-
-    console.log('🏢 Cabinet récupéré:', cabinet);
-    console.log('📊 Data cabinet:', cabinet);
-    console.log('❌ Error cabinet:', cabinetError);
-
-    if (cabinetError || !cabinet) {
-      console.error("Erreur récupération cabinet", cabinetError);
-      return NextResponse.json(
-        { error: "Cabinet introuvable ou inaccessible." },
-        { status: 404 }
-      );
-    }
+    // Récupérer les informations du cabinet (ACPM mono-tenant)
+    const cabinet = await getCabinetInfo();
 
     // Générer le document
     const documentBuffer = await generateCourrierReprise(client, cabinet);

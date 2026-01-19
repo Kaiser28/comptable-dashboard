@@ -4,6 +4,7 @@ import { createServerClient } from "@supabase/ssr";
 
 import type { ActeJuridiqueData, ClientData, CabinetData, AssocieData } from "@/lib/types/database";
 import { generateCessionActions } from "@/lib/generateCessionActions";
+import { getCabinetInfo } from "@/lib/cabinet-params";
 
 /**
  * Route POST /api/generate-cession-actions
@@ -137,43 +138,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // Récupérer le cabinet_id depuis experts_comptables
-    const { data: expertComptable, error: expertError } = await supabase
-      .from("experts_comptables")
-      .select("cabinet_id")
-      .eq("user_id", user.id)
-      .single();
-
-    console.log('👤 Expert comptable:', expertComptable);
-    console.log('🏢 Cabinet ID trouvé:', expertComptable?.cabinet_id);
-    console.log('❌ Error expert:', expertError);
-
-    if (expertError || !expertComptable?.cabinet_id) {
-      console.error("Erreur récupération expert comptable", expertError);
-      return NextResponse.json(
-        { error: "Cabinet introuvable ou inaccessible." },
-        { status: 404 }
-      );
-    }
-
-    // Récupérer le cabinet
-    const { data: cabinet, error: cabinetError } = await supabase
-      .from('cabinets')
-      .select('*')
-      .eq("id", expertComptable.cabinet_id)
-      .single();
-
-    console.log('🏢 Cabinet récupéré:', cabinet);
-    console.log('📊 Data cabinet:', cabinet);
-    console.log('❌ Error cabinet:', cabinetError);
-
-    if (cabinetError || !cabinet) {
-      console.error("Erreur récupération cabinet", cabinetError);
-      return NextResponse.json(
-        { error: "Cabinet introuvable ou inaccessible." },
-        { status: 404 }
-      );
-    }
+    // Récupérer les informations du cabinet (ACPM mono-tenant)
+    const cabinet = await getCabinetInfo();
 
     // Générer le document
     const documentBuffer = await generateCessionActions(
