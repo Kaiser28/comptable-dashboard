@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { createServerClient } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 
 /**
  * Rate limiting strict pour login : 5 tentatives / 15 minutes par IP
@@ -111,34 +111,18 @@ export async function POST(request: Request) {
       );
     }
     
-    console.log('[LOGIN API] AVANT await cookies()');
-    const cookieStore = await cookies();
-    console.log('[LOGIN API] APRÈS await cookies() - succès');
-    const supabase = createServerClient(
-      supabaseUrl,
-      supabaseKey,
-      {
-        cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value;
-          },
-          set(name: string, value: string, options: any) {
-            try {
-              cookieStore.set({ name, value, ...options });
-            } catch (error) {
-              // Erreur silencieuse si cookie déjà défini (Server Component)
-            }
-          },
-          remove(name: string, options: any) {
-            try {
-              cookieStore.set({ name, value: "", ...options });
-            } catch (error) {
-              // Erreur silencieuse si cookie déjà supprimé
-            }
-          },
-        },
-      }
-    );
+    console.log('[LOGIN API] AVANT création client Supabase');
+    
+    // Utiliser createClient direct au lieu de createServerClient
+    // pour éviter le bug /pipeline de @supabase/ssr avec Next.js 16
+    const supabase = createClient(supabaseUrl, supabaseKey, {
+      auth: {
+        persistSession: false, // Pas de session persistante dans l'API route
+        autoRefreshToken: false,
+      },
+    });
+    
+    console.log('[LOGIN API] Client Supabase créé');
 
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -185,6 +169,30 @@ export async function POST(request: Request) {
       const ip = getClientIP(request);
       const key = `login-fails:${ip}`;
       await redis.del(key);
+    }
+
+    // Définir les cookies de session Supabase manuellement
+    if (data.session) {
+      const cookieStore = await cookies();
+      
+      // Stocker les tokens dans les cookies
+      const maxAge = 60 * 60 * 24 * 7; // 7 jours
+      
+      cookieStore.set('sb-access-token', data.session.access_token, {
+        maxAge,
+        path: '/',
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+      });
+      
+      cookieStore.set('sb-refresh-token', data.session.refresh_token, {
+        maxAge,
+        path: '/',
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+      });
+      
+      console.log('[LOGIN API] Cookies de session définis');
     }
 
     return NextResponse.json(
