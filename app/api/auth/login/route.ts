@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { createClient } from "@supabase/supabase-js";
+import { createServerClient } from "@supabase/ssr";
 
 /**
  * Rate limiting strict pour login : 5 tentatives / 15 minutes par IP
@@ -113,14 +113,28 @@ export async function POST(request: Request) {
     
     console.log('[LOGIN API] AVANT création client Supabase');
     
-    // Utiliser createClient direct au lieu de createServerClient
-    // pour éviter le bug /pipeline de @supabase/ssr avec Next.js 16
-    const supabase = createClient(supabaseUrl, supabaseKey, {
-      auth: {
-        persistSession: false, // Pas de session persistante dans l'API route
-        autoRefreshToken: false,
-      },
-    });
+    // Utiliser la méthode officielle Supabase avec getAll/setAll
+    const cookieStore = await cookies();
+    const supabase = createServerClient(
+      supabaseUrl,
+      supabaseKey,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll();
+          },
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) =>
+                cookieStore.set(name, value, options)
+              );
+            } catch {
+              // Server Component - ignore
+            }
+          },
+        },
+      }
+    );
     
     console.log('[LOGIN API] Client Supabase créé');
 
@@ -171,29 +185,8 @@ export async function POST(request: Request) {
       await redis.del(key);
     }
 
-    // Définir les cookies de session Supabase manuellement
-    if (data.session) {
-      const cookieStore = await cookies();
-      
-      // Stocker les tokens dans les cookies
-      const maxAge = 60 * 60 * 24 * 7; // 7 jours
-      
-      cookieStore.set('sb-access-token', data.session.access_token, {
-        maxAge,
-        path: '/',
-        sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production',
-      });
-      
-      cookieStore.set('sb-refresh-token', data.session.refresh_token, {
-        maxAge,
-        path: '/',
-        sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production',
-      });
-      
-      console.log('[LOGIN API] Cookies de session définis');
-    }
+    // Les cookies de session sont automatiquement gérés par @supabase/ssr
+    console.log('[LOGIN API] Authentification réussie - Cookies gérés par Supabase SSR');
 
     return NextResponse.json(
       {
