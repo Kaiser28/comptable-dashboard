@@ -39,10 +39,12 @@ interface AssocieInsert {
  */
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const clientId = params.id;
+    const { id: clientId } = await params;
+
+    console.log('[API ASSOCIES GET] clientId reçu:', clientId);
 
     if (!clientId) {
       return NextResponse.json(
@@ -116,10 +118,10 @@ export async function GET(
 export const POST = withRateLimit(
   async (
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
   ) => {
     try {
-      const clientId = params.id;
+      const { id: clientId } = await params;
 
       if (!clientId) {
         return NextResponse.json(
