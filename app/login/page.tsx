@@ -1,153 +1,109 @@
 'use client';
 
-import { useState, type FormEvent } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-
-import { supabaseClient } from "@/lib/supabase";
-import { ACPM_CONFIG } from "@/lib/acpm-config";
-import Image from 'next/image';
+import { useState, FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setIsSubmitting(true);
-    setErrorMessage(null);
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
 
     try {
-      // Appel de la route API protégée avec rate limiting
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
+      const supabase = createClient();
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        // Gestion spécifique du rate limiting (429)
-        if (response.status === 429) {
-          setErrorMessage(data.error || "Trop de tentatives. Réessayez dans 15 minutes.");
-        } else {
-          setErrorMessage(data.error || "Impossible de se connecter. Veuillez réessayer.");
-        }
+      if (signInError) {
+        setError('Email ou mot de passe incorrect');
+        setLoading(false);
         return;
       }
 
-      if (data.success) {
-        // Connexion réussie, rediriger vers le dashboard
-        router.push("/dashboard");
-      } else {
-        setErrorMessage("Impossible de se connecter. Veuillez réessayer.");
+      if (data.user) {
+        // Rediriger vers le dashboard
+        router.push('/dashboard');
       }
-    } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Une erreur inattendue est survenue.";
-      setErrorMessage(message);
-    } finally {
-      setIsSubmitting(false);
+    } catch (err) {
+      console.error('[LOGIN] Erreur:', err);
+      setError('Erreur lors de la connexion');
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
-      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl">
-        <header className="mb-6 text-center">
-          <div className="mb-4 flex items-center justify-center gap-3">
-            <Image 
-              src={ACPM_CONFIG.branding.logo.light}
-              alt={ACPM_CONFIG.cabinet.name}
-              width={60}
-              height={60}
-              className="object-contain"
-            />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900">{ACPM_CONFIG.app.name}</h1>
-          <h2 className="mt-4 text-xl font-semibold text-gray-900">
-            {ACPM_CONFIG.messages.loginTitle}
-          </h2>
-          <p className="mt-2 text-sm text-gray-500">
-            {ACPM_CONFIG.messages.loginSubtitle}
-          </p>
-        </header>
-
-        {errorMessage ? (
-          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-            {errorMessage}
-          </div>
-        ) : null}
-
-        <form className="space-y-5" onSubmit={handleSubmit}>
-          <div>
-            <label
-              className="block text-sm font-medium text-gray-700"
-              htmlFor="email"
-            >
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              autoComplete="email"
-              required
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              className="mt-1 w-full rounded-lg border border-gray-200 px-4 py-2.5 text-gray-900 shadow-sm focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
-              placeholder="contact@acpm-expertise.com"
-            />
-          </div>
-
-          <div>
-            <label
-              className="block text-sm font-medium text-gray-700"
-              htmlFor="password"
-            >
-              Mot de passe
-            </label>
-            <input
-              id="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              className="mt-1 w-full rounded-lg border border-gray-200 px-4 py-2.5 text-gray-900 shadow-sm focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
-              placeholder="••••••••"
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
-            style={{ backgroundColor: ACPM_CONFIG.branding.colors.primary }}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <>
-                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/70 border-t-transparent" />
-                Connexion…
-              </>
-            ) : (
-              "Se connecter"
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold text-center">
+            ACPM LexiGen
+          </CardTitle>
+          <CardDescription className="text-center">
+            Connectez-vous à votre espace de gestion
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
             )}
-          </button>
-        </form>
+            
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="contact@acpm-expertise.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={loading}
+              />
+            </div>
 
-        <p className="mt-6 text-center text-sm text-gray-500">
-          Besoin d'aide ? Contactez l'administrateur ACPM
-        </p>
-      </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Mot de passe</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                disabled={loading}
+              />
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={loading}
+            >
+              {loading ? 'Connexion...' : 'Se connecter'}
+            </Button>
+          </form>
+
+          <div className="mt-4 text-center text-xs text-gray-500">
+            Cabinet ACPM - Gestion juridique
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
-

@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import { Toaster } from "sonner";
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
-import { CabinetProvider, useCabinet } from "@/lib/contexts/CabinetContext";
+import { AuthProvider, useAuth } from "@/lib/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 
 type DashboardLayoutProps = {
@@ -11,30 +11,32 @@ type DashboardLayoutProps = {
 };
 
 /**
- * Composant interne qui utilise le hook useCabinet
+ * Composant interne qui utilise le hook useAuth
  * Nécessaire car les hooks doivent être utilisés dans un composant enfant du Provider
  */
 function DashboardContent({ children }: DashboardLayoutProps) {
-  const { loading, error } = useCabinet();
+  const { user, loading, error } = useAuth();
 
-  // Afficher un loading pendant le chargement du cabinet_id
+  // Afficher un loading pendant le chargement de l'auth
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-          <p className="text-sm text-muted-foreground">Chargement de votre cabinet...</p>
+          <p className="text-sm text-muted-foreground">Chargement...</p>
         </div>
       </div>
     );
   }
 
-  // Afficher une erreur si le cabinet_id n'a pas pu être chargé
-  if (error) {
+  // Afficher une erreur si problème d'auth
+  if (error || !user) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="flex flex-col items-center gap-4 p-6">
-          <p className="text-sm font-medium text-destructive">{error}</p>
+          <p className="text-sm font-medium text-destructive">
+            {error || 'Non authentifié'}
+          </p>
           <p className="text-xs text-muted-foreground">
             Redirection vers la page de connexion...
           </p>
@@ -58,9 +60,9 @@ function DashboardContent({ children }: DashboardLayoutProps) {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
-    <CabinetProvider>
+    <AuthProvider>
       <DashboardContent>{children}</DashboardContent>
-    </CabinetProvider>
+    </AuthProvider>
   );
 }
 

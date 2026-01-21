@@ -61,7 +61,7 @@ type ActeType =
 type ActeJuridiqueWithClient = {
   id: string;
   client_id: string;
-  cabinet_id: string;
+  // cabinet_id removed
   type: ActeType;
   statut: ActeStatut;
   priorite?: 'urgent' | 'normal' | null;
@@ -151,7 +151,7 @@ const getStatutLabel = (statut: ActeStatut): string => {
 export default function WorkflowClients() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
-  const [cabinetId, setCabinetId] = useState<string | null>(null);
+  // Cabinet ID removed for mono-tenant
   const [documentsUrgents, setDocumentsUrgents] = useState<ActeJuridiqueWithClient[]>([]);
   const [clientsAvecActes, setClientsAvecActes] = useState<ClientWithActes[]>([]);
   const [isAllClientsExpanded, setIsAllClientsExpanded] = useState(false);
@@ -198,19 +198,7 @@ export default function WorkflowClients() {
         return;
       }
 
-      // Récupérer le cabinet_id
-      const { data: expertComptable, error: expertError } = await supabaseClient
-        .from("experts_comptables")
-        .select("cabinet_id")
-        .eq("user_id", user.id)
-        .single();
-
-      if (expertError || !expertComptable?.cabinet_id) {
-        return;
-      }
-
-      const id = expertComptable.cabinet_id;
-      setCabinetId(id);
+      // ACPM mono-tenant : pas besoin de cabinet_id
 
       // Récupérer les documents urgents et les clients avec actes en parallèle
       await Promise.all([
@@ -243,7 +231,7 @@ export default function WorkflowClients() {
             forme_juridique
           )
         `)
-        .eq("cabinet_id", cabinetId)
+        
         .or(`priorite.eq.urgent,and(statut.eq.brouillon,updated_at.lt.${fiveDaysAgoISO})`)
         .order("updated_at", { ascending: true })
         .limit(10);
@@ -272,7 +260,7 @@ export default function WorkflowClients() {
             forme_juridique
           )
         `)
-        .eq("cabinet_id", cabinetId)
+        
         .order("updated_at", { ascending: false });
 
       if (actesError) {

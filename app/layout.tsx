@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { GoogleAnalytics } from "@/components/landing/GoogleAnalytics";
-import { Hotjar } from "@/components/landing/Hotjar";
-import { Footer } from "@/components/Footer";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -17,8 +14,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "LexiGen | Génération juridique automatisée",
-  description: "Plateforme SaaS pour experts-comptables : génération automatique de statuts, PV, et actes juridiques en quelques clics",
+  title: "ACPM LexiGen | Gestion juridique simplifiée",
+  description: "Application de gestion juridique pour Cabinet ACPM - Création de statuts, dossiers clients et documents juridiques",
 };
 
 export default function RootLayout({
@@ -31,10 +28,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <GoogleAnalytics />
-        <Hotjar />
         {children}
-        <Footer />
       </body>
     </html>
   );

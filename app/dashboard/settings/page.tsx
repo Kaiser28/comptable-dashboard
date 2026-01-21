@@ -37,7 +37,7 @@ export default function SettingsPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [cabinetId, setCabinetId] = useState<string | null>(null);
+  // Cabinet ID removed for mono-tenant
   const [cabinetData, setCabinetData] = useState<CabinetData | null>(null);
   
   // États du formulaire
@@ -76,21 +76,7 @@ export default function SettingsPage() {
           return;
         }
 
-        // Récupérer le cabinet_id via experts_comptables
-        const { data: expertComptable, error: expertError } = await supabaseClient
-          .from("experts_comptables")
-          .select("cabinet_id")
-          .eq("user_id", user.id)
-          .single();
-
-        if (expertError || !expertComptable?.cabinet_id) {
-          toast.error("Cabinet introuvable");
-          router.push("/dashboard");
-          return;
-        }
-
-        const id = expertComptable.cabinet_id;
-        setCabinetId(id);
+        // ACPM mono-tenant : pas besoin de cabinet_id
 
         // Récupérer les données du cabinet
         const { data: cabinet, error: cabinetError } = await supabaseClient

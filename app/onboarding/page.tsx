@@ -61,7 +61,7 @@ function OnboardingContent() {
 
       // Vérifier si l'utilisateur existe déjà
       const { data: existingUser } = await supabase
-        .from('experts_comptables')
+        .from('users')
         .select('user_id')
         .eq('email', sessionData.email)
         .maybeSingle();

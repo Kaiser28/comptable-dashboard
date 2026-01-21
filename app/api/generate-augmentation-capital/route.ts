@@ -145,12 +145,6 @@ export const POST = withRateLimit(
     const cabinet = await getCabinetInfo();
 
     // Générer le document
-      return NextResponse.json(
-        { error: "Cabinet introuvable ou inaccessible." },
-        { status: 404 }
-      );
-    }
-
     const acteWithRelations = acte as ActeJuridiqueData & { client: ClientData };
 
     const documentBuffer = await generateAugmentationCapital(

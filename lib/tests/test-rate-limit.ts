@@ -104,7 +104,7 @@ async function getTestClientId(token: string): Promise<string> {
   console.log(`${colors.yellow}⚠️  Aucun client trouvé, création d'un client de test...${colors.reset}`);
   
   const { data: expert } = await supabase
-    .from('experts_comptables')
+    .from('users')
     .select('cabinet_id')
     .single();
 

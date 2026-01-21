@@ -61,7 +61,7 @@ export default function EquipePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [cabinetId, setCabinetId] = useState<string | null>(null);
+  // Cabinet ID removed for mono-tenant
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   
   // États pour l'invitation
@@ -92,7 +92,7 @@ export default function EquipePage() {
 
         // Récupérer les infos de l'expert-comptable
         const { data: expertComptable, error: expertError } = await supabaseClient
-          .from("experts_comptables")
+          .from("users")
           .select("id, role, cabinet_id")
           .eq("user_id", user.id)
           .single();
@@ -129,9 +129,9 @@ export default function EquipePage() {
   const loadTeamMembers = async (cabinetId: string) => {
     try {
       const { data, error } = await supabaseClient
-        .from("experts_comptables")
+        .from("users")
         .select("*")
-        .eq("cabinet_id", cabinetId)
+        
         .order("role", { ascending: true }) // Admin en premier
         .order("created_at", { ascending: true });
 
@@ -220,7 +220,7 @@ export default function EquipePage() {
       };
 
       const { error } = await supabaseClient
-        .from("experts_comptables")
+        .from("users")
         .update({ permissions: updatedPermissions })
         .eq("id", memberId);
 
@@ -243,7 +243,7 @@ export default function EquipePage() {
 
     try {
       const { error } = await supabaseClient
-        .from("experts_comptables")
+        .from("users")
         .update({ is_active: !currentStatus })
         .eq("id", memberId);
 
@@ -271,7 +271,7 @@ export default function EquipePage() {
 
     try {
       const { error } = await supabaseClient
-        .from("experts_comptables")
+        .from("users")
         .delete()
         .eq("id", memberToDelete.id);
 

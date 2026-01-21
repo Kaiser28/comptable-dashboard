@@ -57,20 +57,8 @@ export default function DashboardStats() {
           return;
         }
 
-        // Récupérer le cabinet_id
-        const { data: expertComptable, error: expertError } = await supabaseClient
-          .from("experts_comptables")
-          .select("cabinet_id")
-          .eq("user_id", user.id)
-          .single();
-
-        if (expertError || !expertComptable?.cabinet_id) {
-          toast.error("Cabinet introuvable");
-          return;
-        }
-
-        const id = expertComptable.cabinet_id;
-        setCabinetId(id);
+        // ACPM mono-tenant : pas besoin de cabinet_id
+        // RLS gère automatiquement les permissions
 
         // Calculer les dates pour la comparaison (30 jours)
         const now = new Date();
@@ -95,27 +83,27 @@ export default function DashboardStats() {
           supabaseClient
             .from("clients")
             .select("id", { count: "exact", head: true })
-            .eq("cabinet_id", id),
+,
           
           // Total clients il y a 30 jours
           supabaseClient
             .from("clients")
             .select("id", { count: "exact", head: true })
-            .eq("cabinet_id", id)
+
             .lte("created_at", thirtyDaysAgo.toISOString()),
           
           // Clients actifs (formulaire rempli)
           supabaseClient
             .from("clients")
             .select("id", { count: "exact", head: true })
-            .eq("cabinet_id", id)
+
             .ilike("statut", "%formulaire rempli%"),
           
           // Clients actifs il y a 30 jours
           supabaseClient
             .from("clients")
             .select("id", { count: "exact", head: true })
-            .eq("cabinet_id", id)
+
             .ilike("statut", "%formulaire rempli%")
             .lte("created_at", thirtyDaysAgo.toISOString()),
           
@@ -123,14 +111,14 @@ export default function DashboardStats() {
           supabaseClient
             .from("clients")
             .select("id", { count: "exact", head: true })
-            .eq("cabinet_id", id)
+
             .ilike("statut", "%en attente%"),
           
           // Clients en attente il y a 30 jours
           supabaseClient
             .from("clients")
             .select("id", { count: "exact", head: true })
-            .eq("cabinet_id", id)
+
             .ilike("statut", "%en attente%")
             .lte("created_at", thirtyDaysAgo.toISOString()),
           
@@ -138,14 +126,14 @@ export default function DashboardStats() {
           supabaseClient
             .from("clients")
             .select("id", { count: "exact", head: true })
-            .eq("cabinet_id", id)
+
             .ilike("statut", "%statuts générés%"),
           
           // Documents générés il y a 30 jours
           supabaseClient
             .from("clients")
             .select("id", { count: "exact", head: true })
-            .eq("cabinet_id", id)
+
             .ilike("statut", "%statuts générés%")
             .lte("updated_at", thirtyDaysAgo.toISOString()),
           
@@ -153,14 +141,14 @@ export default function DashboardStats() {
           supabaseClient
             .from("clients")
             .select("created_at")
-            .eq("cabinet_id", id)
+
             .gte("created_at", sevenDaysAgo.toISOString()),
           
           // Activité récente (5 dernières actions)
           supabaseClient
             .from("clients")
             .select("nom_entreprise, statut, created_at, updated_at, formulaire_complete")
-            .eq("cabinet_id", id)
+
             .order("created_at", { ascending: false })
             .limit(10),
         ]);

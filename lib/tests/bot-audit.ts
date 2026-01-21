@@ -148,7 +148,7 @@ class LexiGenAuditBot {
       try {
         // Supprimer les anciens experts de test (avant les cabinets pour respecter les FK)
         await this.supabaseAdmin
-          .from('experts_comptables')
+          .from('users')
           .delete()
           .ilike('email', '%expert-audit%lexigen.dev');
         
@@ -204,7 +204,7 @@ class LexiGenAuditBot {
       
       // Créer l'expert ensuite (avec admin pour bypass RLS)
       const { data: expert, error: expertError } = await this.supabaseAdmin
-        .from('experts_comptables')
+        .from('users')
         .insert({
           cabinet_id: this.cabinetId,
           user_id: userId,
@@ -256,7 +256,7 @@ class LexiGenAuditBot {
 
     // Récupérer le cabinet_id de l'expert
     const { data: expertData, error: expertError } = await this.supabaseUser
-      .from('experts_comptables')
+      .from('users')
       .select('cabinet_id')
       .eq('user_id', authData.user.id)
       .single();
