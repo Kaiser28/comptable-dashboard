@@ -1310,7 +1310,7 @@ export default function ClientDetailPage() {
             </CardHeader>
             <CardContent>
               <AssociesList
-                clientId={client.id || ''}
+                clientId={params.id}
                 clientData={{
                   capital_social: client.capital_social || 0,
                   nb_actions: (client as any).nb_actions || 0,
