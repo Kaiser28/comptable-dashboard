@@ -83,6 +83,10 @@ export default function ClientDetailPage() {
     let isMounted = true;
     const clientId = params?.id;
 
+    console.log('[CLIENT DETAIL] params:', params);
+    console.log('[CLIENT DETAIL] clientId type:', typeof clientId);
+    console.log('[CLIENT DETAIL] clientId value:', clientId);
+
     if (!clientId || typeof clientId !== "string") {
       setClientState({
         data: null,
@@ -1310,7 +1314,7 @@ export default function ClientDetailPage() {
             </CardHeader>
             <CardContent>
               <AssociesList
-                clientId={params.id}
+                clientId={typeof params.id === 'string' ? params.id : params.id?.[0] || ''}
                 clientData={{
                   capital_social: client.capital_social || 0,
                   nb_actions: (client as any).nb_actions || 0,
