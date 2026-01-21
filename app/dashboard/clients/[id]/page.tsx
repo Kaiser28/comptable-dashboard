@@ -752,13 +752,45 @@ export default function ClientDetailPage() {
           </p>
         </div>
 
-        <div className="flex flex-col gap-2 sm:flex-row">
+        <div className="flex flex-col gap-2 sm:flex-row sm:justify-between">
           <Button variant="outline" onClick={() => router.push("/dashboard")}>
             Retour
           </Button>
-          <Button onClick={() => router.push(`/dashboard/clients/${params.id}/edit`)}>
-            Modifier
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={() => router.push(`/dashboard/clients/${params.id}/edit`)}>
+              Modifier
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={async () => {
+                if (!confirm(`Êtes-vous sûr de vouloir supprimer le client "${client.nom_entreprise}" ?\n\nCette action est irréversible et supprimera :\n- Le client\n- Tous les dossiers associés\n- Tous les documents\n- Toutes les pièces jointes`)) {
+                  return;
+                }
+                
+                try {
+                  const { error } = await supabaseClient
+                    .from('clients')
+                    .delete()
+                    .eq('id', params.id);
+                  
+                  if (error) {
+                    console.error('Erreur suppression:', error);
+                    alert('Erreur lors de la suppression du client');
+                    return;
+                  }
+                  
+                  toast.success('Client supprimé avec succès');
+                  router.push('/dashboard/clients');
+                } catch (error) {
+                  console.error('Erreur:', error);
+                  alert('Une erreur est survenue');
+                }
+              }}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Supprimer
+            </Button>
+          </div>
         </div>
       </div>
 
