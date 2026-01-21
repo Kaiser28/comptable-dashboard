@@ -173,6 +173,13 @@ export default function ClientDetailPage() {
       return { createdAt: "", updatedAt: "" };
     }
 
+    console.log('[DEBUG DATES]', {
+      created_at: clientState.data.created_at,
+      updated_at: clientState.data.updated_at,
+      created_at_type: typeof clientState.data.created_at,
+      updated_at_type: typeof clientState.data.updated_at
+    });
+
     return {
       createdAt: clientState.data.created_at 
         ? new Date(clientState.data.created_at).toLocaleDateString("fr-FR")
@@ -785,7 +792,7 @@ export default function ClientDetailPage() {
             <div>
               <p className="text-muted-foreground">Capital social</p>
               <p className="font-medium text-foreground">
-                {client.capital_social !== null
+                {client.capital_social !== null && client.capital_social !== undefined
                   ? `${client.capital_social.toLocaleString("fr-FR", {
                       style: "currency",
                       currency: "EUR",
