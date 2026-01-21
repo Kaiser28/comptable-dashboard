@@ -174,8 +174,12 @@ export default function ClientDetailPage() {
     }
 
     return {
-      createdAt: new Date(clientState.data.created_at).toLocaleDateString("fr-FR"),
-      updatedAt: new Date(clientState.data.updated_at).toLocaleDateString("fr-FR"),
+      createdAt: clientState.data.created_at 
+        ? new Date(clientState.data.created_at).toLocaleDateString("fr-FR")
+        : "Non renseigné",
+      updatedAt: clientState.data.updated_at
+        ? new Date(clientState.data.updated_at).toLocaleDateString("fr-FR")
+        : "Non renseigné",
     };
   }, [clientState.data]);
 
