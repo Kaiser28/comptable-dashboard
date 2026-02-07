@@ -144,6 +144,14 @@ export type Associe = {
   situation_matrimoniale?: string;
   /** Pourcentage du capital détenu. */
   pourcentage_capital?: number;
+  /** Nom de jeune fille (pour les femmes mariées). */
+  nom_jeune_fille?: string;
+  /** Nom d'épouse (pour les femmes mariées). */
+  nom_epouse?: string;
+  /** Nom du parent (pour filiation "enfant de"). */
+  enfant_de_nom?: string;
+  /** Prénom du parent (pour filiation "enfant de"). */
+  enfant_de_prenom?: string;
 };
 
 /**

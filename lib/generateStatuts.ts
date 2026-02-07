@@ -259,12 +259,32 @@ export async function generateStatuts(client: ClientData, associes: AssocieData[
             const adresseAssocieFormatee = formatAdresse(associe.adresse);
             const nationalite = (associe as any).nationalite || "française";
             
+            // Construire le nom complet avec nom de jeune fille ou nom d'épouse
+            let nomComplet = `${associe.civilite} ${associe.prenom} ${associe.nom}`;
+            if ((associe as any).nom_jeune_fille) {
+              nomComplet = `${associe.civilite} ${associe.prenom} ${associe.nom}, née ${(associe as any).nom_jeune_fille}`;
+            } else if ((associe as any).nom_epouse) {
+              nomComplet = `${associe.civilite} ${associe.prenom} ${(associe as any).nom_epouse}, née ${associe.nom}`;
+            }
+
+            // Construire la filiation "enfant de"
+            let filiation = `${accorderNe(associe.civilite)} le ${associe.date_naissance || "date non renseignée"} à ${associe.lieu_naissance || "lieu non renseigné"}`;
+            if ((associe as any).enfant_de_nom || (associe as any).enfant_de_prenom) {
+              const prenomParent = (associe as any).enfant_de_prenom || '';
+              const nomParent = (associe as any).enfant_de_nom || '';
+              if (prenomParent && nomParent) {
+                filiation += `, enfant de ${prenomParent} ${nomParent}`;
+              } else if (nomParent) {
+                filiation += `, enfant de ${nomParent}`;
+              }
+            }
+            
             return [
-              // Ligne 1: Nom complet
+              // Ligne 1: Nom complet (avec nom de jeune fille/épouse si présent)
               new Paragraph({
                 children: [
                   new TextRun({
-                    text: `${associe.civilite} ${associe.prenom} ${associe.nom}`,
+                    text: nomComplet,
                     bold: true,
                     size: 12 * 2,
                   }),
@@ -272,11 +292,11 @@ export async function generateStatuts(client: ClientData, associes: AssocieData[
                 spacing: { after: 50 },
               }),
               
-              // Ligne 2: Date et lieu de naissance
+              // Ligne 2: Date et lieu de naissance + filiation "enfant de"
               new Paragraph({
                 children: [
                   new TextRun({
-                    text: `${accorderNe(associe.civilite)} le ${associe.date_naissance || "date non renseignée"} à ${associe.lieu_naissance || "lieu non renseigné"}`,
+                    text: filiation,
                     italics: true,
                     size: 11 * 2,
                   }),
