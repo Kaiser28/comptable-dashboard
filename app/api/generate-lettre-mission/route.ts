@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 
 import type { ClientData, CabinetData } from "@/lib/types/database";
-import { generateLettreMission } from "@/lib/generateLettreMission";
+import { generateLettreMissionFromTemplate, prepareLettreMissionData } from "@/lib/generateLettreMissionTemplate";
 import { getCabinetInfo } from "@/lib/cabinet-params";
 
 /**
@@ -72,33 +72,14 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validations spécifiques pour la lettre de mission
-    if (!client.mission_objectif) {
-      return NextResponse.json(
-        { error: "L'objectif de la mission est requis pour générer la lettre de mission." },
-        { status: 400 }
-      );
-    }
-
-    if (!client.mission_honoraires) {
-      return NextResponse.json(
-        { error: "Les honoraires sont requis pour générer la lettre de mission." },
-        { status: 400 }
-      );
-    }
-
-    if (!client.mission_periodicite) {
-      return NextResponse.json(
-        { error: "La périodicité des interventions est requise pour générer la lettre de mission." },
-        { status: 400 }
-      );
-    }
-
     // Récupérer les informations du cabinet (ACPM mono-tenant)
     const cabinet = await getCabinetInfo();
 
-    // Générer le document
-    const documentBuffer = await generateLettreMission(client, cabinet);
+    // Préparer les données pour le template
+    const templateData = prepareLettreMissionData(client, cabinet);
+
+    // Générer le document avec le template
+    const documentBuffer = generateLettreMissionFromTemplate(templateData);
 
     // Nettoyer le nom de l'entreprise pour le nom de fichier (enlever caractères spéciaux)
     const nomEntrepriseSafe = (client.nom_entreprise || "document")
